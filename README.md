@@ -197,3 +197,12 @@ for error output.
 
 Passing `-k` to make will the build keep going after failure, which is often
 desirable.
+
+## Future Work
+
+The following features are desirable and should be possible to do with TuxMake.
+
+- Support additional native build architectures (such as arm64) and cross build
+  combinations
+- Support additional targets in the kernel source tree
+- Support additional build-time validation

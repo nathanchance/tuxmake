@@ -69,10 +69,12 @@ build request.
 
 Note that artifact handling is not dealt with here.
 
-### x86 with defconfig
+### Default build (run on x86_64)
+
+By default tuxmake will do a defconfig build with the latest gcc for the native architecture.
 
 ```sh
-tuxmake --kconfig defconfig --target-arch x86 --toolchain gcc-9
+tuxmake
 ```
 
 ```sh
@@ -81,7 +83,19 @@ docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux -it tuxbuild/bui
 docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux -it tuxbuild/build-gcc-9_x86 make -j8 modules
 ```
 
-### arm64 crossbuild from x86 host
+### x86 with defconfig
+
+```sh
+tuxmake --kconfig defconfig --target-arch x86_64 --toolchain gcc-9
+```
+
+```sh
+docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux -it tuxbuild/build-gcc-9_x86 make defconfig
+docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux -it tuxbuild/build-gcc-9_x86 make -j8
+docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux -it tuxbuild/build-gcc-9_x86 make -j8 modules
+```
+
+### arm64 crossbuild from x86_64 host
 
 ```sh
 tuxmake --kconfig defconfig --target-arch arm64 --toolchain gcc-9
@@ -94,10 +108,10 @@ docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm64
 docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm64 --env CROSS_COMPILE=aarch64-linux-gnu- -it tuxbuild/build-gcc-9_arm64 make -j8 dtbs
 ```
 
-### x86 defconfig with clang
+### x86_64 defconfig with clang
 
 ```sh
-tuxmake --kconfig defconfig --target-arch x86 --toolchain clang-9
+tuxmake --kconfig defconfig --target-arch x86_64 --toolchain clang-9
 ```
 
 ```sh
@@ -106,7 +120,7 @@ docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env CC=clang -
 docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env CC=clang --env HOSTCC=clang -it tuxbuild/build-clang-9 make -j8 modules
 ```
 
-### arm32 crossbuild from x86 host using clang
+### arm32 crossbuild from x86_64 host using clang
 
 ```sh
 tuxmake --kconfig multi_v7_defconfig --target-arch arm --toolchain clang-9
@@ -117,6 +131,36 @@ docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm -
 docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm --env CC=clang --env HOSTCC=clang --env CROSS_COMPILE=arm-linux-gnueabihf- -it tuxbuild/build-clang-9_arm64 make -j8 zImage
 docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm --env CC=clang --env HOSTCC=clang --env CROSS_COMPILE=arm-linux-gnueabihf- -it tuxbuild/build-clang-9_arm64 make -j8 modules
 docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm --env CC=clang --env HOSTCC=clang --env CROSS_COMPILE=arm-linux-gnueabihf- -it tuxbuild/build-clang-9_arm64 make -j8 dtbs
+```
+
+### Build documentation (only)
+
+```sh
+tuxmake --targets htmldocs
+```
+
+```sh
+docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux -it tuxbuild/build-htmldocs make htmldocs
+```
+
+### Build kernel, selftests, and documentation
+
+```sh
+tuxmake --targets kernel,selftests,htmldocs
+```
+
+### As a python library
+
+```python
+import tuxmake
+
+build = tuxmake.build("/path/to/linux")
+for artifact in build.artifacts:
+    print(artifact)
+
+doc_build = tuxmake.build("/path/to/linux", targets=[tuxmake.targets.htmldocs])
+
+full_build = tuxmake.build("/path/to/linux", targets=tuxmake.targets.all)
 ```
 
 ## Build Stages
@@ -200,7 +244,9 @@ IN:
 
 OUT: documentation artifacts
 
-## Build Artifacts
+## Implementation Details
+
+### Build Artifacts
 
 Each build stage will produce artifacts. Some artifacts (like `.config`) need
 to be passed to subsequent build stages. All artifacts should be preserved in a
@@ -211,7 +257,7 @@ Build artifacts will be saved to a path defined by `KBUILD_OUTPUT`, if set.
 Things like modules need to be installed with `make modules_install` into the
 build directory.
 
-## Other Variables
+### Other Variables
 
 `KBUILD_BUILD_USER`, `KBUILD_BUILD_HOST`, and `KBUILD_BUILD_TIMESTAMP` may be
 set to define information about the build environment. These values are built
@@ -223,6 +269,43 @@ for error output.
 
 Passing `-k` to make will the build keep going after failure, which is often
 desirable.
+
+### Additional Questions and Concerns
+
+#### Config
+
+Kernel config needs to handle a user supplied config, config fragments, and configs that are in tree.
+
+#### make clean
+
+tuxmake will `make clean` by default, and provide a flag to disable it if needed.
+
+#### ccache/sccache
+
+ccache and sccache should be supported, but the details are to be determined.
+
+#### build artifacts
+
+* metadata
+  * per-target: pass/fail, artifacts
+  * command line to reproduce this build locally
+* artifacts
+* logs
+
+#### supported make targets
+
+Initially the following targets will be supported:
+
+* config
+* kernel (Image zImage debug Image etc)
+* modules
+* dtb
+* headers
+* htmldocs
+* pdfdocs
+* kselftests
+* perf
+* cpupower
 
 ## Future Work
 

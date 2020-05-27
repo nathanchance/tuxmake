@@ -30,7 +30,7 @@ For example, wouldn't it be great if a user could install docker and then check
 out a Linux source tree and run:
 
 ```sh
-tuxmake build --kconfig defconfig --target-arch arm64 --toolchain clang-9
+tuxmake --kconfig defconfig --target-arch arm64 --toolchain clang-9
 ```
 
 While bit-for-bit [reproducible
@@ -59,7 +59,17 @@ layer of abstraction introduces.
 
 ## Use Cases
 
+For each use-case shown, an example tuxmake invocation is shown, followed by
+the example set of docker commands that would need to be run to complete the
+build request.
+
+Note that artifact handling is not dealt with here.
+
 ### x86 with defconfig
+
+```sh
+tuxmake --kconfig defconfig --target-arch x86 --toolchain gcc-9
+```
 
 ```sh
 docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux -it tuxbuild/build-gcc-9_x86 make defconfig
@@ -68,6 +78,10 @@ docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux -it tuxbuild/bui
 ```
 
 ### arm64 crossbuild from x86 host
+
+```sh
+tuxmake --kconfig defconfig --target-arch arm64 --toolchain gcc-9
+```
 
 ```sh
 docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm64 --env CROSS_COMPILE=aarch64-linux-gnu- -it tuxbuild/build-gcc-9_arm64 make -j8 defconfig
@@ -79,6 +93,10 @@ docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm64
 ### x86 defconfig with clang
 
 ```sh
+tuxmake --kconfig defconfig --target-arch x86 --toolchain clang-9
+```
+
+```sh
 docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env CC=clang --env HOSTCC=clang -it tuxbuild/build-clang-9 make defconfig
 docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env CC=clang --env HOSTCC=clang -it tuxbuild/build-clang-9 make -j8
 docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env CC=clang --env HOSTCC=clang -it tuxbuild/build-clang-9 make -j8 modules
@@ -87,10 +105,14 @@ docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env CC=clang -
 ### arm32 crossbuild from x86 host using clang
 
 ```sh
-docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm --env CC=clang --env HOSTCC=clang --env CROSS_COMPILE=arm-linux-gnueabihf- -it tuxbuild/build-gcc-9_arm64 make -j8 multi_v7_defconfig
-docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm --env CC=clang --env HOSTCC=clang --env CROSS_COMPILE=arm-linux-gnueabihf- -it tuxbuild/build-gcc-9_arm64 make -j8 zImage
-docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm --env CC=clang --env HOSTCC=clang --env CROSS_COMPILE=arm-linux-gnueabihf- -it tuxbuild/build-gcc-9_arm64 make -j8 modules
-docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm --env CC=clang --env HOSTCC=clang --env CROSS_COMPILE=arm-linux-gnueabihf- -it tuxbuild/build-gcc-9_arm64 make -j8 dtbs
+tuxmake --kconfig multi_v7_defconfig --target-arch arm --toolchain clang-9
+```
+
+```sh
+docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm --env CC=clang --env HOSTCC=clang --env CROSS_COMPILE=arm-linux-gnueabihf- -it tuxbuild/build-clang-9_arm64 make -j8 multi_v7_defconfig
+docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm --env CC=clang --env HOSTCC=clang --env CROSS_COMPILE=arm-linux-gnueabihf- -it tuxbuild/build-clang-9_arm64 make -j8 zImage
+docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm --env CC=clang --env HOSTCC=clang --env CROSS_COMPILE=arm-linux-gnueabihf- -it tuxbuild/build-clang-9_arm64 make -j8 modules
+docker run --rm -u $(id -u):$(id -g) -v $(pwd):/linux -w /linux --env ARCH=arm --env CC=clang --env HOSTCC=clang --env CROSS_COMPILE=arm-linux-gnueabihf- -it tuxbuild/build-clang-9_arm64 make -j8 dtbs
 ```
 
 ## Build Stages

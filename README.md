@@ -307,6 +307,11 @@ Initially the following targets will be supported:
 * perf
 * cpupower
 
+#### Containers
+
+tuxmake needs to provide default containerized environments, but also have the
+ability to specify alternative container environments.
+
 ## Future Work
 
 The following features are desirable and should be possible to do with TuxMake.

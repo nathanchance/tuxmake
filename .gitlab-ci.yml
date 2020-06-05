@@ -1,0 +1,26 @@
+image:
+  name: debian:buster-slim
+
+services:
+  - docker:dind
+
+stages:
+  - test
+  - build
+  - publish
+
+.install: &install
+  - 'apt-get update && apt-get install -qy python3-pytest python3-pytest-cov python3-pytest-mock make black flake8'
+
+before_script: *install
+
+unittests:
+  stage: test
+  script:
+    - python3 -m pytest --cov=tuxmake
+
+style:
+  stage: test
+  script:
+    - black --check .
+    - flake8 .

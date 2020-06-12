@@ -1,0 +1,13 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "tuxmake"
+author = "Antonio Terceiro"
+author-email = "antonio.terceiro@linaro.org"
+home-page = "https://gitlab.com/Linaro/tuxmake"
+classifiers = ["License :: OSI Approved :: MIT License"]
+
+[tool.flit.scripts]
+tuxmake = "tuxmake.cli:main"

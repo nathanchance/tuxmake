@@ -1,6 +1,11 @@
 import argparse
 import sys
-from tuxmake.build import build
+from tuxmake import __version__
+from tuxmake.build import build, defaults
+
+
+def comma_separated(s):
+    return s.split(",")
 
 
 def main(*argv):
@@ -10,9 +15,29 @@ def main(*argv):
     parser = argparse.ArgumentParser(prog="tuxmake")
 
     parser.add_argument(
+        "-t",
+        "--targets",
+        type=comma_separated,
+        help=f"Comma-separated list of targets to build (default: {','.join(defaults.targets)})",
+    )
+
+    parser.add_argument(
+        "-k",
+        "--kconfig",
+        type=str,
+        action="append",
+        help=f"kconfig to use. Named (defconfig etc), or URL to config fragment. Can be specified multiple times (default: {', '.join(defaults.kconfig)})",
+    )
+
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
+
+    parser.add_argument(
         "tree", nargs="?", default=".", help="Tree to build (default: .)"
     )
 
     options = parser.parse_args(argv)
-    result = build(tree=options.tree)
+    build_args = {k: v for k, v in options.__dict__.items() if v}
+    result = build(**build_args)
     print(f"I: build output in {result.output_dir}")

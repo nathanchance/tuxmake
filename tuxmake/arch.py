@@ -8,6 +8,8 @@ class Architecture:
         config = ConfigParser()
         config.read(conffile)
 
+        self.kernel = config["targets"]["kernel"]
+
         self.artifacts = []
         for target, artifact in config["artifacts"].items():
             self.artifacts.append(artifact)

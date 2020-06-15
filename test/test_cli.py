@@ -1,21 +1,53 @@
+import argparse
+import pytest
 import sys
 from tuxmake.cli import main as tuxmake
 
 
-def test_basic_build(linux, home):
-    tuxmake(str(linux))
-    assert (home / ".cache/tuxmake/builds/1").exists()
+@pytest.fixture
+def builds(home):
+    return home / ".cache/tuxmake/builds"
 
 
-def test_build_from_sys_argv(monkeypatch, mocker):
-    build = mocker.patch("tuxmake.cli.build")
+@pytest.fixture(autouse=True)
+def builder(mocker):
+    return mocker.patch("tuxmake.cli.build")
+
+
+def args(called):
+    return argparse.Namespace(**called.call_args.kwargs)
+
+
+def test_basic_build(linux, builder):
+    tree = str(linux)
+    tuxmake(tree)
+    assert builder.call_args.kwargs == {"tree": tree}
+
+
+def test_build_from_sys_argv(monkeypatch, builder):
     monkeypatch.setattr(sys, "argv", ["tuxmake", "/path/to/linux"])
     tuxmake()
-    build.assert_called_with(tree="/path/to/linux")
+    assert args(builder).tree == "/path/to/linux"
 
 
-def test_build_from_sys_argv_default_tree_is_cwd(monkeypatch, mocker):
-    build = mocker.patch("tuxmake.cli.build")
+def test_build_from_sys_argv_default_tree_is_cwd(monkeypatch, builder):
     monkeypatch.setattr(sys, "argv", ["tuxmake"])
     tuxmake()
-    build.assert_called_with(tree=".")
+    assert args(builder).tree == "."
+
+
+class TestTargets:
+    def test_config(self, builder):
+        tuxmake("--targets=config", "foo")
+        args(builder).targets == ["config"]
+        args(builder).tree == "foo"
+
+    def test_config_multiple(self, builder):
+        tuxmake("--targets=config,kernel", "foo")
+        assert args(builder).targets == ["config", "kernel"]
+
+
+class TestKConfig:
+    def test_kconfig(self, builder):
+        tuxmake("--kconfig=olddefconfig")
+        assert args(builder).kconfig == ["olddefconfig"]

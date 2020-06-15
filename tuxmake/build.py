@@ -1,7 +1,10 @@
+from pathlib import Path
 import os
 import subprocess
+from urllib.request import urlopen
 from tuxmake.arch import Architecture
 from tuxmake.output import get_new_output_dir
+from tuxmake.exceptions import InvalidTarget
 
 
 class Build:
@@ -9,10 +12,19 @@ class Build:
     output_dir = None
 
 
-def build(tree, target_arch=None, targets=["bzImage"], output_dir=None):
-    # FIXME move to tuxbuild.arch
-    if target_arch is None:
-        target_arch = subprocess.check_output(["uname", "-m"], text=True).strip()
+class defaults:
+    target_arch = subprocess.check_output(["uname", "-m"], text=True).strip()
+    kconfig = ["defconfig"]
+    targets = ["config", "kernel"]
+
+
+def build(
+    tree,
+    target_arch=defaults.target_arch,
+    kconfig=defaults.kconfig,
+    targets=defaults.targets,
+    output_dir=None,
+):
     arch = Architecture(target_arch)
 
     if output_dir is None:
@@ -20,12 +32,25 @@ def build(tree, target_arch=None, targets=["bzImage"], output_dir=None):
     else:
         os.mkdir(output_dir)
 
-    # FIXME don't hardcode
-    subprocess.check_call(["make", "defconfig", f"O={output_dir}"], cwd=tree)
-
     result = Build()
     for target in targets:
-        subprocess.check_call(["make", target, f"O={output_dir}"], cwd=tree)
+        if target == "config":
+            config = output_dir / ".config"
+            for conf in kconfig:
+                if conf.startswith("http://") or conf.startswith("https://"):
+                    download = urlopen(conf)
+                    with config.open("a") as f:
+                        f.write(download.read().decode("utf-8"))
+                elif Path(conf).exists():
+                    with config.open("a") as f:
+                        f.write(Path(conf).read_text())
+                else:
+                    subprocess.check_call(["make", conf, f"O={output_dir}"], cwd=tree)
+        elif target == "kernel":
+            kernel = arch.kernel
+            subprocess.check_call(["make", kernel, f"O={output_dir}"], cwd=tree)
+        else:
+            raise InvalidTarget(f"Unsupported target: {target}")
 
     result.output_dir = output_dir
     for artifact in arch.artifacts:

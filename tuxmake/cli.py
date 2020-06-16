@@ -15,6 +15,20 @@ def main(*argv):
     parser = argparse.ArgumentParser(prog="tuxmake")
 
     parser.add_argument(
+        "-a",
+        "--target-arch",
+        type=str,
+        help=f"Architecture to build the kernel for (default: {defaults.target_arch})",
+    )
+
+    parser.add_argument(
+        "-T",
+        "--toolchain",
+        type=str,
+        help=f"Toolchain to use in the build (default: {defaults.toolchain})",
+    )
+
+    parser.add_argument(
         "-t",
         "--targets",
         type=comma_separated,

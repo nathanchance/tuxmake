@@ -51,3 +51,15 @@ class TestKConfig:
     def test_kconfig(self, builder):
         tuxmake("--kconfig=olddefconfig")
         assert args(builder).kconfig == ["olddefconfig"]
+
+
+class TestToolchain:
+    def test_toolchain(self, builder):
+        tuxmake("--toolchain=gcc-10")
+        assert args(builder).toolchain == "gcc-10"
+
+
+class TestTargetArch:
+    def test_target_arch(self, builder):
+        tuxmake("--target-arch=arm64")
+        assert args(builder).target_arch == "arm64"

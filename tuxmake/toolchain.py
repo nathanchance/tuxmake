@@ -2,14 +2,13 @@ from configparser import ConfigParser
 from pathlib import Path
 
 
-class Architecture:
+class Toolchain:
     def __init__(self, name):
-        conffile = Path(__file__).parent / "arch" / f"{name}.ini"
+        family = name.split("-")[0]
+        conffile = Path(__file__).parent / "toolchain" / f"{family}.ini"
         config = ConfigParser()
         config.optionxform = str
         config.read(conffile)
 
         self.name = name
-        self.kernel = config["targets"]["kernel"]
-        self.artifacts = config["artifacts"]
         self.makevars = config["makevars"]

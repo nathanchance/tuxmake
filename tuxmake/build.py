@@ -4,12 +4,14 @@ import shutil
 import subprocess
 from urllib.request import urlopen
 from tuxmake.arch import Architecture
+from tuxmake.toolchain import Toolchain
 from tuxmake.output import get_new_output_dir
 from tuxmake.exceptions import InvalidTarget
 
 
 class defaults:
     target_arch = subprocess.check_output(["uname", "-m"], text=True).strip()
+    toolchain = "gcc"
     kconfig = ["defconfig"]
     targets = ["config", "kernel"]
 
@@ -19,15 +21,25 @@ class Build:
         self.source_tree = source_tree
         self.build_dir = build_dir
         self.output_dir = output_dir
-        self.arch = None
-        self.kconfig = None
+        self.arch = Architecture(defaults.target_arch)
+        self.toolchain = Toolchain(defaults.toolchain)
+        self.kconfig = defaults.kconfig
         self.artifacts = []
 
     def make(self, *args):
         subprocess.check_call(
-            ["make", "--silent", f"O={self.build_dir}"] + list(args),
+            ["make", "--silent", f"O={self.build_dir}"] + self.makevars + list(args),
             cwd=self.source_tree,
         )
+
+    @property
+    def makevars(self):
+        archvars = [f"{k}={v}" for k, v in self.arch.makevars.items()]
+        toolchainvars = [
+            f"{k}={v}".format(toolchain=self.toolchain.name, **self.arch.makevars)
+            for k, v in self.toolchain.makevars.items()
+        ]
+        return archvars + toolchainvars
 
     def build(self, target):
         if target == "config":
@@ -64,6 +76,7 @@ class Build:
 def build(
     tree,
     target_arch=defaults.target_arch,
+    toolchain=defaults.toolchain,
     kconfig=defaults.kconfig,
     targets=defaults.targets,
     output_dir=None,
@@ -79,6 +92,7 @@ def build(
 
     builder = Build(tree, tmpdir, output_dir)
     builder.arch = Architecture(target_arch)
+    builder.toolchain = Toolchain(toolchain)
     builder.kconfig = kconfig
 
     for target in targets:

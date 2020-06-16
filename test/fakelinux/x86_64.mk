@@ -1,0 +1,2 @@
+IMAGE = bzImage
+ARCHDIRNAME = x86

@@ -1,5 +1,7 @@
 import pytest
+from tuxmake.toolchain import Toolchain
 from tuxmake.build import build
+from tuxmake.build import Build
 import tuxmake.exceptions
 
 
@@ -75,3 +77,42 @@ def test_kconfig_localfile(linux, tmp_path, output_dir):
 def test_output_dir(linux, output_dir):
     build(linux, output_dir=output_dir)
     assert [str(f.name) for f in output_dir.glob("*")] == ["config", "bzImage"]
+
+
+class TestArchitecture:
+    def test_x86_64(self, linux):
+        result = build(linux, target_arch="x86_64")
+        assert "bzImage" in [str(f.name) for f in result.output_dir.glob("*")]
+
+    def test_arm64(self, linux):
+        result = build(linux, target_arch="arm64")
+        assert "Image.gz" in [str(f.name) for f in result.output_dir.glob("*")]
+
+
+@pytest.fixture
+def builder(linux, output_dir, mocker):
+    mocker.patch("tuxmake.build.Build.cleanup")
+    mocker.patch("tuxmake.build.Build.copy_artifacts")
+    b = Build(linux, output_dir / "tmp", output_dir)
+    return b
+
+
+class TestToolchain:
+    # Test that the righ CC= argument is passed. Ideally we want more black box
+    # tests that check the results of the build, but for that we need a
+    # mechanism to check which toolchain was used to build a given binary (and
+    # for test/fakelinux/ to produce real binaries)
+    def test_gcc_10(self, builder, mocker):
+        check_call = mocker.patch("subprocess.check_call")
+        builder.toolchain = Toolchain("gcc-10")
+        builder.build("config")
+        cmdline = check_call.call_args.args[0]
+        cross = builder.arch.makevars["CROSS_COMPILE"]
+        assert f"CC={cross}gcc-10" in cmdline
+
+    def test_clang(self, builder, mocker):
+        check_call = mocker.patch("subprocess.check_call")
+        builder.toolchain = Toolchain("clang")
+        builder.build("config")
+        cmdline = check_call.call_args.args[0]
+        assert "CC=clang" in cmdline

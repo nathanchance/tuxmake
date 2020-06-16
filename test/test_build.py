@@ -107,6 +107,10 @@ class TestArchitecture:
         result = build(linux, target_arch="arm64")
         assert "Image.gz" in [str(f.name) for f in result.output_dir.glob("*")]
 
+    def test_invalid_arch(self):
+        with pytest.raises(tuxmake.exceptions.InvalidArchitecture):
+            Architecture("foobar")
+
 
 @pytest.fixture
 def builder(linux, output_dir, mocker):
@@ -135,3 +139,7 @@ class TestToolchain:
         builder.build("config")
         cmdline = check_call.call_args.args[0]
         assert "CC=clang" in cmdline
+
+    def test_invalid_toolchain(self, builder):
+        with pytest.raises(tuxmake.exceptions.InvalidToolchain):
+            Toolchain("foocc")

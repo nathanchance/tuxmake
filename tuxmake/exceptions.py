@@ -4,3 +4,11 @@ class TuxMakeException(Exception):
 
 class InvalidTarget(TuxMakeException):
     pass
+
+
+class InvalidArchitecture(TuxMakeException):
+    pass
+
+
+class InvalidToolchain(TuxMakeException):
+    pass

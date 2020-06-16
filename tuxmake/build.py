@@ -71,8 +71,7 @@ class Build:
                 else:
                     self.make(conf)
         elif target == "kernel":
-            kernel = self.arch.kernel
-            self.make(kernel)
+            self.make()
         else:
             raise InvalidTarget(f"Unsupported target: {target}")
 

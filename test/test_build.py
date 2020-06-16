@@ -1,8 +1,15 @@
 import pytest
+from tuxmake.arch import Architecture
 from tuxmake.toolchain import Toolchain
 from tuxmake.build import build
 from tuxmake.build import Build
+from tuxmake.build import defaults
 import tuxmake.exceptions
+
+
+@pytest.fixture
+def arch():
+    return Architecture(defaults.target_arch)
 
 
 @pytest.fixture
@@ -11,16 +18,16 @@ def output_dir(tmp_path):
     return out
 
 
-def test_build(linux, home):
+def test_build(linux, home, arch):
     result = build(linux)
-    assert "bzImage" in result.artifacts
-    assert (home / ".cache/tuxmake/builds/1/bzImage").exists()
+    assert arch.kernel in result.artifacts
+    assert (home / ".cache/tuxmake/builds/1" / arch.kernel).exists()
 
 
-def test_build_with_output_dir(linux, output_dir):
+def test_build_with_output_dir(linux, output_dir, arch):
     result = build(linux, output_dir=output_dir)
-    assert "bzImage" in result.artifacts
-    assert (output_dir / "bzImage").exists()
+    assert arch.kernel in result.artifacts
+    assert (output_dir / arch.kernel).exists()
     assert result.output_dir == output_dir
 
 
@@ -74,9 +81,12 @@ def test_kconfig_localfile(linux, tmp_path, output_dir):
     assert "CONFIG_XYZ=y\nCONFIG_ABC=m\n" in config.read_text()
 
 
-def test_output_dir(linux, output_dir):
+def test_output_dir(linux, output_dir, arch):
     build(linux, output_dir=output_dir)
-    assert [str(f.name) for f in output_dir.glob("*")] == ["config", "bzImage"]
+    artifacts = [str(f.name) for f in output_dir.glob("*")]
+    assert "config" in artifacts
+    assert arch.kernel in artifacts
+    assert "arch" not in artifacts
 
 
 class TestArchitecture:

@@ -27,10 +27,12 @@ class Build:
         self.artifacts = []
 
     def make(self, *args):
-        subprocess.check_call(
-            ["make", "--silent", f"O={self.build_dir}"] + self.makevars + list(args),
-            cwd=self.source_tree,
-        )
+        cmd = ["make", "--silent", f"O={self.build_dir}"] + self.makevars + list(args)
+        self.log(" ".join(cmd))
+        subprocess.check_call(cmd, cwd=self.source_tree)
+
+    def log(self, *stuff):
+        print(*stuff)
 
     @property
     def makevars(self):

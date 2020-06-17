@@ -1,7 +1,9 @@
 from pathlib import Path
+import datetime
 import os
 import shutil
 import subprocess
+import time
 from urllib.request import urlopen
 from tuxmake.arch import Architecture
 from tuxmake.toolchain import Toolchain
@@ -16,6 +18,16 @@ class defaults:
     targets = ["config", "kernel"]
 
 
+class BuildInfo:
+    def __init__(self, status, duration=None):
+        self.status = status
+        self.duration = duration
+
+    @property
+    def fail(self):
+        return self.status == "FAIL"
+
+
 class Build:
     def __init__(self, source_tree, build_dir, output_dir):
         self.source_tree = source_tree
@@ -26,6 +38,7 @@ class Build:
         self.kconfig = defaults.kconfig
         self.artifacts = ["build.log"]
         self.__logger__ = None
+        self.status = {}
 
     def make(self, *args):
         cmd = ["make", "--silent", f"O={self.build_dir}"] + self.makevars + list(args)
@@ -58,24 +71,33 @@ class Build:
         return archvars + toolchainvars
 
     def build(self, target):
-        if target == "config":
-            config = self.build_dir / ".config"
-            for conf in self.kconfig:
-                if conf.startswith("http://") or conf.startswith("https://"):
-                    download = urlopen(conf)
-                    with config.open("a") as f:
-                        f.write(download.read().decode("utf-8"))
-                elif Path(conf).exists():
-                    with config.open("a") as f:
-                        f.write(Path(conf).read_text())
-                else:
-                    self.make(conf)
-        elif target == "kernel":
-            self.make()
-        else:
-            raise UnsupportedTarget(target)
+        start = time.time()
+        try:
+            if target == "config":
+                config = self.build_dir / ".config"
+                for conf in self.kconfig:
+                    if conf.startswith("http://") or conf.startswith("https://"):
+                        download = urlopen(conf)
+                        with config.open("a") as f:
+                            f.write(download.read().decode("utf-8"))
+                    elif Path(conf).exists():
+                        with config.open("a") as f:
+                            f.write(Path(conf).read_text())
+                    else:
+                        self.make(conf)
+            elif target == "kernel":
+                self.make()
+            else:
+                raise UnsupportedTarget(target)
+            self.status[target] = BuildInfo("PASS")
+        except subprocess.CalledProcessError:
+            self.status[target] = BuildInfo("FAIL")
+        finish = time.time()
+        self.status[target].duration = datetime.timedelta(seconds=finish - start)
 
     def copy_artifacts(self, target):
+        if self.status[target].fail:
+            return
         if target == "kernel":
             dest = self.arch.kernel
         else:
@@ -83,6 +105,16 @@ class Build:
         src = self.build_dir / self.arch.artifacts[dest]
         shutil.copy(src, Path(self.output_dir / dest))
         self.artifacts.append(dest)
+
+    @property
+    def passed(self):
+        s = [info.fail for info in self.status.values()]
+        return s and True not in set(s)
+
+    @property
+    def failed(self):
+        s = [info.fail for info in self.status.values()]
+        return s and True in set(s)
 
     def cleanup(self):
         self.logger.terminate()

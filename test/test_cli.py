@@ -1,6 +1,7 @@
 import argparse
 import pytest
 import sys
+from tuxmake.build import BuildInfo
 from tuxmake.cli import main as tuxmake
 from tuxmake.exceptions import TuxMakeException
 
@@ -12,7 +13,10 @@ def builds(home):
 
 @pytest.fixture(autouse=True)
 def builder(mocker):
-    return mocker.patch("tuxmake.cli.build")
+    b = mocker.patch("tuxmake.cli.build")
+    b.return_value.passed = True
+    b.return_value.failed = False
+    return b
 
 
 def args(called):
@@ -74,3 +78,19 @@ class TestExceptions:
         assert exit.value.code == 1
         _, err = capsys.readouterr()
         assert "E: hello" in err
+
+
+class TestBuildStatus:
+    def test_exits_2_on_build_failure(self, builder, capsys):
+        builder.return_value.failed = True
+        builder.return_value.status = {
+            "config": BuildInfo("PASS", 1),
+            "kernel": BuildInfo("FAIL", 2),
+        }
+        with pytest.raises(SystemExit) as exit:
+            tuxmake("/path/to/linux")
+        assert exit.value.code == 2
+
+        _, err = capsys.readouterr()
+        assert "config: PASS" in err
+        assert "kernel: FAIL" in err

@@ -56,7 +56,11 @@ def main(*argv):
     build_args = {k: v for k, v in options.__dict__.items() if v}
     try:
         result = build(**build_args)
-        print(f"I: build output in {result.output_dir}")
+        for target, info in result.status.items():
+            print(f"I: {target}: {info.status} in {info.duration}", file=sys.stderr)
+        print(f"I: build output in {result.output_dir}", file=sys.stderr)
+        if result.failed:
+            sys.exit(2)
     except TuxMakeException as e:
         sys.stderr.write("E: " + str(e) + "\n")
         sys.exit(1)

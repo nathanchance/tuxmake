@@ -98,6 +98,17 @@ def test_saves_log(linux):
     assert "make --silent" in log.read_text()
 
 
+def test_build_failure(linux, monkeypatch):
+    monkeypatch.setenv("FAIL", "kernel")
+    result = build(linux, targets=["config", "kernel"])
+    assert not result.passed
+    assert result.failed
+    artifacts = [str(f.name) for f in result.output_dir.glob("*")]
+    assert "build.log" in artifacts
+    assert "config" in artifacts
+    assert result.arch.kernel not in artifacts
+
+
 class TestArchitecture:
     def test_x86_64(self, linux):
         result = build(linux, target_arch="x86_64")

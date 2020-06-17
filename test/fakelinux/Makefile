@@ -10,13 +10,19 @@ ARCHDIRNAME ?= $(ARCH)
 
 all: $(IMAGE)
 
+define maybefail
+	@if [ "$(filter $(1),$(FAIL))" = "$(1)" ]; then echo "Error: target $(FAIL) failed"; exit 1; fi
+endef
+
 $(IMAGE): $(O)/arch/$(ARCHDIRNAME)/boot/$(IMAGE)
 
 $(O)/arch/$(ARCHDIRNAME)/boot/$(IMAGE): $(O)/.config
+	$(call maybefail,kernel)
 	mkdir -p $$(dirname $@)
 	touch $@
 
 defconfig:
+	$(call maybefail,defconfig)
 	mkdir -p $(O)
 	touch $(O)/.config
 

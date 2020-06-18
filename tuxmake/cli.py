@@ -52,6 +52,19 @@ def main(*argv):
     )
 
     parser.add_argument(
+        "-d",
+        "--docker",
+        action="store_true",
+        help="Do the build using Docker containers (defult: No)",
+    )
+
+    parser.add_argument(
+        "-i",
+        "--docker-image",
+        help="Docker image to build with (implies --docker). {{toolchain}} and {{arch}} get replaced by the names of the toolchain and architecture selected for the build. (default: tuxmake-provided images)",
+    )
+
+    parser.add_argument(
         "--version", action="version", version=f"%(prog)s {__version__}"
     )
 
@@ -60,6 +73,10 @@ def main(*argv):
     )
 
     options = parser.parse_args(argv)
+
+    if options.docker_image:
+        options.docker = True
+
     build_args = {k: v for k, v in options.__dict__.items() if v}
     try:
         result = build(**build_args)

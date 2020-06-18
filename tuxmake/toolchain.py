@@ -15,9 +15,15 @@ class Toolchain:
 
         self.name = name
         self.makevars = config["makevars"]
+        self.docker_image = config["docker"]["image"]
 
     def expand_makevars(self, arch):
         return {
             k: v.format(toolchain=self.name, **arch.makevars)
             for k, v in self.makevars.items()
         }
+
+    def get_docker_image(self, arch):
+        return self.docker_image.replace("{toolchain}", self.name).replace(
+            "{arch}", arch.name
+        )

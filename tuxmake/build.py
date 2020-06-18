@@ -39,9 +39,17 @@ class Build:
         self.toolchain = Toolchain(defaults.toolchain)
         self.kconfig = defaults.kconfig
         self.jobs = defaults.jobs
+        self.docker = False
+        self.docker_image = None
+
         self.artifacts = ["build.log"]
+        self.runner = None
         self.__logger__ = None
         self.status = {}
+
+    def prepare(self):
+        self.runner = get_runner(self)
+        self.runner.prepare()
 
     def make(self, *args):
         cmd = (
@@ -49,12 +57,13 @@ class Build:
             + self.makevars
             + list(args)
         )
-        self.log(" ".join(cmd))
-        self.run(cmd)
 
-    def run(self, cmd):
-        runner = get_runner(self)
-        final_cmd = runner.get_command_line(cmd)
+        if self.runner:
+            final_cmd = self.runner.get_command_line(cmd)
+        else:
+            final_cmd = cmd
+
+        self.log(" ".join(cmd))
         subprocess.check_call(
             final_cmd,
             cwd=self.source_tree,
@@ -134,6 +143,9 @@ class Build:
         self.logger.terminate()
         shutil.rmtree(self.build_dir)
 
+    def get_docker_image(self):
+        return self.toolchain.get_docker_image(self.arch)
+
 
 def build(
     tree,
@@ -143,6 +155,8 @@ def build(
     kconfig=defaults.kconfig,
     targets=defaults.targets,
     jobs=defaults.jobs,
+    docker=False,
+    docker_image=None,
     output_dir=None,
 ):
 
@@ -159,6 +173,10 @@ def build(
     builder.toolchain = Toolchain(toolchain)
     builder.kconfig = kconfig
     builder.jobs = jobs
+    builder.docker = docker
+    builder.docker_image = docker_image
+
+    builder.prepare()
 
     for target in targets:
         builder.build(target)

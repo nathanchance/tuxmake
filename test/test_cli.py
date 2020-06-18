@@ -76,6 +76,20 @@ class TestJobs:
         assert args(builder).jobs == 300
 
 
+class TestDocker:
+    def test_docker(self, builder):
+        tuxmake("--docker")
+        assert args(builder).docker
+
+    def test_docker_image(self, builder):
+        tuxmake("--docker-image=foobar")
+        assert args(builder).docker_image
+
+    def test_docker_image_implies_docker(self, builder):
+        tuxmake("--docker-image=foobar")
+        assert args(builder).docker
+
+
 class TestExceptions:
     def test_basic(self, builder, capsys):
         builder.side_effect = TuxMakeException("hello")

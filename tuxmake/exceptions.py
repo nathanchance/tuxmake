@@ -7,6 +7,10 @@ class TuxMakeException(Exception):
             return name
 
 
+class UnrecognizedSourceTree(TuxMakeException):
+    msg = "{name} does not look like a Linux source tree"
+
+
 class UnsupportedTarget(TuxMakeException):
     msg = "Unsupported target: {name}"
     pass

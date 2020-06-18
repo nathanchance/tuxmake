@@ -18,6 +18,12 @@ def output_dir(tmp_path):
     return out
 
 
+def test_invalid_directory(tmp_path):
+    (tmp_path / "Makefile").touch()
+    with pytest.raises(tuxmake.exceptions.UnrecognizedSourceTree):
+        build(tmp_path)
+
+
 def test_build(linux, home, arch):
     result = build(linux)
     assert arch.kernel in result.artifacts

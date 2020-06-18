@@ -10,6 +10,7 @@ from tuxmake.toolchain import Toolchain
 from tuxmake.output import get_new_output_dir
 from tuxmake.runner import get_runner
 from tuxmake.exceptions import UnsupportedTarget
+from tuxmake.exceptions import UnrecognizedSourceTree
 
 
 class defaults:
@@ -46,6 +47,13 @@ class Build:
         self.runner = None
         self.__logger__ = None
         self.status = {}
+
+    def validate(self):
+        source = Path(self.source_tree)
+        files = [str(f.name) for f in source.glob("*")]
+        if "Makefile" in files and "Kconfig" in files and "Kbuild" in files:
+            return
+        raise UnrecognizedSourceTree(source.absolute())
 
     def prepare(self):
         self.runner = get_runner(self)
@@ -179,6 +187,8 @@ def build(
     builder.jobs = jobs
     builder.docker = docker
     builder.docker_image = docker_image
+
+    builder.validate()
 
     builder.prepare()
 

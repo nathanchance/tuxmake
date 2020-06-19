@@ -27,3 +27,9 @@ class Toolchain:
         return self.docker_image.replace("{toolchain}", self.name).replace(
             "{arch}", arch.name
         )
+
+
+class NoExplicitToolchain(Toolchain):
+    def __init__(self):
+        super().__init__("gcc")
+        self.makevars = {}

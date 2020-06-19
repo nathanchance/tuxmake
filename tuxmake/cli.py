@@ -19,14 +19,14 @@ def main(*argv):
         "-a",
         "--target-arch",
         type=str,
-        help=f"Architecture to build the kernel for (default: {defaults.target_arch})",
+        help="Architecture to build the kernel for (default: host architecture)",
     )
 
     parser.add_argument(
         "-T",
         "--toolchain",
         type=str,
-        help=f"Toolchain to use in the build (default: {defaults.toolchain})",
+        help="Toolchain to use in the build (default: whatever Linux uses by default)",
     )
 
     parser.add_argument(

@@ -5,8 +5,8 @@ import shutil
 import subprocess
 import time
 from urllib.request import urlopen
-from tuxmake.arch import Architecture
-from tuxmake.toolchain import Toolchain
+from tuxmake.arch import Architecture, Native
+from tuxmake.toolchain import Toolchain, NoExplicitToolchain
 from tuxmake.output import get_new_output_dir
 from tuxmake.runner import get_runner
 from tuxmake.exceptions import UnsupportedTarget
@@ -14,8 +14,6 @@ from tuxmake.exceptions import UnrecognizedSourceTree
 
 
 class defaults:
-    target_arch = subprocess.check_output(["uname", "-m"], text=True).strip()
-    toolchain = "gcc"
     kconfig = ["defconfig"]
     targets = ["config", "kernel"]
     jobs = int(subprocess.check_output(["nproc"], text=True)) * 2
@@ -37,8 +35,8 @@ class Build:
         source_tree,
         *,
         output_dir=None,
-        target_arch=defaults.target_arch,
-        toolchain=defaults.toolchain,
+        target_arch=None,
+        toolchain=None,
         kconfig=defaults.kconfig,
         targets=defaults.targets,
         jobs=defaults.jobs,
@@ -56,8 +54,8 @@ class Build:
         self.build_dir = self.output_dir / "tmp"
         os.mkdir(self.build_dir)
 
-        self.arch = Architecture(target_arch)
-        self.toolchain = Toolchain(toolchain)
+        self.target_arch = target_arch and Architecture(target_arch) or Native()
+        self.toolchain = toolchain and Toolchain(toolchain) or NoExplicitToolchain()
 
         self.kconfig = kconfig
         self.targets = targets
@@ -115,13 +113,13 @@ class Build:
 
     @property
     def makevars(self):
-        return [f"{k}={v}" for k, v in self.environment.items()]
+        return [f"{k}={v}" for k, v in self.environment.items() if v]
 
     @property
     def environment(self):
         v = {}
-        v.update(self.arch.makevars)
-        v.update(self.toolchain.expand_makevars(self.arch))
+        v.update(self.target_arch.makevars)
+        v.update(self.toolchain.expand_makevars(self.target_arch))
         return v
 
     def build(self, target):
@@ -140,7 +138,7 @@ class Build:
                     else:
                         self.make(conf)
             elif target == "debugkernel":
-                self.make(self.arch.debugkernel)
+                self.make(self.target_arch.debugkernel)
             elif target == "kernel":
                 self.make()
             else:
@@ -155,12 +153,12 @@ class Build:
         if self.status[target].fail:
             return
         if target == "kernel":
-            dest = self.arch.kernel
+            dest = self.target_arch.kernel
         elif target == "debugkernel":
-            dest = self.arch.debugkernel
+            dest = self.target_arch.debugkernel
         else:
             dest = target
-        src = self.build_dir / self.arch.artifacts[dest]
+        src = self.build_dir / self.target_arch.artifacts[dest]
         shutil.copy(src, Path(self.output_dir / dest))
         self.artifacts.append(dest)
 
@@ -179,7 +177,7 @@ class Build:
         shutil.rmtree(self.build_dir)
 
     def get_docker_image(self):
-        return self.toolchain.get_docker_image(self.arch)
+        return self.toolchain.get_docker_image(self.target_arch)
 
     def run(self):
         self.validate()

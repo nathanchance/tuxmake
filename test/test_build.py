@@ -1,5 +1,5 @@
 import pytest
-from tuxmake.arch import Architecture
+from tuxmake.arch import Architecture, Native
 from tuxmake.toolchain import Toolchain
 from tuxmake.build import build
 from tuxmake.build import Build
@@ -9,7 +9,7 @@ import tuxmake.exceptions
 
 @pytest.fixture
 def arch():
-    return Architecture(defaults.target_arch)
+    return Native()
 
 
 @pytest.fixture
@@ -112,7 +112,7 @@ def test_build_failure(linux, monkeypatch):
     artifacts = [str(f.name) for f in result.output_dir.glob("*")]
     assert "build.log" in artifacts
     assert "config" in artifacts
-    assert result.arch.kernel not in artifacts
+    assert result.target_arch.kernel not in artifacts
 
 
 def test_concurrency_default(linux, mocker):
@@ -163,8 +163,15 @@ class TestToolchain:
         builder.toolchain = Toolchain("gcc-10")
         builder.build("config")
         cmdline = check_call.call_args[0][0]
-        cross = builder.arch.makevars["CROSS_COMPILE"]
-        assert f"CC={cross}gcc-10" in cmdline
+        assert "CC=gcc-10" in cmdline
+
+    def test_gcc_10_cross(self, builder, mocker):
+        check_call = mocker.patch("subprocess.check_call")
+        builder.toolchain = Toolchain("gcc-10")
+        builder.target_arch = Architecture("arm64")
+        builder.build("config")
+        cmdline = check_call.call_args[0][0]
+        assert "CC=aarch64-linux-gnu-gcc-10" in cmdline
 
     def test_clang(self, builder, mocker):
         check_call = mocker.patch("subprocess.check_call")

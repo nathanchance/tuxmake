@@ -1,3 +1,4 @@
+import subprocess
 from configparser import ConfigParser
 from pathlib import Path
 from tuxmake.exceptions import UnsupportedArchitecture
@@ -19,3 +20,10 @@ class Architecture:
         self.debugkernel = config["targets"]["debugkernel"]
         self.artifacts = config["artifacts"]
         self.makevars = config["makevars"]
+
+
+class Native(Architecture):
+    def __init__(self):
+        name = subprocess.check_output(["uname", "-m"], text=True).strip()
+        super().__init__(name)
+        self.makevars = {"CROSS_COMPILE": ""}

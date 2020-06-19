@@ -31,6 +31,7 @@ build:
   stage: build
   script:
     - git status
+    - rm -rf dist/
     - flit --debug build
   artifacts:
     paths:

@@ -149,7 +149,7 @@ class TestArchitecture:
 def builder(linux, output_dir, mocker):
     mocker.patch("tuxmake.build.Build.cleanup")
     mocker.patch("tuxmake.build.Build.copy_artifacts")
-    b = Build(linux, output_dir / "tmp", output_dir)
+    b = Build(linux, output_dir=output_dir)
     return b
 
 

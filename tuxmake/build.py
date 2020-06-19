@@ -32,16 +32,39 @@ class BuildInfo:
 
 
 class Build:
-    def __init__(self, source_tree, build_dir, output_dir):
+    def __init__(
+        self,
+        source_tree,
+        *,
+        output_dir=None,
+        target_arch=defaults.target_arch,
+        toolchain=defaults.toolchain,
+        kconfig=defaults.kconfig,
+        targets=defaults.targets,
+        jobs=defaults.jobs,
+        docker=False,
+        docker_image=None,
+    ):
         self.source_tree = source_tree
-        self.build_dir = build_dir
-        self.output_dir = output_dir
-        self.arch = Architecture(defaults.target_arch)
-        self.toolchain = Toolchain(defaults.toolchain)
-        self.kconfig = defaults.kconfig
-        self.jobs = defaults.jobs
-        self.docker = False
-        self.docker_image = None
+
+        if output_dir is None:
+            self.output_dir = get_new_output_dir()
+        else:
+            self.output_dir = output_dir
+            os.mkdir(self.output_dir)
+
+        self.build_dir = self.output_dir / "tmp"
+        os.mkdir(self.build_dir)
+
+        self.arch = Architecture(target_arch)
+        self.toolchain = Toolchain(toolchain)
+
+        self.kconfig = kconfig
+        self.targets = targets
+        self.jobs = jobs
+
+        self.docker = docker
+        self.docker_image = docker_image
 
         self.artifacts = ["build.log"]
         self.runner = None
@@ -158,46 +181,21 @@ class Build:
     def get_docker_image(self):
         return self.toolchain.get_docker_image(self.arch)
 
+    def run(self):
+        self.validate()
 
-def build(
-    tree,
-    *,
-    target_arch=defaults.target_arch,
-    toolchain=defaults.toolchain,
-    kconfig=defaults.kconfig,
-    targets=defaults.targets,
-    jobs=defaults.jobs,
-    docker=False,
-    docker_image=None,
-    output_dir=None,
-):
+        self.prepare()
 
-    if output_dir is None:
-        output_dir = get_new_output_dir()
-    else:
-        os.mkdir(output_dir)
+        for target in self.targets:
+            self.build(target)
 
-    tmpdir = output_dir / "tmp"
-    os.mkdir(tmpdir)
+        for target in self.targets:
+            self.copy_artifacts(target)
 
-    builder = Build(tree, tmpdir, output_dir)
-    builder.arch = Architecture(target_arch)
-    builder.toolchain = Toolchain(toolchain)
-    builder.kconfig = kconfig
-    builder.jobs = jobs
-    builder.docker = docker
-    builder.docker_image = docker_image
+        self.cleanup()
 
-    builder.validate()
 
-    builder.prepare()
-
-    for target in targets:
-        builder.build(target)
-
-    for target in targets:
-        builder.copy_artifacts(target)
-
-    builder.cleanup()
-
+def build(tree, **kwargs):
+    builder = Build(tree, **kwargs)
+    builder.run()
     return builder

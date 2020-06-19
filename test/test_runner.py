@@ -7,8 +7,8 @@ from tuxmake.runner import DockerRunner
 
 
 @pytest.fixture
-def build(linux, tmp_path):
-    b = Build(linux, tmp_path / "/tmp", tmp_path)
+def build(linux):
+    b = Build(linux)
     return b
 
 

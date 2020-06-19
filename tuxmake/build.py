@@ -82,7 +82,13 @@ class Build:
 
     def make(self, *args):
         cmd = (
-            ["make", "--silent", f"--jobs={self.jobs}", f"O={self.build_dir}"]
+            [
+                "make",
+                "--silent",
+                "--keep-going",
+                f"--jobs={self.jobs}",
+                f"O={self.build_dir}",
+            ]
             + self.makevars
             + list(args)
         )

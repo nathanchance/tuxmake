@@ -1,5 +1,6 @@
 import pytest
 from tuxmake.arch import Architecture, Native
+from tuxmake.target import Target
 from tuxmake.toolchain import Toolchain
 from tuxmake.build import build
 from tuxmake.build import Build
@@ -8,8 +9,8 @@ import tuxmake.exceptions
 
 
 @pytest.fixture
-def arch():
-    return Native()
+def kernel():
+    return Native().targets["kernel"]
 
 
 @pytest.fixture
@@ -24,16 +25,16 @@ def test_invalid_directory(tmp_path):
         build(tmp_path)
 
 
-def test_build(linux, home, arch):
+def test_build(linux, home, kernel):
     result = build(linux)
-    assert arch.kernel in result.artifacts
-    assert (home / ".cache/tuxmake/builds/1" / arch.kernel).exists()
+    assert kernel in result.artifacts
+    assert (home / ".cache/tuxmake/builds/1" / kernel).exists()
 
 
-def test_build_with_output_dir(linux, output_dir, arch):
+def test_build_with_output_dir(linux, output_dir, kernel):
     result = build(linux, output_dir=output_dir)
-    assert arch.kernel in result.artifacts
-    assert (output_dir / arch.kernel).exists()
+    assert kernel in result.artifacts
+    assert (output_dir / kernel).exists()
     assert result.output_dir == output_dir
 
 
@@ -87,11 +88,11 @@ def test_kconfig_localfile(linux, tmp_path, output_dir):
     assert "CONFIG_XYZ=y\nCONFIG_ABC=m\n" in config.read_text()
 
 
-def test_output_dir(linux, output_dir, arch):
+def test_output_dir(linux, output_dir, kernel):
     build(linux, output_dir=output_dir)
     artifacts = [str(f.name) for f in output_dir.glob("*")]
     assert "config" in artifacts
-    assert arch.kernel in artifacts
+    assert kernel in artifacts
     assert "arch" not in artifacts
 
 
@@ -104,7 +105,7 @@ def test_saves_log(linux):
     assert "make --silent" in log.read_text()
 
 
-def test_build_failure(linux, monkeypatch):
+def test_build_failure(linux, kernel, monkeypatch):
     monkeypatch.setenv("FAIL", "kernel")
     result = build(linux, targets=["config", "kernel"])
     assert not result.passed
@@ -112,7 +113,7 @@ def test_build_failure(linux, monkeypatch):
     artifacts = [str(f.name) for f in result.output_dir.glob("*")]
     assert "build.log" in artifacts
     assert "config" in artifacts
-    assert result.target_arch.kernel not in artifacts
+    assert kernel not in artifacts
 
 
 def test_concurrency_default(linux, mocker):
@@ -161,7 +162,7 @@ class TestToolchain:
     def test_gcc_10(self, builder, mocker):
         check_call = mocker.patch("subprocess.check_call")
         builder.toolchain = Toolchain("gcc-10")
-        builder.build("config")
+        builder.build(Target("config", builder.target_arch))
         cmdline = check_call.call_args[0][0]
         assert "CC=gcc-10" in cmdline
 
@@ -169,14 +170,14 @@ class TestToolchain:
         check_call = mocker.patch("subprocess.check_call")
         builder.toolchain = Toolchain("gcc-10")
         builder.target_arch = Architecture("arm64")
-        builder.build("config")
+        builder.build(Target("config", builder.target_arch))
         cmdline = check_call.call_args[0][0]
         assert "CC=aarch64-linux-gnu-gcc-10" in cmdline
 
     def test_clang(self, builder, mocker):
         check_call = mocker.patch("subprocess.check_call")
         builder.toolchain = Toolchain("clang")
-        builder.build("config")
+        builder.build(Target("config", builder.target_arch))
         cmdline = check_call.call_args[0][0]
         assert "CC=clang" in cmdline
 

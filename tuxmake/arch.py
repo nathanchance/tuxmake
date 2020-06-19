@@ -16,8 +16,7 @@ class Architecture:
         config.read(conffile)
 
         self.name = name
-        self.kernel = config["targets"]["kernel"]
-        self.debugkernel = config["targets"]["debugkernel"]
+        self.targets = config["targets"]
         self.artifacts = config["artifacts"]
         self.makevars = config["makevars"]
 

@@ -8,8 +8,8 @@ from urllib.request import urlopen
 from tuxmake.arch import Architecture, Native
 from tuxmake.toolchain import Toolchain, NoExplicitToolchain
 from tuxmake.output import get_new_output_dir
+from tuxmake.target import Target
 from tuxmake.runner import get_runner
-from tuxmake.exceptions import UnsupportedTarget
 from tuxmake.exceptions import UnrecognizedSourceTree
 
 
@@ -58,7 +58,7 @@ class Build:
         self.toolchain = toolchain and Toolchain(toolchain) or NoExplicitToolchain()
 
         self.kconfig = kconfig
-        self.targets = targets
+        self.targets = [Target(t, self.target_arch) for t in targets]
         self.jobs = jobs
 
         self.docker = docker
@@ -125,7 +125,9 @@ class Build:
     def build(self, target):
         start = time.time()
         try:
-            if target == "config":
+            if target.name == "config":
+                # config is a special case
+                # FIXME move somewhere else
                 config = self.build_dir / ".config"
                 for conf in self.kconfig:
                     if conf.startswith("http://") or conf.startswith("https://"):
@@ -137,12 +139,8 @@ class Build:
                             f.write(Path(conf).read_text())
                     else:
                         self.make(conf)
-            elif target == "debugkernel":
-                self.make(self.target_arch.debugkernel)
-            elif target == "kernel":
-                self.make()
             else:
-                raise UnsupportedTarget(target)
+                self.make(*target.make_args)
             self.status[target] = BuildInfo("PASS")
         except subprocess.CalledProcessError:
             self.status[target] = BuildInfo("FAIL")
@@ -152,15 +150,11 @@ class Build:
     def copy_artifacts(self, target):
         if self.status[target].fail:
             return
-        if target == "kernel":
-            dest = self.target_arch.kernel
-        elif target == "debugkernel":
-            dest = self.target_arch.debugkernel
-        else:
-            dest = target
-        src = self.build_dir / self.target_arch.artifacts[dest]
-        shutil.copy(src, Path(self.output_dir / dest))
-        self.artifacts.append(dest)
+        for origdest, origsrc in target.artifacts.items():
+            dest = self.output_dir / origdest
+            src = self.build_dir / origsrc
+            shutil.copy(src, Path(self.output_dir / dest))
+            self.artifacts.append(origdest)
 
     @property
     def passed(self):

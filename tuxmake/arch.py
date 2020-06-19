@@ -1,24 +1,16 @@
 import subprocess
-from configparser import ConfigParser
-from pathlib import Path
+from tuxmake.config import ConfigurableObject
 from tuxmake.exceptions import UnsupportedArchitecture
 
 
-class Architecture:
-    def __init__(self, name):
-        commonconf = Path(__file__).parent / "arch" / "common.ini"
-        conffile = Path(__file__).parent / "arch" / f"{name}.ini"
-        if not conffile.exists():
-            raise UnsupportedArchitecture(name)
-        config = ConfigParser()
-        config.optionxform = str
-        config.read(commonconf)
-        config.read(conffile)
+class Architecture(ConfigurableObject):
+    basedir = "arch"
+    exception = UnsupportedArchitecture
 
-        self.name = name
-        self.targets = config["targets"]
-        self.artifacts = config["artifacts"]
-        self.makevars = config["makevars"]
+    def __init_config__(self):
+        self.targets = self.config["targets"]
+        self.artifacts = self.config["artifacts"]
+        self.makevars = self.config["makevars"]
 
 
 class Native(Architecture):

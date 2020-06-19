@@ -1,26 +1,24 @@
-from configparser import ConfigParser
-from pathlib import Path
+from tuxmake.config import ConfigurableObject
 from tuxmake.exceptions import UnsupportedTarget
 
 
-class Target:
-    def __init__(self, name, target_arch):
-        conffile = Path(__file__).parent / "target" / f"{name}.ini"
-        if not conffile.exists():
-            raise UnsupportedTarget(name)
-        config = ConfigParser()
-        config.optionxform = str
-        config.read(conffile)
+class Target(ConfigurableObject):
+    basedir = "target"
+    exception = UnsupportedTarget
 
-        self.name = name
-        self.description = config["target"].get("description")
-        self.dependencies = config["target"].get("dependencies", [])
-        self.make_args = config["target"].get("make_args", "").split()
+    def __init__(self, name, target_arch):
+        self.target_arch = target_arch
+        super().__init__(name)
+
+    def __init_config__(self):
+        self.description = self.config["target"].get("description")
+        self.dependencies = self.config["target"].get("dependencies", [])
+        self.make_args = self.config["target"].get("make_args", "").split()
         try:
-            self.artifacts = config["artifacts"]
+            self.artifacts = self.config["artifacts"]
         except KeyError:
-            key = target_arch.targets[name]
-            value = target_arch.artifacts[key]
+            key = self.target_arch.targets[self.name]
+            value = self.target_arch.artifacts[key]
             self.artifacts = {key: value}
 
     def __str__(self):

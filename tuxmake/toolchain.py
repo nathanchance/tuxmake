@@ -1,21 +1,19 @@
-from configparser import ConfigParser
-from pathlib import Path
+from tuxmake.config import ConfigurableObject
 from tuxmake.exceptions import UnsupportedToolchain
 
 
-class Toolchain:
+class Toolchain(ConfigurableObject):
+    basedir = "toolchain"
+    exception = UnsupportedToolchain
+
     def __init__(self, name):
         family = name.split("-")[0]
-        conffile = Path(__file__).parent / "toolchain" / f"{family}.ini"
-        if not conffile.exists():
-            raise UnsupportedToolchain(name)
-        config = ConfigParser()
-        config.optionxform = str
-        config.read(conffile)
-
+        super().__init__(family)
         self.name = name
-        self.makevars = config["makevars"]
-        self.docker_image = config["docker"]["image"]
+
+    def __init_config__(self):
+        self.makevars = self.config["makevars"]
+        self.docker_image = self.config["docker"]["image"]
 
     def expand_makevars(self, arch):
         return {

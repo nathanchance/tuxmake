@@ -25,8 +25,16 @@ class BuildInfo:
         self.duration = duration
 
     @property
-    def fail(self):
+    def failed(self):
         return self.status == "FAIL"
+
+    @property
+    def passed(self):
+        return self.status == "PASS"
+
+    @property
+    def skipped(self):
+        return self.status == "SKIP"
 
 
 class Build:
@@ -129,6 +137,13 @@ class Build:
         return v
 
     def build(self, target):
+        for dep in target.dependencies:
+            if not self.status[dep].passed:
+                self.status[target.name] = BuildInfo(
+                    "SKIP", datetime.timedelta(seconds=0)
+                )
+                return
+
         start = time.time()
         try:
             if target.name == "config":
@@ -147,14 +162,14 @@ class Build:
                         self.make(conf)
             else:
                 self.make(*target.make_args)
-            self.status[target] = BuildInfo("PASS")
+            self.status[target.name] = BuildInfo("PASS")
         except subprocess.CalledProcessError:
-            self.status[target] = BuildInfo("FAIL")
+            self.status[target.name] = BuildInfo("FAIL")
         finish = time.time()
-        self.status[target].duration = datetime.timedelta(seconds=finish - start)
+        self.status[target.name].duration = datetime.timedelta(seconds=finish - start)
 
     def copy_artifacts(self, target):
-        if self.status[target].fail:
+        if not self.status[target.name].passed:
             return
         for origdest, origsrc in target.artifacts.items():
             dest = self.output_dir / origdest
@@ -164,12 +179,12 @@ class Build:
 
     @property
     def passed(self):
-        s = [info.fail for info in self.status.values()]
+        s = [info.passed for info in self.status.values()]
         return s and True not in set(s)
 
     @property
     def failed(self):
-        s = [info.fail for info in self.status.values()]
+        s = [info.failed for info in self.status.values()]
         return s and True in set(s)
 
     def cleanup(self):

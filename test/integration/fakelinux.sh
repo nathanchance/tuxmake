@@ -68,4 +68,11 @@ test_fail() {
   assertTrue 'grep "kernel: FAIL" stderr'
 }
 
+test_skip_kernel_if_config_fails() {
+  failrun defconfig tuxmake
+  assertTrue 'grep "config: FAIL" stderr'
+  assertTrue 'grep "kernel: SKIP" stderr'
+}
+
+
 . shunit2

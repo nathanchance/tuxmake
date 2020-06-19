@@ -35,8 +35,16 @@ class TestDebugKernel:
         assert debugkernel.make_args == ["vmlinux"]
 
 
+@pytest.fixture
+def arch():
+    return Native()
+
+
 class TestKernel:
-    def test_gets_kernel_name_from_arch(self):
-        arch = Native()
+    def test_gets_kernel_name_from_arch(self, arch):
         kernel = Target("kernel", arch)
         assert kernel.artifacts
+
+    def test_depends_on_config(self, arch):
+        kernel = Target("kernel", arch)
+        assert kernel.dependencies == ["config"]

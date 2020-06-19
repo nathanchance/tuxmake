@@ -196,3 +196,11 @@ class TestDebugKernel:
         result = build(linux, targets=["config", "debugkernel"], target_arch="arm64")
         artifacts = [str(f.name) for f in result.output_dir.glob("*")]
         assert "vmlinux" in artifacts
+
+
+class TestTargetDependencies:
+    def test_dont_build_kernel_if_config_fails(self, linux, monkeypatch):
+        monkeypatch.setenv("FAIL", "defconfig")
+        result = build(linux)
+        assert result.status["config"].failed
+        assert result.status["kernel"].skipped

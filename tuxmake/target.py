@@ -12,7 +12,7 @@ class Target(ConfigurableObject):
 
     def __init_config__(self):
         self.description = self.config["target"].get("description")
-        self.dependencies = self.config["target"].get("dependencies", [])
+        self.dependencies = self.config["target"].get("dependencies", "").split()
         self.make_args = self.config["target"].get("make_args", "").split()
         try:
             self.artifacts = self.config["artifacts"]

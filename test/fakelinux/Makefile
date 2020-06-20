@@ -1,12 +1,13 @@
 O ?= $(CURDIR)
 ARCH := $(shell uname -m)
+VERSION := $(shell uname -r)
 
 all:
 
 include $(ARCH).mk
 ARCHDIRNAME ?= $(ARCH)
 
-.PHONY: vmlinux $(IMAGE)
+.PHONY: vmlinux $(IMAGE) modules modules_install
 
 all: vmlinux $(IMAGE)
 
@@ -18,6 +19,8 @@ $(IMAGE): $(O)/arch/$(ARCHDIRNAME)/boot/$(IMAGE)
 
 vmlinux: $(O)/vmlinux
 
+modules: $(O)/modules
+
 $(O)/arch/$(ARCHDIRNAME)/boot/$(IMAGE): $(O)/vmlinux
 	$(call maybefail,kernel)
 	mkdir -p $$(dirname $@)
@@ -26,6 +29,15 @@ $(O)/arch/$(ARCHDIRNAME)/boot/$(IMAGE): $(O)/vmlinux
 $(O)/vmlinux: $(O)/.config
 	$(call maybefail,debugkernel)
 	touch $@
+
+$(O)/modules: $(O)/vmlinux
+	$(call maybefail,modules)
+	mkdir -p $@/lib/modules/$(VERSION)/kernel/fs/ext4
+	touch    $@/lib/modules/$(VERSION)/kernel/fs/ext4/ext4.ko
+
+modules_install: $(O)/modules
+	mkdir -p $(INSTALL_MOD_PATH)
+	cp -r $(O)/modules/lib $(INSTALL_MOD_PATH)/
 
 defconfig:
 	$(call maybefail,defconfig)

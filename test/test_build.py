@@ -206,6 +206,13 @@ class TestDebugKernel:
         assert "vmlinux" in artifacts
 
 
+class TestModules:
+    def test_modules(self, linux):
+        result = build(linux, targets=["config", "kernel", "modules"])
+        artifacts = [str(f.name) for f in result.output_dir.glob("*")]
+        assert "modules.tar.gz" in artifacts
+
+
 class TestTargetDependencies:
     def test_dont_build_kernel_if_config_fails(self, linux, monkeypatch):
         monkeypatch.setenv("FAIL", "defconfig")
@@ -217,3 +224,9 @@ class TestTargetDependencies:
         result = build(linux, targets=["kernel"])
         assert result.status["config"].passed
         assert result.status["kernel"].passed
+
+    def test_recursive_dependencies(self, linux):
+        result = build(linux, targets=["modules"])
+        assert result.status["config"].passed
+        assert result.status["kernel"].passed
+        assert result.status["modules"].passed

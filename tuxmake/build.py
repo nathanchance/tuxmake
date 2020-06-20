@@ -71,12 +71,7 @@ class Build:
         self.targets = []
         for t in targets:
             target = Target(t, self.target_arch)
-            for d in target.dependencies:
-                dependency = Target(d, self.target_arch)
-                if dependency not in self.targets:
-                    self.targets.append(dependency)
-            if target not in self.targets:
-                self.targets.append(target)
+            self.add_target(target)
 
         self.jobs = jobs
 
@@ -89,6 +84,12 @@ class Build:
         self.runner = None
         self.__logger__ = None
         self.status = {}
+
+    def add_target(self, target):
+        for d in target.dependencies:
+            self.add_target(Target(d, self.target_arch))
+        if target not in self.targets:
+            self.targets.append(target)
 
     def validate(self):
         source = Path(self.source_tree)
@@ -115,6 +116,10 @@ class Build:
             + self.makevars
             + list(args)
         )
+        self.run_cmd(cmd)
+
+    def run_cmd(self, cmd):
+        cmd = [c.format(build_dir=self.build_dir) for c in cmd]
 
         if self.runner:
             final_cmd = self.runner.get_command_line(cmd)
@@ -177,6 +182,8 @@ class Build:
                         self.make(conf)
             else:
                 self.make(*target.make_args)
+                if target.extra_command:
+                    self.run_cmd(target.extra_command)
             self.status[target.name] = BuildInfo("PASS")
         except subprocess.CalledProcessError:
             self.status[target.name] = BuildInfo("FAIL")

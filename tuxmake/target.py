@@ -1,3 +1,5 @@
+import shlex
+
 from tuxmake.config import ConfigurableObject
 from tuxmake.exceptions import UnsupportedTarget
 
@@ -13,7 +15,8 @@ class Target(ConfigurableObject):
     def __init_config__(self):
         self.description = self.config["target"].get("description")
         self.dependencies = self.config["target"].get("dependencies", "").split()
-        self.make_args = self.config["target"].get("make_args", "").split()
+        self.make_args = shlex.split(self.config["target"].get("make_args", ""))
+        self.extra_command = shlex.split(self.config["target"].get("extra_command", ""))
         try:
             self.artifacts = self.config["artifacts"]
         except KeyError:

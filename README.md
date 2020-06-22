@@ -1,12 +1,4 @@
-TuxMake is a thin python+docker wrapper for building Linux kernels.
-
-Python is used to provide a common command-line interface for building across
-architectures, targets, and toolchains.
-
-Docker is used to provide isolated build environments, and allows builds to be
-reproducible.
-
-Requirements: python 3.6+, docker
+TuxMake is a thin wrapper for building Linux kernels.
 
 [[_TOC_]]
 
@@ -23,11 +15,8 @@ It gets complicated when you want to support the following combinations:
 
 Each of those items requires specific configuration, and supporting all
 combinations becomes difficult. TuxMake seeks to simplify Linux kernel building
-by supporting dockerized build environments and providing a consistent command
-line interface to each of those combinations listed above.
-
-For example, wouldn't it be great if a user could install docker and then check
-out a Linux source tree and run:
+by providing a consistent command line interface to each of those combinations
+listed above. E.g. the following command builds an arm64 kernel with gcc-9:
 
 ```sh
 tuxmake --kconfig defconfig --target-arch arm64 --toolchain clang-9
@@ -42,24 +31,46 @@ user should be able to use the same command to produce the same build problem.
 Such an interface provides portability and simplicity, making arbitrary Linux
 kernel build combinations easier for developers.
 
-TuxMake should provide strong defaults, making the easy cases easy. By default,
+TuxMake provides strong defaults, making the easy cases easy. By default,
 tuxmake will build a config, a kernel, and modules and dtbs if applicable.
 Additional targets can be specified with command line flags.
 
-Every step of the build should be clearly shown so that there is no mystery or
+Every step of the build is clearly shown so that there is no mystery or
 obfuscation during the build.
 
-It should not 'fix' any problems in Linux - rather it should provide a thin
+TuxMake does not 'fix' any problems in Linux - rather it provides a thin
 veneer over the top of the existing Linux source tree to make building Linux
 easier. e.g. if a build combination fails in Linux, it should fail the same way
 when building with TuxMake.
 
-The resulting build artifacts and meta-data should be automatically saved in a
+The resulting build artifacts and meta-data are automatically saved in a
 single local per-build directory.
 
-Finally, TuxMake must be well tested and reliable so that developers can rely
+Finally, TuxMake strives to be well tested and reliable so that developers can rely
 on it to save time and make it worth the additional complexity that another
 layer of abstraction introduces.
+
+## Usage examples
+
+Use case | TuxMake invocation
+:-------|:---------
+Build from current directory        | `tuxmake`
+Build from specific directory       | `tuxmake /path/to/linux`
+Build an arm64 kernel               | `tuxmake --target-arch=arm64`
+Build an arm64 kernel with gcc-10   | `tuxmake --target-arch=arm64 --toolchain=gcc-10`
+Build an arm64 kernel with clang-10 | `tuxmake --target-arch=arm64 --toolchain=clang-10`
+Display all options                 | `tuxmake --help`
+
+## Docker support
+
+All of the above use cases require you to have the appropriate (cross)
+compilers installed on your system. TuxMake can also use cross compilers
+provided by docker containers. If you just pass the `--docker` option, TuxMake
+will download and use the appropriate docker container image for your choice of
+target architecture and toolchain.
+
+If you want to override the docker container image to use, you can do that with
+the `--docker-image=` option.
 
 ## Use Cases
 
@@ -71,7 +82,7 @@ Note that artifact handling is not dealt with here.
 
 ### Default build (run on x86_64)
 
-By default tuxmake will do a defconfig build with the latest gcc for the native architecture.
+By default tuxmake will do a defconfig build with the default gcc for the native architecture.
 
 ```sh
 tuxmake

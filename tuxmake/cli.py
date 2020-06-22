@@ -1,7 +1,7 @@
 import argparse
 import sys
 from tuxmake import __version__
-from tuxmake.build import build, defaults
+from tuxmake.build import build, supported, defaults
 from tuxmake.exceptions import TuxMakeException
 
 
@@ -13,70 +13,72 @@ def main(*argv):
     if not argv:
         argv = sys.argv[1:]
 
-    parser = argparse.ArgumentParser(prog="tuxmake")
-
+    parser = argparse.ArgumentParser(
+        prog="tuxmake",
+        usage="%(prog)s [OPTIONS] [tree]",
+        description="A think wrapper to build Linux kernels",
+        add_help=False,
+    )
     parser.add_argument(
+        "tree", nargs="?", default=".", help="Tree to build (default: .)"
+    )
+
+    target = parser.add_argument_group("Build target options")
+    target.add_argument(
         "-a",
         "--target-arch",
         type=str,
-        help="Architecture to build the kernel for (default: host architecture)",
+        help=f"Architecture to build the kernel for. Default: host architecture. Supported: {(', '.join(supported.architectures))}",
     )
-
-    parser.add_argument(
-        "-T",
-        "--toolchain",
-        type=str,
-        help="Toolchain to use in the build (default: whatever Linux uses by default)",
-    )
-
-    parser.add_argument(
+    target.add_argument(
         "-t",
         "--targets",
         type=comma_separated,
-        help=f"Comma-separated list of targets to build (default: {','.join(defaults.targets)})",
+        help=f"Comma-separated list of targets to build. Default: {','.join(defaults.targets)}. Supported: {', '.join(supported.targets)}",
     )
-
-    parser.add_argument(
+    target.add_argument(
         "-k",
         "--kconfig",
         type=str,
         action="append",
-        help=f"kconfig to use. Named (defconfig etc), or URL to config fragment. Can be specified multiple times (default: {', '.join(defaults.kconfig)})",
+        help=f"kconfig to use. Named (defconfig etc), path to a local file, or URL to config fragment. Can be specified multiple times (default: {', '.join(defaults.kconfig)})",
     )
 
-    parser.add_argument(
+    buildenv = parser.add_argument_group("Build environment options")
+    buildenv.add_argument(
+        "-T",
+        "--toolchain",
+        type=str,
+        help=f"Toolchain to use in the build. Default: none (use whatever Linux uses by default). Supported: {', '.join(supported.toolchains)}; request specific versions by appending \"-N\" (e.g. gcc-10, clang-9).",
+    )
+    buildenv.add_argument(
         "-j",
         "--jobs",
         type=int,
         help=f"Number of concurrent jobs to run when building (default: {defaults.jobs})",
     )
-
-    parser.add_argument(
+    buildenv.add_argument(
         "-d",
         "--docker",
         action="store_true",
         help="Do the build using Docker containers (defult: No)",
     )
-
-    parser.add_argument(
+    buildenv.add_argument(
         "-i",
         "--docker-image",
         help="Docker image to build with (implies --docker). {{toolchain}} and {{arch}} get replaced by the names of the toolchain and architecture selected for the build. (default: tuxmake-provided images)",
     )
-
-    parser.add_argument(
+    buildenv.add_argument(
         "-v",
         "--verbose",
         action="store_true",
         help="Do a verbose build (default: silent build)",
     )
 
-    parser.add_argument(
-        "--version", action="version", version=f"%(prog)s {__version__}"
-    )
-
-    parser.add_argument(
-        "tree", nargs="?", default=".", help="Tree to build (default: .)"
+    info = parser.add_argument_group("Informational options")
+    info.add_argument("-h", "--help", action="help", help="Show program help")
+    info.add_argument(
+        "-V", "--version", action="version", version=f"%(prog)s {__version__}"
     )
 
     options = parser.parse_args(argv)

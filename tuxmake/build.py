@@ -13,6 +13,12 @@ from tuxmake.runner import get_runner
 from tuxmake.exceptions import UnrecognizedSourceTree
 
 
+class supported:
+    architectures = Architecture.supported()
+    targets = Target.supported()
+    toolchains = Toolchain.supported()
+
+
 class defaults:
     kconfig = ["defconfig"]
     targets = ["config", "kernel"]

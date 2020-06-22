@@ -20,3 +20,10 @@ class ConfigurableObject:
 
     def __init_config__(self):
         raise NotImplementedError
+
+    @classmethod
+    def supported(cls):
+        files = (Path(__file__).parent / cls.basedir).glob("*.ini")
+        return [
+            str(f.name).replace(".ini", "") for f in files if f.name != "common.ini"
+        ]

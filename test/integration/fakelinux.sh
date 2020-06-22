@@ -74,5 +74,10 @@ test_skip_kernel_if_config_fails() {
   assertTrue 'grep "kernel: SKIP" stderr'
 }
 
+test_log_command_line() {
+  run tuxmake --toolchain=gcc-10 --target-arch=arm64
+  assertTrue 'command line logged' 'grep "tuxmake --toolchain=gcc-10 --target-arch=arm64" $XDG_CACHE_HOME/tuxmake/builds/1/build.log'
+}
+
 
 . shunit2

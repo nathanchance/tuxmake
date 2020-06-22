@@ -1,8 +1,10 @@
 from pathlib import Path
 import datetime
 import os
+import shlex
 import shutil
 import subprocess
+import sys
 import time
 from urllib.request import urlopen
 from tuxmake.arch import Architecture, Native
@@ -105,6 +107,7 @@ class Build:
         raise UnrecognizedSourceTree(source.absolute())
 
     def prepare(self):
+        self.log("# command line: " + shlex.join(["tuxmake"] + sys.argv[1:]))
         self.runner = get_runner(self)
         self.runner.prepare()
 

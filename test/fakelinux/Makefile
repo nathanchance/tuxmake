@@ -4,7 +4,7 @@ VERSION := $(shell uname -r)
 
 all:
 
-include $(ARCH).mk
+include arch/$(ARCH).mk
 ARCHDIRNAME ?= $(ARCH)
 
 .PHONY: vmlinux $(IMAGE) modules modules_install

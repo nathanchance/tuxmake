@@ -5,36 +5,36 @@ from tuxmake.build import build, supported, defaults
 from tuxmake.exceptions import TuxMakeException
 
 
-def comma_separated(s):
-    return s.split(",")
-
-
 def main(*argv):
     if not argv:
         argv = sys.argv[1:]
 
     parser = argparse.ArgumentParser(
         prog="tuxmake",
-        usage="%(prog)s [OPTIONS] [tree]",
+        usage="%(prog)s [OPTIONS] [targets ...]",
         description="A thin wrapper to build Linux kernels",
         add_help=False,
     )
-    parser.add_argument(
+
+    positional = parser.add_argument_group("Positional arguments")
+    positional.add_argument(
+        "targets",
+        nargs="*",
+        type=str,
+        help=f"Targets to build. If ommited, tuxmake will build  {' + '.join(defaults.targets)}. Supported targets: {', '.join(supported.targets)}",
+    )
+
+    build_input = parser.add_argument_group("Build input options")
+    build_input.add_argument(
         "-C", "--directory", dest="tree", default=".", help="Tree to build (default: .)"
     )
 
-    target = parser.add_argument_group("Build target options")
+    target = parser.add_argument_group("Build output options")
     target.add_argument(
         "-a",
         "--target-arch",
         type=str,
         help=f"Architecture to build the kernel for. Default: host architecture. Supported: {(', '.join(supported.architectures))}",
-    )
-    target.add_argument(
-        "-t",
-        "--targets",
-        type=comma_separated,
-        help=f"Comma-separated list of targets to build. Default: {','.join(defaults.targets)}. Supported: {', '.join(supported.targets)}",
     )
     target.add_argument(
         "-k",
@@ -61,7 +61,7 @@ def main(*argv):
         "-d",
         "--docker",
         action="store_true",
-        help="Do the build using Docker containers (defult: No)",
+        help="Do the build using Docker containers (default: No)",
     )
     buildenv.add_argument(
         "-i",

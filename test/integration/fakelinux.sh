@@ -79,5 +79,11 @@ test_log_command_line() {
   assertTrue 'command line logged' 'grep "tuxmake --toolchain=gcc-10 --target-arch=arm64" $XDG_CACHE_HOME/tuxmake/builds/1/build.log'
 }
 
+test_config_only() {
+  run tuxmake --target-arch=arm64 config
+  assertTrue "config produced" "test -f $XDG_CACHE_HOME/tuxmake/builds/1/config"
+  assertFalse "kernel image not produced" "test -f $XDG_CACHE_HOME/tuxmake/builds/1/Image.gz"
+}
+
 
 . shunit2

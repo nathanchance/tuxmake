@@ -49,11 +49,11 @@ def test_build_from_sys_argv_default_tree_is_cwd(monkeypatch, builder):
 
 class TestTargets:
     def test_config(self, builder):
-        tuxmake("--targets=config")
+        tuxmake("config")
         args(builder).targets == ["config"]
 
     def test_config_multiple(self, builder):
-        tuxmake("--targets=config,kernel")
+        tuxmake("config", "kernel")
         assert args(builder).targets == ["config", "kernel"]
 
 

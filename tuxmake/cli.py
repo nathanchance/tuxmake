@@ -16,7 +16,7 @@ def main(*argv):
     parser = argparse.ArgumentParser(
         prog="tuxmake",
         usage="%(prog)s [OPTIONS] [tree]",
-        description="A think wrapper to build Linux kernels",
+        description="A thin wrapper to build Linux kernels",
         add_help=False,
     )
     parser.add_argument(

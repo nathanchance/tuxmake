@@ -46,7 +46,7 @@ def main(*argv):
 
     buildenv = parser.add_argument_group("Build environment options")
     buildenv.add_argument(
-        "-T",
+        "-t",
         "--toolchain",
         type=str,
         help=f"Toolchain to use in the build. Default: none (use whatever Linux uses by default). Supported: {', '.join(supported.toolchains)}; request specific versions by appending \"-N\" (e.g. gcc-10, clang-9).",

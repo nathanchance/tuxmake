@@ -11,6 +11,9 @@ ARCHDIRNAME ?= $(ARCH)
 
 all: vmlinux $(IMAGE)
 
+kernel_version:
+	@echo $(VERSION)
+
 define maybefail
 	@if [ "$(filter $(1),$(FAIL))" = "$(1)" ]; then echo "Error: target $(FAIL) failed"; exit 1; fi
 endef

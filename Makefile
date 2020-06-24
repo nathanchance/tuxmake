@@ -7,7 +7,7 @@ all: unit-tests style integration-tests typecheck codespell
 
 
 unit-tests:
-	python3 -m pytest --cov=tuxmake --cov-report=term-missing
+	python3 -m pytest --cov=tuxmake --cov-report=term-missing --cov-fail-under=100
 
 style:
 	black --check --diff .

@@ -105,7 +105,10 @@ class Build:
         raise UnrecognizedSourceTree(source.absolute())
 
     def prepare(self):
-        self.log("# command line: " + shlex.join(["tuxmake"] + sys.argv[1:]))
+        self.log(
+            "# command line: "
+            + " ".join(["tuxmake"] + [shlex.quote(a) for a in sys.argv[1:]])
+        )
         self.runtime.prepare()
 
     def get_silent(self):

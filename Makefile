@@ -2,7 +2,7 @@
 
 ALL_TESTS_PASSED = ======================== All tests passed ========================
 
-all: unit-tests integration-tests docker-build-tests typecheck codespell style
+all: unit-tests integration-tests docker-build-tests man doc typecheck codespell style
 	@printf "\033[01;32m$(ALL_TESTS_PASSED)\033[m\n"
 
 
@@ -33,3 +33,23 @@ release:
 	git tag --sign --message="$(version) release" v$(version)
 	flit publish
 	git push --tags
+
+man: tuxmake.1
+
+tuxmake.1: tuxmake.rst cli_options.rst
+	rst2man tuxmake.rst $@
+
+cli_options.rst: tuxmake/cli.py scripts/cli2rst.sh
+	scripts/cli2rst.sh $@
+
+docs/cli.md: tuxmake/cli.py scripts/cli2md.sh
+	scripts/cli2md.sh $@
+
+docs/index.md: README.md scripts/readme2index.sh
+	scripts/readme2index.sh $@
+
+doc: docs/cli.md docs/index.md
+	mkdocs build
+
+clean:
+	$(RM) -r tuxmake.1 cli_options.rst docs/cli.md docs/index.md

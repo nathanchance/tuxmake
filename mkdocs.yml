@@ -1,0 +1,19 @@
+site_name: tuxmake documentation
+site_dir: public
+theme:
+  name: readthedocs
+
+nav:
+- Introduction:
+  - Getting Started: index.md
+  - Command line reference: cli.md
+- Reference Documentation:
+  - Targets: targets.md
+  - Target architectures: architectures.md
+  - Toolchains: toolchains.md
+  - Compiler wrappers: wrappers.md
+  - Runtimes: runtimes.md
+  - Metadata: metadata.md
+- TuxMake community:
+  - Contributing: contributing.md
+  - Code of Conduct: code-of-conduct.md

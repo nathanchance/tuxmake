@@ -1,10 +1,11 @@
+from typing import Optional, Type
 from configparser import ConfigParser
 from pathlib import Path
 
 
 class ConfigurableObject:
-    basedir = None
-    exception = None
+    basedir: Optional[str] = None
+    exception: Optional[Type[Exception]] = None
 
     def __init__(self, name):
         commonconf = Path(__file__).parent / self.basedir / "common.ini"

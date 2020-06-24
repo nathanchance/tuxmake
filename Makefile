@@ -2,7 +2,7 @@
 
 ALL_TESTS_PASSED = ======================== All tests passed ========================
 
-all: unit-tests style integration-tests
+all: unit-tests style integration-tests typechecks
 	@printf "\033[01;32m$(ALL_TESTS_PASSED)\033[m\n"
 
 
@@ -12,6 +12,9 @@ unit-tests:
 style:
 	black --check --diff .
 	flake8 .
+
+typechecks:
+	mypy tuxmake
 
 integration-tests:
 	sh test/integration/fakelinux.sh

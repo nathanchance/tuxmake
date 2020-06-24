@@ -19,18 +19,17 @@ before_script: *install
 unittests:
   stage: test
   script:
-    - python3 -m pytest --cov=tuxmake
+    - make unit-tests
 
 style:
   stage: test
   script:
-    - black --check .
-    - flake8 .
+    - make style
 
 typecheck:
   stage: test
   script:
-    - mypy tuxmake
+    - make typecheck
 
 codespell:
   stage: test

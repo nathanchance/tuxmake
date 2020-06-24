@@ -2,7 +2,7 @@
 
 ALL_TESTS_PASSED = ======================== All tests passed ========================
 
-all: unit-tests style integration-tests typechecks codespell
+all: unit-tests style integration-tests typecheck codespell
 	@printf "\033[01;32m$(ALL_TESTS_PASSED)\033[m\n"
 
 
@@ -13,7 +13,7 @@ style:
 	black --check --diff .
 	flake8 .
 
-typechecks:
+typecheck:
 	mypy tuxmake
 
 codespell:

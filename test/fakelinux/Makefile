@@ -48,4 +48,4 @@ defconfig:
 	touch $(O)/.config
 
 clean:
-	$(RM) -rf $(O)/arch/ $(O)/.config
+	$(RM) -rf vmlinux $(O)/arch/*/boot $(O)/.config $(O)/modules

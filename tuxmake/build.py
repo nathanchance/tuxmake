@@ -24,7 +24,7 @@ class supported:
 
 class defaults:
     kconfig = ["defconfig"]
-    targets = ["config", "kernel"]
+    targets = ["config", "kernel", "modules", "dtbs"]
     jobs = int(subprocess.check_output(["nproc"], text=True)) * 2
 
 

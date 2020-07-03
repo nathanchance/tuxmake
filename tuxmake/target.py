@@ -1,5 +1,4 @@
 from pathlib import Path
-import re
 import shlex
 import urllib.request
 
@@ -27,10 +26,9 @@ class Target(ConfigurableObject):
     def __init_config__(self):
         self.description = self.config["target"].get("description")
         self.dependencies = self.config["target"].get("dependencies", "").split()
-        make_args = re.split(r"\s*&&\s*", self.config["target"].get("make_args", ""))
-        self.make_args = [shlex.split(c) for c in make_args]
-        self.precondition = shlex.split(self.config["target"].get("precondition", ""))
-        self.extra_command = shlex.split(self.config["target"].get("extra_command", ""))
+        self.make_args = self.__split_cmds__("target", "make_args") or [[]]
+        self.preconditions = self.__split_cmds__("target", "preconditions")
+        self.extra_commands = self.__split_cmds__("target", "extra_commands")
         try:
             self.artifacts = self.config["artifacts"]
         except KeyError:
@@ -43,6 +41,18 @@ class Target(ConfigurableObject):
 
     def __eq__(self, other):
         return str(self) == str(other)
+
+    def __split_cmds__(self, section, item):
+        s = self.config[section].get(item)
+        if not s:
+            return []
+        result = [[]]
+        for item in shlex.split(s):
+            if item == "&&":
+                result.append([])
+            else:
+                result[-1].append(item)
+        return result
 
     def prepare(self, build):
         pass

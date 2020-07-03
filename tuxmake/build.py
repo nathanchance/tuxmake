@@ -172,23 +172,21 @@ class Build:
                 )
                 return
 
-        if target.precondition:
-            try:
-                self.run_cmd(target.precondition)
-            except subprocess.CalledProcessError:
-                self.status[target.name] = BuildInfo(
-                    "SKIP", datetime.timedelta(seconds=0)
-                )
-                self.log(f"# Skipping {target.name} because precondition failed")
-                return
+        try:
+            for precondition in target.preconditions:
+                self.run_cmd(precondition)
+        except subprocess.CalledProcessError:
+            self.status[target.name] = BuildInfo("SKIP", datetime.timedelta(seconds=0))
+            self.log(f"# Skipping {target.name} because precondition failed")
+            return
 
         start = time.time()
         try:
             target.prepare(self)
             for args in target.make_args:
                 self.make(*args)
-            if target.extra_command:
-                self.run_cmd(target.extra_command)
+            for cmd in target.extra_commands:
+                self.run_cmd(cmd)
             self.status[target.name] = BuildInfo("PASS")
         except subprocess.CalledProcessError:
             self.status[target.name] = BuildInfo("FAIL")

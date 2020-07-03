@@ -90,7 +90,7 @@ class Build:
         self.status = {}
 
     def add_target(self, target_name):
-        target = create_target(target_name, self.target_arch)
+        target = create_target(target_name, self)
         for d in target.dependencies:
             self.add_target(d)
         if target not in self.targets:
@@ -182,7 +182,7 @@ class Build:
 
         start = time.time()
         try:
-            target.prepare(self)
+            target.prepare()
             for args in target.make_args:
                 self.make(*args)
             for cmd in target.extra_commands:

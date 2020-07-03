@@ -10,17 +10,18 @@ def supported_targets():
     return Target.supported()
 
 
-def create_target(name, target_arch):
+def create_target(name, build):
     cls = (name == "config") and Config or Target
-    return cls(name, target_arch)
+    return cls(name, build)
 
 
 class Target(ConfigurableObject):
     basedir = "target"
     exception = UnsupportedTarget
 
-    def __init__(self, name, target_arch):
-        self.target_arch = target_arch
+    def __init__(self, name, build):
+        self.build = build
+        self.target_arch = build.target_arch
         super().__init__(name)
 
     def __init_config__(self):
@@ -54,7 +55,7 @@ class Target(ConfigurableObject):
                 result[-1].append(item)
         return result
 
-    def prepare(self, build):
+    def prepare(self):
         pass
 
 
@@ -63,9 +64,9 @@ class Config(Target):
         super().__init_config__()
         self.make_args = []
 
-    def prepare(self, build):
-        config = build.build_dir / ".config"
-        for conf in build.kconfig:
+    def prepare(self):
+        config = self.build.build_dir / ".config"
+        for conf in self.build.kconfig:
             if conf.startswith("http://") or conf.startswith("https://"):
                 download = urllib.request.urlopen(conf)
                 with config.open("a") as f:
@@ -74,4 +75,4 @@ class Config(Target):
                 with config.open("a") as f:
                     f.write(Path(conf).read_text())
             else:
-                build.make(conf)
+                self.build.make(conf)

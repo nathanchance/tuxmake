@@ -6,18 +6,26 @@ from tuxmake.target import Target, Config
 
 
 @pytest.fixture
-def config():
-    return Config("config", Native())
+def build(mocker):
+    b = mocker.MagicMock()
+    b.target_arch = Native()
+    b.kconfig = ["defconfig"]
+    return b
 
 
-def test_unsupported():
+@pytest.fixture
+def config(build):
+    return Config("config", build)
+
+
+def test_unsupported(build):
     with pytest.raises(tuxmake.exceptions.UnsupportedTarget):
-        Target("foobarbaz", Native())
+        Target("foobarbaz", build)
 
 
-def test_comparison():
-    t1 = Target("kernel", Native())
-    t2 = Target("kernel", Native())
+def test_comparison(build):
+    t1 = Target("kernel", build)
+    t2 = Target("kernel", build)
     assert t1 == t2
     assert t1 in [t2]
 
@@ -37,37 +45,32 @@ class TestConfig:
 
 
 class TestDebugKernel:
-    def test_make_args(self):
-        debugkernel = Target("debugkernel", Native())
+    def test_make_args(self, build):
+        debugkernel = Target("debugkernel", build)
         assert debugkernel.make_args == [["vmlinux"]]
 
 
-@pytest.fixture
-def arch():
-    return Native()
-
-
 class TestKernel:
-    def test_gets_kernel_name_from_arch(self, arch):
-        kernel = Target("kernel", arch)
+    def test_gets_kernel_name_from_arch(self, build):
+        kernel = Target("kernel", build)
         assert kernel.artifacts
 
-    def test_depends_on_config(self, arch):
-        kernel = Target("kernel", arch)
+    def test_depends_on_config(self, build):
+        kernel = Target("kernel", build)
         assert kernel.dependencies == ["config"]
 
 
 class TestDtbs:
-    def test_make_args(self, arch):
-        dtbs = Target("dtbs", arch)
+    def test_make_args(self, build):
+        dtbs = Target("dtbs", build)
         assert dtbs.make_args[0] == ["dtbs"]
         assert dtbs.make_args[1][0] == "dtbs_install"
         assert "INSTALL_DTBS_PATH=" in dtbs.make_args[1][1]
 
-    def test_depends_on_config(self, arch):
-        dtbs = Target("dtbs", arch)
+    def test_depends_on_config(self, build):
+        dtbs = Target("dtbs", build)
         assert dtbs.dependencies == ["config"]
 
-    def test_artifacts(self, arch):
-        dtbs = Target("dtbs", arch)
+    def test_artifacts(self, build):
+        dtbs = Target("dtbs", build)
         assert dtbs.artifacts["dtbs.tar.gz"] == "dtbs.tar.gz"

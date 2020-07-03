@@ -170,7 +170,7 @@ class TestToolchain:
     def test_gcc_10(self, builder, mocker):
         check_call = mocker.patch("subprocess.check_call")
         builder.toolchain = Toolchain("gcc-10")
-        builder.build(Target("config", builder.target_arch))
+        builder.build(Target("config", builder))
         cmdline = check_call.call_args[0][0]
         assert "CC=gcc-10" in cmdline
 
@@ -178,14 +178,14 @@ class TestToolchain:
         check_call = mocker.patch("subprocess.check_call")
         builder.toolchain = Toolchain("gcc-10")
         builder.target_arch = Architecture("arm64")
-        builder.build(Target("config", builder.target_arch))
+        builder.build(Target("config", builder))
         cmdline = check_call.call_args[0][0]
         assert "CC=aarch64-linux-gnu-gcc-10" in cmdline
 
     def test_clang(self, builder, mocker):
         check_call = mocker.patch("subprocess.check_call")
         builder.toolchain = Toolchain("clang")
-        builder.build(Target("config", builder.target_arch))
+        builder.build(Target("config", builder))
         cmdline = check_call.call_args[0][0]
         assert "CC=clang" in cmdline
 

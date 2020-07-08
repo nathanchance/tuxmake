@@ -1,6 +1,98 @@
-TuxMake is a thin wrapper for building Linux kernels.
+[![Pipeline Status](https://gitlab.com/Linaro/tuxmake/badges/master/pipeline.svg)](https://gitlab.com/Linaro/tuxmake/pipelines)
+[![coverage report](https://gitlab.com/Linaro/tuxmake/badges/master/coverage.svg)](https://gitlab.com/Linaro/tuxmake/commits/master)
+[![PyPI version](https://badge.fury.io/py/tuxmake.svg)](https://pypi.org/project/tuxmake/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![PyPI - License](https://img.shields.io/pypi/l/tuxmake)](https://gitlab.com/Linaro/tuxmake/blob/master/LICENSE)
+
+TuxMake is a python utility that provides portable and repeatable Linux kernel
+builds across a variety of architectures, toolchains, kernel configurations,
+and make targets.
 
 [[_TOC_]]
+
+# Status: Pre-Alpha
+
+TuxMake is still in its initial development phase and does not yet have enough
+functionality (or smooth edges) to be generally useful. However, brave users
+interested in contributing to the concepts, design, and interfaces are welcome
+and encouraged to try tuxmake and send feedback. The best way to provide
+feedback is by [opening an
+issue](https://gitlab.com/Linaro/tuxmake/-/issues/new?issue) or merge request
+(see [CONTRIBUTING](CONTRIBUTING.md)).
+
+# Getting Started
+
+## Install TuxMake
+
+TuxMake requires Python version 3, and is available using pip.
+
+To install tuxmake on your system globally:
+
+```
+sudo pip3 install -U tuxmake
+```
+
+To install tuxbuild to your home directory at ~/.local/bin:
+
+```
+pip3 install -U --user tuxmake
+```
+
+To upgrade tuxmake to the latest version, run the same command you ran to
+install it.
+
+## Usage
+
+To use tuxmake, navigate to a Linux source tree (where you might usually run
+`make`), and run `tuxmake`. By default, it will perform a defconfig build on
+your native architecture, using a default compiler (`gcc`).
+
+The behavior of the build can be modified with command-line arguments. Run
+`tuxmake --help` to see all command-line arguments.
+
+### Docker Support
+
+When specifying `--toolchain` and `--target-arch`, the appropriate compiler
+must be available locally.
+
+Alternatively, tuxmake can use portable build environments provided by docker
+containers. If you pass the `--runtime docker` option, tuxmake will download
+and use the appropriate docker container image for your choice of target
+architecture and toolchain. Each of the build steps will be performed inside
+the given docker container as your user, provided docker is installed and your
+user is allowed to run containers.
+
+If you want to override the docker container image to use, you can do that with
+the `--docker-image=` option.
+
+### Target Support
+
+By default, tuxmake will build all available and applicable targets. To build a
+specific target or a subset of targets, provide the desired target(s) as
+positional arguments.
+
+For example, to build dtbs, run `tuxmake dtbs`. A list of supported targets is
+available by running `tuxmake --help`. Specified targets will automatically run
+any prerequisite targets.
+
+### Usage Examples
+
+Use Case                                          | TuxMake Invocation
+:-------------------------------------------------|:------------------
+Build from current directory                      | `tuxmake`
+Build from specific directory                     | `tuxmake --directory /path/to/linux`
+Build an arm64 kernel                             | `tuxmake --target-arch=arm64`
+Build an arm64 kernel with gcc-10                 | `tuxmake --target-arch=arm64 --toolchain=gcc-10`
+Build an arm64 kernel with clang-10               | `tuxmake --target-arch=arm64 --toolchain=clang-10`
+Build tinyconfig on arm64 with gcc-9              | `tuxmake -a arm64 -t gcc-9 -k tinyconfig`
+Build tinyconfig on arm64 with gcc-9 using docker | `tuxmake -r docker -a arm64 -t gcc-9 -k tinyconfig`
+Build DTBs on arm64 using docker                  | `tuxmake -r docker -a arm64 -t gcc-9 dtbs`
+Display all options                               | `tuxmake --help`
+
+# Original Design
+
+*Note: Below is the original design documentation for tuxmake. Actual
+implementation may vary.*
 
 ## Goals
 
@@ -49,28 +141,6 @@ single local per-build directory.
 Finally, TuxMake strives to be well tested and reliable so that developers can rely
 on it to save time and make it worth the additional complexity that another
 layer of abstraction introduces.
-
-## Usage examples
-
-Use case | TuxMake invocation
-:-------|:---------
-Build from current directory        | `tuxmake`
-Build from specific directory       | `tuxmake /path/to/linux`
-Build an arm64 kernel               | `tuxmake --target-arch=arm64`
-Build an arm64 kernel with gcc-10   | `tuxmake --target-arch=arm64 --toolchain=gcc-10`
-Build an arm64 kernel with clang-10 | `tuxmake --target-arch=arm64 --toolchain=clang-10`
-Display all options                 | `tuxmake --help`
-
-## Docker support
-
-All of the above use cases require you to have the appropriate (cross)
-compilers installed on your system. TuxMake can also use cross compilers
-provided by docker containers. If you just pass the `--docker` option, TuxMake
-will download and use the appropriate docker container image for your choice of
-target architecture and toolchain.
-
-If you want to override the docker container image to use, you can do that with
-the `--docker-image=` option.
 
 ## Use Cases
 

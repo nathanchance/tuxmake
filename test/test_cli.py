@@ -60,7 +60,7 @@ class TestTargets:
 class TestKConfig:
     def test_kconfig(self, builder):
         tuxmake("--kconfig=olddefconfig")
-        assert args(builder).kconfig == ["olddefconfig"]
+        assert args(builder).kconfig == "olddefconfig"
 
 
 class TestToolchain:

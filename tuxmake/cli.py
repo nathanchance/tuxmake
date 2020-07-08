@@ -40,8 +40,7 @@ def main(*argv):
         "-k",
         "--kconfig",
         type=str,
-        action="append",
-        help=f"kconfig to use. Named (defconfig etc), path to a local file, or URL to config fragment. Can be specified multiple times (default: {', '.join(defaults.kconfig)})",
+        help=f"kconfig to use. Named (defconfig etc), path to a local config file, or URL to config file (default: {defaults.kconfig})",
     )
 
     buildenv = parser.add_argument_group("Build environment options")

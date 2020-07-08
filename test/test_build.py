@@ -55,7 +55,7 @@ def test_kconfig_named(linux, mocker):
     check_call = mocker.patch("subprocess.check_call")
     mocker.patch("tuxmake.build.Build.copy_artifacts")
     mocker.patch("tuxmake.build.Build.cleanup")
-    build(linux, targets=["config"], kconfig=["fooconfig"])
+    build(linux, targets=["config"], kconfig="fooconfig")
     assert "fooconfig" in check_call.call_args_list[0][0][0]
 
 
@@ -68,7 +68,7 @@ def test_kconfig_url(linux, mocker, output_dir):
     build(
         linux,
         targets=["config"],
-        kconfig=["defconfig", "https://example.com/config.txt"],
+        kconfig="https://example.com/config.txt",
         output_dir=output_dir,
     )
     config = output_dir / "config"
@@ -79,10 +79,7 @@ def test_kconfig_localfile(linux, tmp_path, output_dir):
     extra_config = tmp_path / "extra_config"
     extra_config.write_text("CONFIG_XYZ=y\nCONFIG_ABC=m\n")
     build(
-        linux,
-        targets=["config"],
-        kconfig=["defconfig", str(extra_config)],
-        output_dir=output_dir,
+        linux, targets=["config"], kconfig=str(extra_config), output_dir=output_dir,
     )
     config = output_dir / "config"
     assert "CONFIG_XYZ=y\nCONFIG_ABC=m\n" in config.read_text()
@@ -214,7 +211,7 @@ class TestModules:
 
     def test_skip_if_not_configured_for_modules(self, linux):
         result = build(
-            linux, targets=["config", "kernel", "modules"], kconfig=["tinyconfig"]
+            linux, targets=["config", "kernel", "modules"], kconfig="tinyconfig"
         )
         artifacts = [str(f.name) for f in result.output_dir.glob("*")]
         assert "modules.tar.gz" not in artifacts

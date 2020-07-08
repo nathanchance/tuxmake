@@ -66,13 +66,13 @@ class Config(Target):
 
     def prepare(self):
         config = self.build.build_dir / ".config"
-        for conf in self.build.kconfig:
-            if conf.startswith("http://") or conf.startswith("https://"):
-                download = urllib.request.urlopen(conf)
-                with config.open("a") as f:
-                    f.write(download.read().decode("utf-8"))
-            elif Path(conf).exists():
-                with config.open("a") as f:
-                    f.write(Path(conf).read_text())
-            else:
-                self.build.make(conf)
+        conf = self.build.kconfig
+        if conf.startswith("http://") or conf.startswith("https://"):
+            download = urllib.request.urlopen(conf)
+            with config.open("w") as f:
+                f.write(download.read().decode("utf-8"))
+        elif Path(conf).exists():
+            with config.open("w") as f:
+                f.write(Path(conf).read_text())
+        else:
+            self.build.make(conf)

@@ -59,12 +59,12 @@ def main(*argv):
     buildenv.add_argument(
         "-r",
         "--runtime",
-        help="Runtime to use for the builds. By default, builds are run natively on the build host. Supported: {', '.join(supported.runtimes)}",
+        help=f"Runtime to use for the builds. By default, builds are run natively on the build host. Supported: {', '.join(supported.runtimes)}",
     )
     buildenv.add_argument(
         "-i",
         "--docker-image",
-        help="Docker image to build with (implies --docker). {{toolchain}} and {{arch}} get replaced by the names of the toolchain and architecture selected for the build. (default: tuxmake-provided images)",
+        help=f"Docker image to build with (implies --docker). {{toolchain}} and {{arch}} get replaced by the names of the toolchain and architecture selected for the build. (default: tuxmake-provided images)",
     )
     buildenv.add_argument(
         "-v",

@@ -64,8 +64,8 @@ class TestDtbs:
     def test_commands(self, build):
         dtbs = Target("dtbs", build)
         assert dtbs.commands[0] == ["{make}", "dtbs"]
-        assert dtbs.commands[1][1] == "dtbs_install"
-        assert "INSTALL_DTBS_PATH=" in dtbs.commands[1][2]
+        assert dtbs.commands[2][1] == "dtbs_install"
+        assert "INSTALL_DTBS_PATH=" in dtbs.commands[2][2]
 
     def test_depends_on_config(self, build):
         dtbs = Target("dtbs", build)

@@ -24,3 +24,15 @@ class UnsupportedArchitecture(TuxMakeException):
 class UnsupportedToolchain(TuxMakeException):
     msg = "Unsupported toolchain: {name}"
     pass
+
+
+class UnsupportedKconfig(TuxMakeException):
+    msg = "Unsupported kconfig: {name}"
+
+
+class InvalidKConfig(TuxMakeException):
+    msg = "Invalid kconfig: {name}"
+
+
+class UnsupportedKconfigFragment(TuxMakeException):
+    msg = "Unsupported kconfig fragment: {name}"

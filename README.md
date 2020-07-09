@@ -41,6 +41,18 @@ pip3 install -U --user tuxmake
 To upgrade tuxmake to the latest version, run the same command you ran to
 install it.
 
+## Running tuxmake from source
+
+If you don't want to or can't install tuxmake, you can run it directly from the
+source directory. After getting the sources via git or something else, there is
+a `run` script that will do the right think for you: you can either use that
+script, or symlink it to a directory in your `PATH`.
+
+```
+/path/to/tuxmake/run --help
+sudo ln -s /path/to/tuxmake/run /usr/local/bin/tuxmake && tuxmake --help
+```
+
 ## Usage
 
 To use tuxmake, navigate to a Linux source tree (where you might usually run

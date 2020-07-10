@@ -26,5 +26,7 @@ version = $(shell python3 -c "import tuxmake; print(tuxmake.__version__)")
 
 release:
 	@if ! git diff-index --exit-code --quiet HEAD; then git status; echo "Commit all changes before releasing"; false; fi
+	git push
 	git tag --sign --message="$(version) release" v$(version)
 	flit publish
+	git push --tags

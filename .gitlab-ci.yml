@@ -17,17 +17,18 @@ stages:
 
 before_script: *install
 
-unittests-python3.7:
-  image: debian:10-slim
+.unit-tests:
   stage: test
   script:
     - make unit-tests
 
-unittests-python3.6:
+unit-tests-python3.7:
+  extends: .unit-tests
+  image: debian:10-slim
+
+unit-tests-python3.6:
+  extends: .unit-tests
   image: ubuntu:18.04
-  stage: test
-  script:
-    - make unit-tests
 
 style:
   stage: test
@@ -54,10 +55,18 @@ build:
     paths:
       - dist/
 
-integration:
+.integration:
   stage: testbuild
   dependencies:
     - build
   script:
     - python3 -m pip install dist/*.whl
     - make integration-tests TMV=1
+
+integration-python3.7:
+  extends: .integration
+  image: debian:10-slim
+
+integration-python3.6:
+  extends: .integration
+  image: ubuntu:18.04

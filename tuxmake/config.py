@@ -12,6 +12,8 @@ class ConfigurableObject:
         conffile = Path(__file__).parent / self.basedir / f"{name}.ini"
         if not conffile.exists():
             raise self.exception(name)
+        conffile = conffile.resolve()
+        name = conffile.stem
         self.name = name
         self.config = ConfigParser()
         self.config.optionxform = str
@@ -22,9 +24,17 @@ class ConfigurableObject:
     def __init_config__(self):
         raise NotImplementedError
 
+    def __str__(self):
+        return self.name
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
     @classmethod
     def supported(cls):
         files = (Path(__file__).parent / cls.basedir).glob("*.ini")
         return [
-            str(f.name).replace(".ini", "") for f in files if f.name != "common.ini"
+            str(f.name).replace(".ini", "")
+            for f in files
+            if f.name != "common.ini" and not f.is_symlink()
         ]

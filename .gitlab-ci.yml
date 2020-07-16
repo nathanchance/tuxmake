@@ -30,6 +30,18 @@ unit-tests-python3.6:
   extends: .unit-tests
   image: ubuntu:18.04
 
+unit-tests-python3.7-arm64:
+  extends: .unit-tests
+  tags:
+    - arm64
+  image: debian:10-slim
+
+unit-tests-python3.6-arm64:
+  extends: .unit-tests
+  tags:
+    - arm64
+  image: ubuntu:18.04
+
 style:
   stage: test
   script:

@@ -1,1 +1,2 @@
 IMAGE = Image.gz
+ARCHDIRNAME = arm64

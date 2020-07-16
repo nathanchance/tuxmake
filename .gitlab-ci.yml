@@ -82,3 +82,15 @@ integration-python3.7:
 integration-python3.6:
   extends: .integration
   image: ubuntu:18.04
+
+integration-python3.7-arm64:
+  extends: .integration
+  tags:
+    - arm64
+  image: debian:10-slim
+
+integration-python3.6-arm64:
+  extends: .integration
+  tags:
+    - arm64
+  image: ubuntu:18.04

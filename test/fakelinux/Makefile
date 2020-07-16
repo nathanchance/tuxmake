@@ -1,5 +1,6 @@
+SRC = $(CURDIR)
 O ?= $(CURDIR)
-ARCH := $(shell uname -m)
+ARCH ?= $(shell basename $$(readlink -f $(SRC)/arch/$$(uname -m).mk) .mk)
 VERSION := $(shell uname -r)
 
 all:

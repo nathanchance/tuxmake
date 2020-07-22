@@ -54,6 +54,7 @@ class Build:
         output_dir=None,
         target_arch=None,
         toolchain=None,
+        environment={},
         kconfig=defaults.kconfig,
         kconfig_add=[],
         targets=defaults.targets,
@@ -74,6 +75,8 @@ class Build:
 
         self.target_arch = target_arch and Architecture(target_arch) or Native()
         self.toolchain = toolchain and Toolchain(toolchain) or NoExplicitToolchain()
+
+        self.environment = environment
 
         self.kconfig = kconfig
         self.kconfig_add = kconfig_add
@@ -130,6 +133,7 @@ class Build:
         process = subprocess.Popen(
             final_cmd,
             cwd=self.source_tree,
+            env=dict(os.environ, **self.environment),
             stdin=subprocess.DEVNULL,
             stdout=self.logger.stdin,
             stderr=subprocess.STDOUT,
@@ -172,14 +176,10 @@ class Build:
 
     @property
     def makevars(self):
-        return [f"{k}={v}" for k, v in self.environment.items() if v]
-
-    @property
-    def environment(self):
-        v = {}
-        v.update(self.target_arch.makevars)
-        v.update(self.toolchain.expand_makevars(self.target_arch))
-        return v
+        mvars = {}
+        mvars.update(self.target_arch.makevars)
+        mvars.update(self.toolchain.expand_makevars(self.target_arch))
+        return [f"{k}={v}" for k, v in mvars.items() if v]
 
     def build(self, target):
         for dep in target.dependencies:

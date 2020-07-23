@@ -5,6 +5,11 @@ from tuxmake.build import build, supported, defaults
 from tuxmake.exceptions import TuxMakeException
 
 
+def key_value(s):
+    parts = s.split("=")
+    return (parts[0], "=".join(parts[1:]))
+
+
 def main(*argv):
     if not argv:
         argv = sys.argv[1:]
@@ -58,6 +63,13 @@ def main(*argv):
         help=f"Toolchain to use in the build. Default: none (use whatever Linux uses by default). Supported: {', '.join(supported.toolchains)}; request specific versions by appending \"-N\" (e.g. gcc-10, clang-9).",
     )
     buildenv.add_argument(
+        "-e",
+        "--environment",
+        type=key_value,
+        action="append",
+        help="Set environment variables for the build. Format: KEY=VALUE",
+    )
+    buildenv.add_argument(
         "-j",
         "--jobs",
         type=int,
@@ -87,6 +99,8 @@ def main(*argv):
     )
 
     options = parser.parse_args(argv)
+    if options.environment:
+        options.environment = dict(options.environment)
 
     build_args = {k: v for k, v in options.__dict__.items() if v}
     try:

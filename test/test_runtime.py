@@ -63,6 +63,11 @@ class TestDockerRuntime:
         assert cmd[0:2] == ["docker", "run"]
         assert cmd[-1] == "date"
 
+    def test_environment(self, build):
+        build.environment = {"FOO": "BAR"}
+        cmd = DockerRuntime(build).get_command_line(["date"])
+        assert "--env=FOO=BAR" in cmd
+
 
 class TestDockerLocalRuntime:
     def test_prepare_checks_local_image(self, build, get_docker_image, mocker):

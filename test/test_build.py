@@ -23,6 +23,10 @@ def args(called):
     return called.call_args[0][0]
 
 
+def kwargs(called):
+    return called.call_args[1]
+
+
 def test_invalid_directory(tmp_path):
     (tmp_path / "Makefile").touch()
     with pytest.raises(tuxmake.exceptions.UnrecognizedSourceTree):
@@ -348,3 +352,12 @@ class TestRuntime:
     def test_docker(self, linux):
         build = Build(linux, runtime="docker")
         assert build.runtime
+
+
+class TestEnvironment:
+    def test_basics(self, linux, builder, mocker):
+        Popen = mocker.patch("subprocess.Popen")
+        builder(
+            linux, environment={"KCONFIG_ALLCONFIG": "foo.config"}, targets=["config"]
+        ).run()
+        assert kwargs(Popen)["env"]["KCONFIG_ALLCONFIG"] == "foo.config"

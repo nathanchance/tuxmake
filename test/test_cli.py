@@ -103,6 +103,25 @@ class TestVerbose:
         assert args(builder).verbose
 
 
+class TestEnvironment:
+    def test_environment(self, builder):
+        tuxmake("--environment=FOO=BAR")
+        assert args(builder).environment["FOO"] == "BAR"
+
+    def test_multiple_environment_variables(self, builder):
+        tuxmake("--environment=FOO=BAR", "--environment=BAZ=QUX")
+        assert args(builder).environment["FOO"] == "BAR"
+        assert args(builder).environment["BAZ"] == "QUX"
+
+    def test_later_overrides_earlier(self, builder):
+        tuxmake("--environment=FOO=BAR", "--environment=FOO=BAZ")
+        assert args(builder).environment["FOO"] == "BAZ"
+
+    def test_multiple_equal_signs(self, builder):
+        tuxmake("--environment=OPTIONS=x=y")
+        assert args(builder).environment["OPTIONS"] == "x=y"
+
+
 class TestExceptions:
     def test_basic(self, builder, capsys):
         builder.side_effect = TuxMakeException("hello")

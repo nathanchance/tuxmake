@@ -62,6 +62,7 @@ class DockerRuntime(Runtime):
         source_tree = os.path.abspath(build.source_tree)
         build_dir = os.path.abspath(build.build_dir)
 
+        env = (f"--env={k}={v}" for k, v in build.environment.items())
         uid = os.getuid()
         gid = os.getgid()
         return [
@@ -69,6 +70,7 @@ class DockerRuntime(Runtime):
             "run",
             "--rm",
             "--init",
+            *env,
             f"--user={uid}:{gid}",
             f"--volume={source_tree}:{source_tree}",
             f"--volume={build_dir}:{build_dir}",

@@ -18,4 +18,9 @@ clang-8         build         base-debian11          monthly
 clang-9         build         base-debian11          monthly
 clang-10        build         base-debian11          monthly
 
+# These images are used in the ci for tuxmake itself
+ci-python3.6   ci             ubuntu:18.04            monthly
+ci-python3.7   ci             debian:10-slim          monthly
+ci-python3.8   ci             debian:bullseye-slim    monthly
+
 # vim: ts=2 ts=2 sw=2 et

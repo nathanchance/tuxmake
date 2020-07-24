@@ -16,10 +16,11 @@ all: $(all_images)
 base: $(base_images)
 build: $(build_images)
 crossbuild: $(crossbuild_images)
+ci: $(ci_images)
 daily: $(daily_images)
 weekly: $(weekly_images)
 monthly: $(monthly_images)
-releases = all base build crossbuild daily weekly monthly
+releases = all base build crossbuild ci daily weekly monthly
 noop_releases = $(patsubst %, noop-%, $(releases))
 publish_releases = $(patsubst %, publish-%, $(releases))
 publish_multiarch_releases = $(patsubst %, publish-multiarch-%, $(releases))
@@ -60,10 +61,11 @@ list: checkconfig
 	@echo base_images = $(base_images)
 	@echo build_images = $(build_images)
 	@echo crossbuild_images = $(crossbuild_images)
+	@echo all_images = $(all_images)
 	@echo daily_images = $(daily_images)
 	@echo weekly_images = $(weekly_images)
 	@echo monthly_images = $(monthly_images)
-	@echo all_images = $(all_images)
+	@echo ci_images = $(ci_images)
 
 clean:
 	$(RM) configure.mk

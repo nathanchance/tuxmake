@@ -232,8 +232,7 @@ class Build:
 
     @property
     def passed(self):
-        s = [info.passed for info in self.status.values()]
-        return s and True not in set(s)
+        return not self.failed
 
     @property
     def failed(self):

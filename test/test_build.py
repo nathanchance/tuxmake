@@ -47,6 +47,7 @@ def test_build(linux, home, kernel):
     result = build(linux)
     assert kernel in result.artifacts
     assert (home / ".cache/tuxmake/builds/1" / kernel).exists()
+    assert result.passed
 
 
 def test_build_with_output_dir(linux, output_dir, kernel):

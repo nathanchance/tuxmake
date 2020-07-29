@@ -19,6 +19,16 @@ def output_dir(tmp_path):
     return out
 
 
+@pytest.fixture()
+def Popen(mocker):
+    _Popen = mocker.patch("subprocess.Popen")
+    _Popen.return_value.communicate.return_value = (
+        mocker.MagicMock(),
+        mocker.MagicMock(),
+    )
+    return _Popen
+
+
 def args(called):
     return called.call_args[0][0]
 
@@ -51,19 +61,15 @@ def test_unsupported_target(linux):
         build(linux, targets=["unknown-target"])
 
 
-def test_kconfig_default(linux, mocker):
-    Popen = mocker.patch("subprocess.Popen")
-    mocker.patch("tuxmake.build.Build.copy_artifacts")
-    mocker.patch("tuxmake.build.Build.cleanup")
-    build(linux, targets=["config"])
+def test_kconfig_default(linux, Popen):
+    b = Build(linux, targets=["config"])
+    b.build(b.targets[0])
     assert "defconfig" in args(Popen)
 
 
-def test_kconfig_named(linux, mocker):
-    Popen = mocker.patch("subprocess.Popen")
-    mocker.patch("tuxmake.build.Build.copy_artifacts")
-    mocker.patch("tuxmake.build.Build.cleanup")
-    build(linux, targets=["config"], kconfig="fooconfig")
+def test_kconfig_named(linux, Popen):
+    b = Build(linux, targets=["config"], kconfig="fooconfig")
+    b.build(b.targets[0])
     assert "fooconfig" in args(Popen)
 
 
@@ -201,38 +207,32 @@ def test_build_failure(linux, kernel, monkeypatch):
     assert kernel not in artifacts
 
 
-def test_concurrency_default(linux, mocker):
-    Popen = mocker.patch("subprocess.Popen")
-    mocker.patch("tuxmake.build.Build.copy_artifacts")
-    mocker.patch("tuxmake.build.Build.cleanup")
-    build(linux, targets=["config"])
+def test_concurrency_default(linux, Popen):
+    b = Build(linux, targets=["config"])
+    b.build(b.targets[0])
     assert f"--jobs={defaults.jobs}" in args(Popen)
 
 
-def test_concurrency_set(linux, mocker):
-    Popen = mocker.patch("subprocess.Popen")
-    mocker.patch("tuxmake.build.Build.copy_artifacts")
-    mocker.patch("tuxmake.build.Build.cleanup")
-    build(linux, targets=["config"], jobs=99)
+def test_concurrency_set(linux, Popen):
+    b = Build(linux, targets=["config"], jobs=99)
+    b.build(b.targets[0])
     assert "--jobs=99" in args(Popen)
 
 
-def test_verbose(linux, mocker):
-    Popen = mocker.patch("subprocess.Popen")
-    mocker.patch("tuxmake.build.Build.copy_artifacts")
-    mocker.patch("tuxmake.build.Build.cleanup")
-    build(linux, targets=["config"], verbose=True)
+def test_verbose(linux, mocker, Popen):
+    b = Build(linux, targets=["config"], verbose=True)
+    b.build(b.targets[0])
     assert "--silent" not in args(Popen)
 
 
-def test_ctrl_c(linux, mocker):
+def test_ctrl_c(linux, mocker, Popen):
     mocker.patch("tuxmake.build.Build.logger")
-    Popen = mocker.patch("subprocess.Popen")
     process = mocker.MagicMock()
     Popen.return_value = process
     process.communicate.side_effect = KeyboardInterrupt()
     with pytest.raises(SystemExit):
-        build(linux)
+        b = Build(linux)
+        b.build(b.targets[0])
     process.terminate.assert_called()
 
 
@@ -250,39 +250,30 @@ class TestArchitecture:
             Architecture("foobar")
 
 
-@pytest.fixture
-def builder(mocker):
-    mocker.patch("tuxmake.build.Build.cleanup")
-    mocker.patch("tuxmake.build.Build.copy_artifacts")
-    return Build
-
-
 class TestToolchain:
     # Test that the righ CC= argument is passed. Ideally we want more black box
     # tests that check the results of the build, but for that we need a
     # mechanism to check which toolchain was used to build a given binary (and
     # for test/fakelinux/ to produce real binaries)
-    def test_gcc_10(self, linux, builder, mocker):
-        Popen = mocker.patch("subprocess.Popen")
-        builder(linux, targets=["config"], toolchain="gcc-10").run()
+    def test_gcc_10(self, linux, Popen):
+        b = Build(linux, targets=["config"], toolchain="gcc-10")
+        b.build(b.targets[0])
         cmdline = args(Popen)
         assert "CC=gcc-10" in cmdline
 
-    def test_gcc_10_cross(self, linux, builder, mocker):
-        Popen = mocker.patch("subprocess.Popen")
-        builder(
-            linux, targets=["config"], toolchain="gcc-10", target_arch="arm64"
-        ).run()
+    def test_gcc_10_cross(self, linux, Popen):
+        b = Build(linux, targets=["config"], toolchain="gcc-10", target_arch="arm64")
+        b.build(b.targets[0])
         cmdline = args(Popen)
         assert "CC=aarch64-linux-gnu-gcc-10" in cmdline
 
-    def test_clang(self, linux, builder, mocker):
-        Popen = mocker.patch("subprocess.Popen")
-        builder(linux, targets=["config"], toolchain="clang").run()
+    def test_clang(self, linux, Popen):
+        b = Build(linux, targets=["config"], toolchain="clang")
+        b.build(b.targets[0])
         cmdline = args(Popen)
         assert "CC=clang" in cmdline
 
-    def test_invalid_toolchain(self, builder):
+    def test_invalid_toolchain(self):
         with pytest.raises(tuxmake.exceptions.UnsupportedToolchain):
             Toolchain("foocc")
 
@@ -355,24 +346,24 @@ class TestRuntime:
 
 
 class TestEnvironment:
-    def test_basics(self, linux, builder, mocker):
-        Popen = mocker.patch("subprocess.Popen")
-        builder(
+    def test_basics(self, linux, Popen):
+        b = Build(
             linux, environment={"KCONFIG_ALLCONFIG": "foo.config"}, targets=["config"]
-        ).run()
+        )
+        b.build(b.targets[0])
         assert kwargs(Popen)["env"]["KCONFIG_ALLCONFIG"] == "foo.config"
 
 
 class TestCompilerWrappers:
-    def test_ccache(self, linux, builder, mocker):
-        Popen = mocker.patch("subprocess.Popen")
-        builder(linux, targets=["config"], wrapper="ccache").run()
+    def test_ccache(self, linux, Popen):
+        b = Build(linux, targets=["config"], wrapper="ccache")
+        b.build(b.targets[0])
         assert "CC=ccache gcc" in args(Popen)
         assert "HOSTCC=ccache gcc" in args(Popen)
         assert "CCACHE_DIR" in kwargs(Popen)["env"]
 
-    def test_ccache_gcc_v(self, linux, builder, mocker):
-        Popen = mocker.patch("subprocess.Popen")
-        builder(linux, targets=["config"], toolchain="gcc-10", wrapper="ccache").run()
+    def test_ccache_gcc_v(self, linux, Popen):
+        b = Build(linux, targets=["config"], toolchain="gcc-10", wrapper="ccache")
+        b.build(b.targets[0])
         assert "CC=ccache gcc-10" in args(Popen)
         assert "HOSTCC=ccache gcc-10" in args(Popen)

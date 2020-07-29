@@ -27,8 +27,14 @@ class Toolchain(ConfigurableObject):
             "{arch}", arch.name
         )
 
+    def compiler(self, arch):
+        return self.expand_makevars(arch).get("CC")
+
 
 class NoExplicitToolchain(Toolchain):
     def __init__(self):
         super().__init__("gcc")
         self.makevars = {}
+
+    def compiler(self, arch):
+        return arch.makevars.get("CROSS_COMPILE", "") + self.name

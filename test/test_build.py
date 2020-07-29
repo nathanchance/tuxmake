@@ -1,4 +1,6 @@
+import json
 import pytest
+import re
 import urllib
 from tuxmake.arch import Architecture, Native
 from tuxmake.toolchain import Toolchain
@@ -27,6 +29,13 @@ def Popen(mocker):
         mocker.MagicMock(),
     )
     return _Popen
+
+
+# Disable the metadata extraction for non-metadata related tests since its
+# pretty slow.
+@pytest.fixture(autouse=True)
+def disable_metadata(mocker):
+    return mocker.patch("tuxmake.build.Build.extract_metadata")
 
 
 def args(called):
@@ -368,3 +377,49 @@ class TestCompilerWrappers:
         b.build(b.targets[0])
         assert "CC=ccache gcc-10" in args(Popen)
         assert "HOSTCC=ccache gcc-10" in args(Popen)
+
+
+@pytest.mark.skipif(
+    [int(n) for n in pytest.__version__.split(".")] < [3, 10], reason="old pytest"
+)
+class TestMetadata:
+    @pytest.fixture(scope="class")
+    def build(self, linux):
+        build = Build(linux, environment={"WARN": "kernel", "FAIL": "modules"})
+        build.run()
+        return build
+
+    def test_kernelversion(self, build):
+        assert re.match(r"^[0-9]+\.[0-9]+", build.metadata["source"]["kernelversion"])
+
+    def test_metadata_file(self, build):
+        metadata_file = build.output_dir / "metadata.json"
+        assert metadata_file.exists()
+        assert type(json.loads(metadata_file.open().read())) is dict
+
+    def test_build_metadata(self, build):
+        assert type(build.metadata["build"]) is dict
+
+    def test_status(self, build):
+        assert build.metadata["results"]["status"] == "FAIL"
+
+
+LOG = """error: asdasdas
+warning: ssadas
+"""
+
+
+class TestParseLog:
+    @pytest.fixture(scope="class")
+    def build(linux):
+        b = Build(linux)
+        (b.output_dir / "build.log").write_text(LOG)
+        return b
+
+    def test_warnings(self, build):
+        _, warnings = build.parse_log()
+        assert warnings == 1
+
+    def test_errors(self, build):
+        errors, _ = build.parse_log()
+        assert errors == 1

@@ -43,10 +43,12 @@ class Runtime:
 
 
 class NullRuntime(Runtime):
-    pass
+    name = "null"
 
 
 class DockerRuntime(Runtime):
+    name = "docker"
+
     def __init__(self, build):
         super().__init__(build)
         self.image = os.getenv("TUXMAKE_DOCKER_IMAGE")
@@ -101,6 +103,7 @@ class DockerRuntime(Runtime):
 
 
 class DockerLocalRuntime(DockerRuntime):
+    name = "docker-local"
     prepare_failed_msg = "image {image} not found locally"
 
     def do_prepare(self):

@@ -16,10 +16,12 @@ RUN apt-get update \
         bc \
         bison \
         bsdmainutils \
+        bzip2 \
         ccache \
         cpio \
         flex \
         git \
+        gzip \
         kmod \
         libssl-dev \
         libelf-dev \

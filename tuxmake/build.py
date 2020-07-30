@@ -1,6 +1,8 @@
+from collections import OrderedDict
 from pathlib import Path
 import datetime
 import multiprocessing
+import json
 import os
 import shlex
 import shutil
@@ -13,6 +15,7 @@ from tuxmake.wrapper import Wrapper, NoWrapper
 from tuxmake.output import get_new_output_dir
 from tuxmake.target import create_target, supported_targets
 from tuxmake.runtime import get_runtime
+from tuxmake.metadata import MetadataExtractor
 from tuxmake.exceptions import UnrecognizedSourceTree
 
 
@@ -98,6 +101,7 @@ class Build:
         self.artifacts = ["build.log"]
         self.__logger__ = None
         self.status = {}
+        self.metadata = OrderedDict()
 
     def add_target(self, target_name):
         target = create_target(target_name, self)
@@ -127,7 +131,7 @@ class Build:
         else:
             return ["--silent"]
 
-    def run_cmd(self, origcmd):
+    def run_cmd(self, origcmd, output=None):
         cmd = []
         for c in origcmd:
             cmd += self.expand_cmd_part(c)
@@ -135,17 +139,24 @@ class Build:
         final_cmd = self.runtime.get_command_line(cmd)
         env = dict(os.environ, **self.wrapper.environment, **self.environment)
 
-        self.log(" ".join([shlex.quote(c) for c in cmd]))
+        if output:
+            stdout = subprocess.PIPE
+        else:
+            self.log(" ".join([shlex.quote(c) for c in cmd]))
+            stdout = self.logger.stdin
+
         process = subprocess.Popen(
             final_cmd,
             cwd=self.source_tree,
             env=env,
             stdin=subprocess.DEVNULL,
-            stdout=self.logger.stdin,
+            stdout=stdout,
             stderr=subprocess.STDOUT,
         )
         try:
-            process.communicate()
+            out, _ = process.communicate()
+            if output:
+                output.write(out.decode("utf-8"))
             return process.returncode == 0
         except KeyboardInterrupt:
             process.terminate()
@@ -157,7 +168,7 @@ class Build:
                 ["make"]
                 + self.get_silent()
                 + ["--keep-going", f"--jobs={self.jobs}", f"O={self.build_dir}"]
-                + self.makevars
+                + self.make_args
             )
         else:
             return [
@@ -181,12 +192,16 @@ class Build:
         subprocess.call(["echo"] + list(stuff), stdout=self.logger.stdin)
 
     @property
+    def make_args(self):
+        return [f"{k}={v}" for k, v in self.makevars.items() if v]
+
+    @property
     def makevars(self):
         mvars = {}
         mvars.update(self.target_arch.makevars)
         mvars.update(self.toolchain.expand_makevars(self.target_arch))
         mvars.update(self.wrapper.wrap(mvars))
-        return [f"{k}={v}" for k, v in mvars.items() if v]
+        return mvars
 
     def build(self, target):
         for dep in target.dependencies:
@@ -232,16 +247,56 @@ class Build:
 
     @property
     def passed(self):
-        s = [info.passed for info in self.status.values()]
-        return s and True not in set(s)
+        return not self.failed
 
     @property
     def failed(self):
         s = [info.failed for info in self.status.values()]
         return s and True in set(s)
 
-    def cleanup(self):
+    def extract_metadata(self):
+        self.metadata["build"] = {
+            "targets": [t.name for t in self.targets],
+            "target_arch": self.target_arch.name,
+            "toolchain": self.toolchain.name,
+            "wrapper": self.wrapper.name,
+            "environment": self.environment,
+            "kconfig": self.kconfig,
+            "kconfig_add": self.kconfig_add,
+            "jobs": self.jobs,
+            "runtime": self.runtime.name,
+            "verbose": self.verbose,
+        }
+        errors, warnings = self.parse_log()
+        self.metadata["results"] = {
+            "status": "PASS" if self.passed else "FAIL",
+            "targets": {k: s.status for k, s in self.status.items()},
+            "artifacts": self.artifacts,
+            "errors": errors,
+            "warnings": warnings,
+        }
+
+        extractor = MetadataExtractor(self)
+        self.metadata.update(extractor.extract())
+
+        with (self.output_dir / "metadata.json").open("w") as f:
+            f.write(json.dumps(self.metadata, indent=4))
+            f.write("\n")
+
+    def parse_log(self):
+        errors = 0
+        warnings = 0
+        for line in (self.output_dir / "build.log").open("r"):
+            if "error:" in line:
+                errors += 1
+            if "warning:" in line:
+                warnings += 1
+        return errors, warnings
+
+    def terminate(self):
         self.logger.terminate()
+
+    def cleanup(self):
         shutil.rmtree(self.build_dir)
 
     def run(self):
@@ -254,6 +309,10 @@ class Build:
 
         for target in self.targets:
             self.copy_artifacts(target)
+
+        self.terminate()
+
+        self.extract_metadata()
 
         self.cleanup()
 

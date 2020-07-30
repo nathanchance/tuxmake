@@ -24,12 +24,15 @@ ARCHDIRNAME ?= $(ARCH)
 
 all: vmlinux $(IMAGE)
 
-kernel_version:
+kernelversion:
+	$(call maybefail,kernelversion)
 	@echo $(VERSION)
 
 define maybefail
-	@if [ "$(filter $(1),$(FAIL))" = "$(1)" ]; then echo "Error: target $(FAIL) failed"; exit 1; fi
+	@if [ "$(filter $(1),$(FAIL))" = "$(1)" ]; then echo "error: target $(1) failed" >&2; exit 1; fi
+	@if [ "$(filter $(1),$(WARN))" = "$(1)" ]; then echo "warning: target $(1) has some issues" >&2; fi
 endef
+
 
 ########################################################################
 # final kernel image

@@ -41,6 +41,7 @@ class Wrapper(ConfigurableObject):
 class NoWrapper(Wrapper):
     def __init__(self):
         self.environment = {}
+        self.name = "none"
 
     def prepare(self):
         pass

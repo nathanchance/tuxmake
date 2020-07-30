@@ -49,3 +49,13 @@ class InvalidRuntimeError(TuxMakeException):
 
 class RuntimePreparationFailed(TuxMakeException):
     msg = "Runtime preparation failed: {name}"
+
+
+class UnsupportedMetadata(TuxMakeException):
+    msg = "Unsupported metadata extractor: {name}"
+    pass
+
+
+class UnsupportedMetadataType(TuxMakeException):
+    msg = "Unsupported metadata type: {name}"
+    pass

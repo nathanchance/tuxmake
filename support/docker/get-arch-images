@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -eu
+
+img=$1
+
+for arch in $(awk "{if(\$1 == \"$img\") {gsub(\",\", \" \", \$5); print(\$5)}}" base.in); do
+	printf " ${PROJECT:-tuxmake}/${img}:latest-${arch}"
+done
+echo

@@ -44,7 +44,7 @@ $(publish_releases): publish-%: %
 
 $(publish_multiarch_releases): publish-multiarch-%: noop-%
 	@for image in $(shell ./list-images $*); do \
-		echo $(PROJECT)/$${image}:latest $(foreach TAG, $(ARCH_TAGS), $(PROJECT)/$${image}:latest$(TAG)) | \
+		echo $(PROJECT)/$${image}:latest $$(./get-arch-images $${image}) | \
 			$(xargs) $(docker) manifest create; \
 	done
 	@echo $(patsubst %, $(PROJECT)/%:latest, $(shell ./list-images $*)) | \

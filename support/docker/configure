@@ -3,6 +3,7 @@
 import os
 import pathlib
 import re
+import subprocess
 import sys
 
 tuxmake = (pathlib.Path(__file__).parent / "../..").resolve()
@@ -12,6 +13,7 @@ sys.path.insert(0, str(tuxmake))
 from tuxmake.build import supported
 from tuxmake.arch import Architecture
 
+TAG = os.getenv("TAG")
 
 class Image:
     kind = "base"
@@ -95,14 +97,6 @@ class BuildImage(Image):
         packages = " ".join(self.packages)
         self.arg("PACKAGES", f'"{packages}"')
 
-    def generate(self, stream):
-        super().generate(stream)
-        if self.build_cross_images:
-            for arch in supported.architectures:
-                cls = globals()["Cross" + type(self).__name__]
-                image = cls(f"{arch}_{self.name}", self.name, self.when, arch)
-                image.generate(stream)
-
 
 class GccBuildImage(GccMixin, BuildImage):
     build_cross_images = True
@@ -111,9 +105,10 @@ class GccBuildImage(GccMixin, BuildImage):
 class CrossGccBuildImage(GccMixin, BuildImage):
     lists = ["crossbuild_images", "all_images"]
 
-    def __init__(self, name, base, when, arch):
+    def __init__(self, name, base, when):
         super().__init__(name, base, when)
         self.pkgname = base
+        arch = re.sub(r"_gcc.*$", "", name)
         self.arch = Architecture(arch)
         self.cross_suffix = re.sub(r"-$", "", self.arch.makevars["CROSS_COMPILE"])
 
@@ -128,7 +123,12 @@ class CrossGccBuildImage(GccMixin, BuildImage):
         self.arg("HOSTARCH", gnu_arch)
 
 
-def generate(name, kind, base, when):
+def generate(name, kind, base, when, hosts):
+    if TAG:
+        host_arch = re.sub("^-", "", TAG)
+        if host_arch not in hosts.split(','):
+            return
+
     # transforms foo-bar into FooBarImage
     clsname = "".join([w.title() for w in re.split(r"[-_]", kind)]) + "Image"
 
@@ -136,19 +136,23 @@ def generate(name, kind, base, when):
     image = cls(name, base, when)
     image.generate(output)
 
+def read_file(filename):
+    result = []
+    with open(filename, "r") as f:
+        for line in f.readlines():
+            if re.match(r"^\s*#", line):
+                continue
+            if not re.match(r"\S", line):
+                continue
+            result.append(line.split())
+    return result
 
 if os.getenv("DEBUG"):
     output = sys.stdout
 else:
     output = open("configure.mk", "w")
 
-
-with open("base.in", "r") as f:
-    for line in f.readlines():
-        if re.match(r"^\s*#", line):
-            continue
-        if not re.match(r"\S", line):
-            continue
-        generate(*line.split())
+for item in read_file("base.in"):
+    generate(*item)
 
 output.close()

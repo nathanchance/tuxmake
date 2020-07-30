@@ -270,6 +270,10 @@ class TestArchitecture:
         result = build(linux, target_arch="i386")
         assert "bzImage" in [str(f.name) for f in result.output_dir.glob("*")]
 
+    def test_mips(self, linux):
+        result = build(linux, target_arch="mips")
+        assert "vmlinux.bin.gz" in [str(f.name) for f in result.output_dir.glob("*")]
+
     def test_invalid_arch(self):
         with pytest.raises(tuxmake.exceptions.UnsupportedArchitecture):
             Architecture("foobar")

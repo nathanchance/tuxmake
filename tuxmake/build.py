@@ -314,9 +314,9 @@ class Build:
         for target in self.targets:
             self.copy_artifacts(target)
 
-        self.terminate()
-
         self.extract_metadata()
+
+        self.terminate()
 
         self.cleanup()
 

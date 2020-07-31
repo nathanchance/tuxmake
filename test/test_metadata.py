@@ -94,8 +94,10 @@ class TestOs:
     def test_os(self, build, field):
         assert type(build.metadata["os"][field]) is str
 
-    def test_packages(self, build):
-        assert type(build.metadata["os"]["packages"]) is dict
+
+class TestTools:
+    def test_tools(self, build):
+        assert type(build.metadata["tools"]) is dict
 
 
 class TestArtifacts:

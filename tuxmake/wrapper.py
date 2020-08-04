@@ -33,9 +33,10 @@ class Wrapper(ConfigurableObject):
                 Path(v).mkdir(parents=True, exist_ok=True)
 
     def wrap(self, makevars):
+        cross = makevars.get("CROSS_COMPILE", "")
         return {
             k: f"{self.name} {v}" for k, v in makevars.items() if k in ("CC", "HOSTCC")
-        } or {"CC": f"{self.name} gcc", "HOSTCC": f"{self.name} gcc"}
+        } or {"CC": f"{self.name} {cross}gcc", "HOSTCC": f"{self.name} gcc"}
 
 
 class NoWrapper(Wrapper):

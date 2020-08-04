@@ -386,6 +386,22 @@ class TestCompilerWrappers:
         assert "CC=ccache gcc-10" in args(Popen)
         assert "HOSTCC=ccache gcc-10" in args(Popen)
 
+    def test_ccache_target_arch(self, linux, Popen):
+        b = Build(linux, targets=["config"], target_arch="arm64", wrapper="ccache")
+        b.build(b.targets[0])
+        assert "CC=ccache aarch64-linux-gnu-gcc" in args(Popen)
+
+    def test_ccache_target_arch_and_gcc_v(self, linux, Popen):
+        b = Build(
+            linux,
+            targets=["config"],
+            toolchain="gcc-10",
+            target_arch="arm64",
+            wrapper="ccache",
+        )
+        b.build(b.targets[0])
+        assert "CC=ccache aarch64-linux-gnu-gcc-10" in args(Popen)
+
 
 @pytest.mark.skipif(
     [int(n) for n in pytest.__version__.split(".")] < [3, 10], reason="old pytest"

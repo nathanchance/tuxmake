@@ -107,7 +107,7 @@ class CrossGccBuildImage(GccMixin, BuildImage):
 
     def __init__(self, name, base, when):
         super().__init__(name, base, when)
-        self.pkgname = base
+        self.pkgname = re.sub(r".*_(gcc.*)$", "\g<1>", name)
         arch = re.sub(r"_gcc.*$", "", name)
         self.arch = Architecture(arch)
         self.cross_suffix = re.sub(r"-$", "", self.arch.makevars["CROSS_COMPILE"])

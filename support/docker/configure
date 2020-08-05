@@ -102,25 +102,55 @@ class GccBuildImage(GccMixin, BuildImage):
     build_cross_images = True
 
 
-class CrossGccBuildImage(GccMixin, BuildImage):
+class CrossBuildMixin:
+    @property
+    def arch(self):
+        try:
+            return getattr(self, "__arch__")
+        except AttributeError:
+            a = re.sub(r"_(gcc|clang).*$", "", self.name)
+            self.__arch__ = Architecture(a)
+            return self.__arch__
+
+    @property
+    def full_arch(self):
+        return re.sub(r"-$", "", self.arch.makevars["CROSS_COMPILE"])
+
+    @property
+    def cross_package_suffix(self):
+        return self.full_arch.replace("_", "-")
+
+    @property
+    def gnu_arch(self):
+        return self.full_arch.replace("-linux-gnu", "")
+
+    def emit(self):
+        super().emit()
+        self.arg("HOSTARCH", self.gnu_arch)
+
+
+class CrossGccBuildImage(GccMixin, CrossBuildMixin, BuildImage):
     lists = ["crossbuild_images", "all_images"]
 
     def __init__(self, name, base, when):
         super().__init__(name, base, when)
         self.pkgname = re.sub(r".*_(gcc.*)$", "\g<1>", name)
-        arch = re.sub(r"_gcc.*$", "", name)
-        self.arch = Architecture(arch)
-        self.cross_suffix = re.sub(r"-$", "", self.arch.makevars["CROSS_COMPILE"])
 
     @property
     def packages(self):
-        suffix = self.cross_suffix.replace("_", "-")
+        suffix = self.cross_package_suffix
         return super().packages + [pkg + "-" + suffix for pkg in super().packages]
 
-    def emit(self):
-        super().emit()
-        gnu_arch = self.cross_suffix.replace("-linux-gnu", "")
-        self.arg("HOSTARCH", gnu_arch)
+
+class CrossClangBuildImage(CrossBuildMixin, BuildImage):
+    lists = ["crossbuild_images", "all_images"]
+    @property
+    def packages(self):
+        cross = self.cross_package_suffix
+        return [
+            f"gcc-{cross}",
+            f"g++-{cross}",
+        ]
 
 
 def generate(name, kind, base, when, hosts):

@@ -28,23 +28,39 @@ x86_64_gcc    cross-gcc-build     gcc               monthly          amd64,arm64
 x86_64_gcc-8  cross-gcc-build     gcc-8             monthly          amd64,arm64
 x86_64_gcc-9  cross-gcc-build     gcc-9             monthly          amd64,arm64
 x86_64_gcc-10 cross-gcc-build     gcc-10            monthly          amd64,arm64
+x86_64_clang    cross-clang-build clang             monthly          amd64,arm64
+x86_64_clang-8  cross-clang-build clang-8           monthly          amd64,arm64
+x86_64_clang-9  cross-clang-build clang-9           monthly          amd64,arm64
+x86_64_clang-10 cross-clang-build clang-10          monthly          amd64,arm64
 
 # Cross build images: arm64
 arm64_gcc     cross-gcc-build     gcc               monthly          amd64,arm64
 arm64_gcc-8   cross-gcc-build     gcc-8             monthly          amd64,arm64
 arm64_gcc-9   cross-gcc-build     gcc-9             monthly          amd64,arm64
 arm64_gcc-10  cross-gcc-build     gcc-10            monthly          amd64,arm64
+arm64_clang    cross-clang-build  clang             monthly          amd64,arm64
+arm64_clang-8  cross-clang-build  clang-8           monthly          amd64,arm64
+arm64_clang-9  cross-clang-build  clang-9           monthly          amd64,arm64
+arm64_clang-10 cross-clang-build  clang-10          monthly          amd64,arm64
 
 # Cross build images: i386
 i386_gcc      cross-gcc-build     gcc               monthly          amd64,arm64
 i386_gcc-8    cross-gcc-build     gcc-8             monthly          amd64,arm64
 i386_gcc-9    cross-gcc-build     gcc-9             monthly          amd64,arm64
 i386_gcc-10   cross-gcc-build     gcc-10            monthly          amd64,arm64
+i386_clang    cross-clang-build   clang             monthly          amd64,arm64
+i386_clang-8  cross-clang-build   clang-8           monthly          amd64,arm64
+i386_clang-9  cross-clang-build   clang-9           monthly          amd64,arm64
+i386_clang-10 cross-clang-build   clang-10          monthly          amd64,arm64
 
 # Cross build images: arm
 arm_gcc       cross-gcc-build     gcc               monthly          amd64,arm64
 arm_gcc-8     cross-gcc-build     gcc-8             monthly          amd64,arm64
 arm_gcc-9     cross-gcc-build     gcc-9             monthly          amd64,arm64
 arm_gcc-10    cross-gcc-build     gcc-10            monthly          amd64,arm64
+arm_clang     cross-clang-build   clang             monthly          amd64,arm64
+arm_clang-8   cross-clang-build   clang-8           monthly          amd64,arm64
+arm_clang-9   cross-clang-build   clang-9           monthly          amd64,arm64
+arm_clang-10  cross-clang-build   clang-10          monthly          amd64,arm64
 
 # vim: ts=2 ts=2 sw=2 et

@@ -3,6 +3,7 @@
 import os
 import pathlib
 import re
+import subprocess
 import sys
 
 tuxmake = (pathlib.Path(__file__).parent / "../..").resolve()
@@ -12,10 +13,15 @@ sys.path.insert(0, str(tuxmake))
 from tuxmake.build import supported
 from tuxmake.arch import Architecture
 
+TAG = os.getenv("TAG")
 
 class Image:
     kind = "base"
-    lists = []
+    extra_lists = []
+
+    @property
+    def lists(self):
+        return self.extra_lists + ["all_images"]
 
     def __init__(self, name, base, when):
         self.name = name
@@ -55,7 +61,7 @@ class Image:
 
 
 class BaseImage(Image):
-    lists = ["base_images", "all_images"]
+    extra_lists = ["base_images"]
 
     @property
     def dependency(self):
@@ -68,7 +74,7 @@ class BaseImage(Image):
 
 class CiImage(BaseImage):
     kind = "ci"
-    lists = ["ci_images", "all_images"]
+    extra_lists = ["ci_images"]
 
 
 class GccMixin:
@@ -79,7 +85,7 @@ class GccMixin:
 
 class BuildImage(Image):
     kind = "build"
-    lists = ["build_images", "all_images"]
+    extra_lists = ["build_images"]
     build_cross_images = False
 
     def __init__(self, name, base, when):
@@ -95,40 +101,69 @@ class BuildImage(Image):
         packages = " ".join(self.packages)
         self.arg("PACKAGES", f'"{packages}"')
 
-    def generate(self, stream):
-        super().generate(stream)
-        if self.build_cross_images:
-            for arch in supported.architectures:
-                cls = globals()["Cross" + type(self).__name__]
-                image = cls(f"{arch}_{self.name}", self.name, self.when, arch)
-                image.generate(stream)
-
 
 class GccBuildImage(GccMixin, BuildImage):
     build_cross_images = True
 
 
-class CrossGccBuildImage(GccMixin, BuildImage):
-    lists = ["crossbuild_images", "all_images"]
-
-    def __init__(self, name, base, when, arch):
-        super().__init__(name, base, when)
-        self.pkgname = base
-        self.arch = Architecture(arch)
-        self.cross_suffix = re.sub(r"-$", "", self.arch.makevars["CROSS_COMPILE"])
+class CrossBuildMixin:
+    @property
+    def arch(self):
+        try:
+            return getattr(self, "__arch__")
+        except AttributeError:
+            a = re.sub(r"_(gcc|clang).*$", "", self.name)
+            self.__arch__ = Architecture(a)
+            return self.__arch__
 
     @property
-    def packages(self):
-        suffix = self.cross_suffix.replace("_", "-")
-        return [pkg + "-" + suffix for pkg in super().packages]
+    def full_arch(self):
+        return re.sub(r"-$", "", self.arch.makevars["CROSS_COMPILE"])
+
+    @property
+    def cross_package_suffix(self):
+        return self.full_arch.replace("_", "-")
+
+    @property
+    def gnu_arch(self):
+        return self.full_arch.replace("-linux-gnu", "")
 
     def emit(self):
         super().emit()
-        gnu_arch = self.cross_suffix.replace("-linux-gnu", "")
-        self.arg("HOSTARCH", gnu_arch)
+        self.arg("HOSTARCH", self.gnu_arch)
 
 
-def generate(name, kind, base, when):
+class CrossGccBuildImage(GccMixin, CrossBuildMixin, BuildImage):
+    extra_lists = ["crossbuild_images", "gcc_images"]
+
+    def __init__(self, name, base, when):
+        super().__init__(name, base, when)
+        self.pkgname = re.sub(r".*_(gcc.*)$", "\g<1>", name)
+
+    @property
+    def packages(self):
+        suffix = self.cross_package_suffix
+        return super().packages + [pkg + "-" + suffix for pkg in super().packages]
+
+
+class CrossClangBuildImage(CrossBuildMixin, BuildImage):
+    extra_lists = ["crossbuild_images", "clang_images"]
+
+    @property
+    def packages(self):
+        cross = self.cross_package_suffix
+        return [
+            f"gcc-{cross}",
+            f"g++-{cross}",
+        ]
+
+
+def generate(name, kind, base, when, hosts):
+    if TAG:
+        host_arch = re.sub("^-", "", TAG)
+        if host_arch not in hosts.split(','):
+            return
+
     # transforms foo-bar into FooBarImage
     clsname = "".join([w.title() for w in re.split(r"[-_]", kind)]) + "Image"
 
@@ -136,19 +171,23 @@ def generate(name, kind, base, when):
     image = cls(name, base, when)
     image.generate(output)
 
+def read_file(filename):
+    result = []
+    with open(filename, "r") as f:
+        for line in f.readlines():
+            if re.match(r"^\s*#", line):
+                continue
+            if not re.match(r"\S", line):
+                continue
+            result.append(line.split())
+    return result
 
 if os.getenv("DEBUG"):
     output = sys.stdout
 else:
     output = open("configure.mk", "w")
 
-
-with open("base.in", "r") as f:
-    for line in f.readlines():
-        if re.match(r"^\s*#", line):
-            continue
-        if not re.match(r"\S", line):
-            continue
-        generate(*line.split())
+for item in read_file("base.in"):
+    generate(*item)
 
 output.close()

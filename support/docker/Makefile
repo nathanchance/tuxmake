@@ -16,11 +16,13 @@ all: $(all_images)
 base: $(base_images)
 build: $(build_images)
 crossbuild: $(crossbuild_images)
+gcc_all: $(gcc_images)
+clang_all: $(clang_images)
 ci: $(ci_images)
 daily: $(daily_images)
 weekly: $(weekly_images)
 monthly: $(monthly_images)
-releases = all base build crossbuild ci daily weekly monthly
+releases = all base build crossbuild gcc_all clang_all ci daily weekly monthly
 noop_releases = $(patsubst %, noop-%, $(releases))
 publish_releases = $(patsubst %, publish-%, $(releases))
 publish_multiarch_releases = $(patsubst %, publish-multiarch-%, $(releases))
@@ -44,7 +46,7 @@ $(publish_releases): publish-%: %
 
 $(publish_multiarch_releases): publish-multiarch-%: noop-%
 	@for image in $(shell ./list-images $*); do \
-		echo $(PROJECT)/$${image}:latest $(foreach TAG, $(ARCH_TAGS), $(PROJECT)/$${image}:latest$(TAG)) | \
+		echo $(PROJECT)/$${image}:latest $$(./get-arch-images $${image}) | \
 			$(xargs) $(docker) manifest create; \
 	done
 	@echo $(patsubst %, $(PROJECT)/%:latest, $(shell ./list-images $*)) | \
@@ -61,6 +63,8 @@ list: checkconfig
 	@echo base_images = $(base_images)
 	@echo build_images = $(build_images)
 	@echo crossbuild_images = $(crossbuild_images)
+	@echo gcc_all_images = $(gcc_images)
+	@echo clang_all_images = $(clang_images)
 	@echo all_images = $(all_images)
 	@echo daily_images = $(daily_images)
 	@echo weekly_images = $(weekly_images)

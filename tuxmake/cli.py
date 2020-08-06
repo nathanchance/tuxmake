@@ -97,6 +97,12 @@ def main(*argv):
         action="store_true",
         help="Do a verbose build (default: silent build)",
     )
+    buildenv.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="Quiet build: only errors messages, if any (default: no)",
+    )
 
     info = parser.add_argument_group("Informational options")
     info.add_argument("-h", "--help", action="help", help="Show program help")
@@ -128,12 +134,17 @@ def main(*argv):
     if options.environment:
         options.environment = dict(options.environment)
 
+    if options.quiet:
+        err = open("/dev/null", "w")
+    else:
+        err = sys.stderr
+
     build_args = {k: v for k, v in options.__dict__.items() if v}
     try:
         result = build(**build_args)
         for target, info in result.status.items():
-            print(f"I: {target}: {info.status} in {info.duration}", file=sys.stderr)
-        print(f"I: build output in {result.output_dir}", file=sys.stderr)
+            print(f"I: {target}: {info.status} in {info.duration}", file=err)
+        print(f"I: build output in {result.output_dir}", file=err)
         if result.failed:
             sys.exit(2)
     except TuxMakeException as e:

@@ -108,11 +108,7 @@ class DockerLocalRuntime(DockerRuntime):
 
     def do_prepare(self):
         subprocess.check_call(
-            [
-                "docker",
-                "image",
-                "inspect",
-                f"--format=Local image {self.image} exists!",
-                self.image,
-            ]
+            ["docker", "image", "inspect", self.image],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )

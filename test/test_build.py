@@ -235,6 +235,13 @@ def test_verbose(linux, mocker, Popen):
     assert "--silent" not in args(Popen)
 
 
+def test_quiet(linux, capfd):
+    build(linux, quiet=True)
+    out, err = capfd.readouterr()
+    assert out == ""
+    assert err == ""
+
+
 def test_ctrl_c(linux, mocker, Popen):
     mocker.patch("tuxmake.build.Build.logger")
     process = mocker.MagicMock()

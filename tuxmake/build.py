@@ -67,6 +67,7 @@ class Build:
         jobs=defaults.jobs,
         runtime=None,
         verbose=False,
+        quiet=False,
     ):
         self.source_tree = source_tree
 
@@ -97,6 +98,7 @@ class Build:
         self.runtime = get_runtime(self, runtime)
 
         self.verbose = verbose
+        self.quiet = quiet
 
         self.artifacts = ["build.log"]
         self.__logger__ = None
@@ -187,8 +189,14 @@ class Build:
     @property
     def logger(self):
         if not self.__logger__:
+            if self.quiet:
+                stdout = subprocess.DEVNULL
+            else:
+                stdout = sys.stdout
             self.__logger__ = subprocess.Popen(
-                ["tee", str(self.output_dir / "build.log")], stdin=subprocess.PIPE
+                ["tee", str(self.output_dir / "build.log")],
+                stdin=subprocess.PIPE,
+                stdout=stdout,
             )
         return self.__logger__
 

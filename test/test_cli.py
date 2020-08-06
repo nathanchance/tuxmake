@@ -97,10 +97,20 @@ class TestRuntime:
         assert args(builder).runtime == "docker"
 
 
-class TestVerbose:
+class TestVerbosity:
     def test_verbose(self, builder):
         tuxmake("--verbose")
         assert args(builder).verbose
+
+    def test_quiet(self, builder):
+        tuxmake("--quiet")
+        assert args(builder).quiet
+
+    def test_quiet_build(self, capsys):
+        tuxmake("--quiet")
+        out, err = capsys.readouterr()
+        assert out == ""
+        assert err == ""
 
 
 class TestEnvironment:

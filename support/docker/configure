@@ -64,11 +64,14 @@ class Image:
     def emit(self):
         self.args = [("BASE", self.base_image)]
 
+    def register(self):
+        for l in self.lists:
+            ImageList.register(l)
+
     def generate(self, stream):
         self.emit()
         for l in self.lists:
             stream.write(f"{l}_images += {self.name}\n")
-            ImageList.register(l)
         if self.dependency:
             stream.write(f"{self.name}: {self.dependency} log\n")
         else:
@@ -188,17 +191,19 @@ class ArcImage(Image):
     kind = "arc"
     extra_lists = ["crossbuild", "arc"]
 
+
 def generate(name, kind, base, when, hosts):
+    # transforms foo-bar into FooBarImage
+    clsname = "".join([w.title() for w in re.split(r"[-_]", kind)]) + "Image"
+    cls = globals()[clsname]
+    image = cls(name, base, when)
+    image.register()
+
     if TAG:
         host_arch = re.sub("^-", "", TAG)
         if host_arch not in hosts.split(','):
             return
 
-    # transforms foo-bar into FooBarImage
-    clsname = "".join([w.title() for w in re.split(r"[-_]", kind)]) + "Image"
-
-    cls = globals()[clsname]
-    image = cls(name, base, when)
     image.generate(output)
 
 def read_file(filename):

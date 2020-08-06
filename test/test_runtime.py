@@ -100,7 +100,9 @@ class TestDockerLocalRuntime:
 
         runtime.prepare()
         check_call.assert_called_with(
-            ["docker", "image", "inspect", mocker.ANY, "mylocalimage"]
+            ["docker", "image", "inspect", "mylocalimage"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
 
     def test_prepare_image_not_found(self, build, get_docker_image, mocker):

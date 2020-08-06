@@ -28,7 +28,7 @@ def clang():
 
 class TestClang:
     def test_docker_image(self, clang, arm64):
-        assert clang.get_docker_image(arm64) == "tuxmake/clang"
+        assert clang.get_docker_image(arm64) == "tuxmake/arm64_clang"
 
 
 def test_compiler_name(gcc, arm64):

@@ -95,7 +95,7 @@ class Build:
 
         self.jobs = jobs
 
-        self.runtime = get_runtime(self, runtime)
+        self.runtime = get_runtime(runtime)
 
         self.verbose = verbose
         self.quiet = quiet
@@ -125,7 +125,7 @@ class Build:
             + " ".join(["tuxmake"] + [shlex.quote(a) for a in sys.argv[1:]])
         )
         self.wrapper.prepare()
-        self.runtime.prepare()
+        self.runtime.prepare(self)
 
     def get_silent(self):
         if self.verbose:
@@ -138,7 +138,7 @@ class Build:
         for c in origcmd:
             cmd += self.expand_cmd_part(c)
 
-        final_cmd = self.runtime.get_command_line(cmd)
+        final_cmd = self.runtime.get_command_line(self, cmd)
         env = dict(os.environ, **self.wrapper.environment, **self.environment)
 
         logger = self.logger.stdin

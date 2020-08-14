@@ -5,6 +5,7 @@ import subprocess
 import sys
 
 
+from tuxmake.config import ConfigurableObject
 from tuxmake.exceptions import RuntimePreparationFailed
 from tuxmake.exceptions import InvalidRuntimeError
 
@@ -12,33 +13,31 @@ from tuxmake.exceptions import InvalidRuntimeError
 DEFAULT_RUNTIME = "null"
 
 
-def get_runtime(build, runtime):
+def get_runtime(runtime):
     runtime = runtime or DEFAULT_RUNTIME
     name = "".join([w.title() for w in re.split(r"[_-]", runtime)]) + "Runtime"
     try:
         here = sys.modules[__name__]
         cls = getattr(here, name)
-        return cls(build)
+        return cls()
     except AttributeError:
         raise InvalidRuntimeError(runtime)
 
 
-class Runtime:
-    def __init__(self, build):
-        self.build = build
+class Runtime(ConfigurableObject):
+    basedir = "runtime"
+    exception = InvalidRuntimeError
 
-    def get_command_line(self, cmd):
+    def __init__(self):
+        super().__init__(self.name)
+
+    def __init_config__(self):
+        pass
+
+    def get_command_line(self, build, cmd):
         return cmd
 
-    def prepare(self):
-        try:
-            self.do_prepare()
-        except subprocess.CalledProcessError:
-            raise RuntimePreparationFailed(
-                self.prepare_failed_msg.format(image=self.image)
-            )
-
-    def do_prepare(self):
+    def prepare(self, build):
         pass
 
 
@@ -49,19 +48,26 @@ class NullRuntime(Runtime):
 class DockerRuntime(Runtime):
     name = "docker"
 
-    def __init__(self, build):
-        super().__init__(build)
-        self.image = os.getenv("TUXMAKE_DOCKER_IMAGE")
-        if not self.image:
-            self.image = build.toolchain.get_docker_image(build.target_arch)
-
     prepare_failed_msg = "failed to pull remote image {image}"
 
-    def do_prepare(self):
-        subprocess.check_call(["docker", "pull", self.image])
+    def get_image(self, build):
+        return os.getenv("TUXMAKE_DOCKER_IMAGE") or build.toolchain.get_docker_image(
+            build.target_arch
+        )
 
-    def get_command_line(self, cmd):
-        build = self.build
+    def prepare(self, build):
+        pass
+        try:
+            self.do_prepare(build)
+        except subprocess.CalledProcessError:
+            raise RuntimePreparationFailed(
+                self.prepare_failed_msg.format(image=self.get_image(build))
+            )
+
+    def do_prepare(self, build):
+        subprocess.check_call(["docker", "pull", self.get_image(build)])
+
+    def get_command_line(self, build, cmd):
         source_tree = os.path.abspath(build.source_tree)
         build_dir = os.path.abspath(build.build_dir)
 
@@ -94,7 +100,7 @@ class DockerRuntime(Runtime):
             f"--volume={build_dir}:{build_dir}",
             f"--workdir={source_tree}",
             *extra_opts,
-            self.image,
+            self.get_image(build),
         ] + cmd
 
     def __get_extra_opts__(self):
@@ -106,9 +112,9 @@ class DockerLocalRuntime(DockerRuntime):
     name = "docker-local"
     prepare_failed_msg = "image {image} not found locally"
 
-    def do_prepare(self):
+    def do_prepare(self, build):
         subprocess.check_call(
-            ["docker", "image", "inspect", self.image],
+            ["docker", "image", "inspect", self.get_image(build)],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )

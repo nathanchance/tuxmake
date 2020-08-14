@@ -90,6 +90,15 @@ class TestDockerRuntime:
         assert "--hostname=foobar" in cmd
         assert "--env=FOO=bar baz" in cmd
 
+    def test_bases(self):
+        assert "base-debian" in [t.name for t in DockerRuntime().base_images]
+
+    def test_ci_images(self):
+        assert "ci-python3.8" in [t.name for t in DockerRuntime().ci_images]
+
+    def test_toolchains(self):
+        assert "gcc" in [t.name for t in DockerRuntime().toolchain_images]
+
 
 class TestDockerLocalRuntime:
     def test_prepare_checks_local_image(self, build, get_docker_image, mocker):

@@ -45,10 +45,78 @@ class NullRuntime(Runtime):
     name = "null"
 
 
+def split(s, sep=r",\s*"):
+    if not s:
+        return []
+    if type(s) is list:
+        return s
+    result = re.split(sep, s.replace("\n", ""))
+    if result[-1] == "":
+        result.pop()
+    return result
+
+
+def splitmap(s):
+    return {k: v for k, v in [split(pair, ":") for pair in split(s)]}
+
+
+def splitlistmap(s):
+    return {k: split(v, r"\+") for k, v in splitmap(s).items()}
+
+
+class Image:
+    def __init__(
+        self,
+        name,
+        kind,
+        base,
+        hosts,
+        rebuild,
+        targets="",
+        target_bases="",
+        target_kinds="",
+        target_hosts="",
+    ):
+        self.name = name
+        self.kind = kind
+        self.base = base
+        self.hosts = split(hosts)
+        self.targets = split(targets)
+        self.target_bases = splitmap(target_bases)
+        self.target_kinds = splitmap(target_kinds)
+        self.target_hosts = splitlistmap(target_hosts)
+        self.rebuild = rebuild
+
+
 class DockerRuntime(Runtime):
     name = "docker"
-
     prepare_failed_msg = "failed to pull remote image {image}"
+
+    def __init_config__(self):
+        self.base_images = []
+        self.ci_images = []
+        self.toolchain_images = []
+        for image_list, config in (
+            (self.base_images, self.config["runtime"]["bases"]),
+            (self.ci_images, self.config["runtime"]["ci"]),
+            (self.toolchain_images, self.config["runtime"]["toolchains"]),
+        ):
+            for entry in split(config):
+                image = Image(name=entry, **self.config[entry])
+                image_list.append(image)
+                for target in image.targets:
+                    base = image.target_bases.get(target, image.name)
+                    kind = image.target_kinds.get(target, "cross-" + image.kind)
+                    hosts = image.target_hosts.get(target, image.hosts)
+                    cross_image = Image(
+                        name=f"{target}_{image.name}",
+                        kind=kind,
+                        base=base,
+                        rebuild=image.rebuild,
+                        hosts=hosts,
+                    )
+                    image_list.append(cross_image)
+        self.images = self.base_images + self.ci_images + self.toolchain_images
 
     def get_image(self, build):
         return os.getenv("TUXMAKE_DOCKER_IMAGE") or build.toolchain.get_docker_image(
@@ -111,6 +179,9 @@ class DockerRuntime(Runtime):
 class DockerLocalRuntime(DockerRuntime):
     name = "docker-local"
     prepare_failed_msg = "image {image} not found locally"
+
+    def __init_config__(self):
+        pass
 
     def do_prepare(self, build):
         subprocess.check_call(

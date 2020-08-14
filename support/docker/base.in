@@ -1,94 +1,80 @@
 # Container     Type          Base container         When to build    Host
 #############################################################################
-base-debian     base          debian:stable-slim     monthly          amd64,arm64
-base-debian10   base          debian:10-slim         monthly          amd64,arm64
-base-debian11   base          debian:bullseye-slim   monthly          amd64,arm64
-
-# The "unversioned" toolchains follow Debian stable, and will upgraded together
-# with Debian.
-gcc             gcc-build     base-debian            monthly          amd64,arm64
-clang           build         base-debian            monthly          amd64,arm64
-
-# The versioned toolchains will sometime need specific Debian releases as older
-# versions get removed and new versions are introduced.
-gcc-8           gcc-build     base-debian10          monthly          amd64,arm64
-gcc-9           gcc-build     base-debian11          monthly          amd64,arm64
-gcc-10          gcc-build     base-debian11          monthly          amd64,arm64
-clang-8         build         base-debian11          monthly          amd64,arm64
-clang-9         build         base-debian11          monthly          amd64,arm64
-clang-10        build         base-debian11          monthly          amd64,arm64
+base-debian     base          debian:stable-slim      monthly          amd64,arm64
+base-debian10   base          debian:10-slim          monthly          amd64,arm64
+base-debian11   base          debian:bullseye-slim    monthly          amd64,arm64
 
 # These images are used in the ci for tuxmake itself
-ci-python3.6   ci             ubuntu:18.04            monthly         amd64,arm64
-ci-python3.7   ci             debian:10-slim          monthly         amd64,arm64
-ci-python3.8   ci             debian:bullseye-slim    monthly         amd64,arm64
+ci-python3.6    ci             ubuntu:18.04           monthly         amd64,arm64
+ci-python3.7    ci             debian:10-slim         monthly         amd64,arm64
+ci-python3.8    ci             debian:bullseye-slim   monthly         amd64,arm64
 
-# Cross build images: x86_64_gcc
-x86_64_gcc    cross-gcc-build     gcc               monthly          amd64,arm64
-x86_64_gcc-8  cross-gcc-build     gcc-8             monthly          amd64,arm64
-x86_64_gcc-9  cross-gcc-build     gcc-9             monthly          amd64,arm64
-x86_64_gcc-10 cross-gcc-build     gcc-10            monthly          amd64,arm64
-x86_64_clang    cross-clang-build clang             monthly          amd64,arm64
-x86_64_clang-8  cross-clang-build clang-8           monthly          amd64,arm64
-x86_64_clang-9  cross-clang-build clang-9           monthly          amd64,arm64
-x86_64_clang-10 cross-clang-build clang-10          monthly          amd64,arm64
+# The "unversioned" toolchains follow Debian stable, and will upgraded together
+# with Debian; except when that version has no support for the target
+# architecture
+gcc             gcc-build           base-debian       monthly          amd64,arm64
+x86_64_gcc      cross-gcc-build     gcc               monthly          amd64,arm64
+arm64_gcc       cross-gcc-build     gcc               monthly          amd64,arm64
+i386_gcc        cross-gcc-build     gcc               monthly          amd64,arm64
+arm_gcc         cross-gcc-build     gcc               monthly          amd64,arm64
+mips_gcc        cross-gcc-build     gcc               monthly          amd64
+riscv_gcc       cross-gcc-build     gcc-10            monthly          amd64,arm64
+arc_gcc         arc                 gcc-9             monthly          amd64
 
-# Cross build images: arm64
-arm64_gcc     cross-gcc-build     gcc               monthly          amd64,arm64
-arm64_gcc-8   cross-gcc-build     gcc-8             monthly          amd64,arm64
-arm64_gcc-9   cross-gcc-build     gcc-9             monthly          amd64,arm64
-arm64_gcc-10  cross-gcc-build     gcc-10            monthly          amd64,arm64
-arm64_clang    cross-clang-build  clang             monthly          amd64,arm64
-arm64_clang-8  cross-clang-build  clang-8           monthly          amd64,arm64
-arm64_clang-9  cross-clang-build  clang-9           monthly          amd64,arm64
-arm64_clang-10 cross-clang-build  clang-10          monthly          amd64,arm64
+gcc-8           gcc-build           base-debian10     monthly          amd64,arm64
+x86_64_gcc-8    cross-gcc-build     gcc-8             monthly          amd64,arm64
+arm64_gcc-8     cross-gcc-build     gcc-8             monthly          amd64,arm64
+i386_gcc-8      cross-gcc-build     gcc-8             monthly          amd64,arm64
+arm_gcc-8       cross-gcc-build     gcc-8             monthly          amd64,arm64
+mips_gcc-8      cross-gcc-build     gcc-8             monthly          amd64
+riscv_gcc-8     cross-gcc-build     gcc-8             monthly          amd64
 
-# Cross build images: i386
-i386_gcc      cross-gcc-build     gcc               monthly          amd64,arm64
-i386_gcc-8    cross-gcc-build     gcc-8             monthly          amd64,arm64
-i386_gcc-9    cross-gcc-build     gcc-9             monthly          amd64,arm64
-i386_gcc-10   cross-gcc-build     gcc-10            monthly          amd64,arm64
-i386_clang    cross-clang-build   clang             monthly          amd64,arm64
-i386_clang-8  cross-clang-build   clang-8           monthly          amd64,arm64
-i386_clang-9  cross-clang-build   clang-9           monthly          amd64,arm64
-i386_clang-10 cross-clang-build   clang-10          monthly          amd64,arm64
 
-# Cross build images: arm
-arm_gcc       cross-gcc-build     gcc               monthly          amd64,arm64
-arm_gcc-8     cross-gcc-build     gcc-8             monthly          amd64,arm64
-arm_gcc-9     cross-gcc-build     gcc-9             monthly          amd64,arm64
-arm_gcc-10    cross-gcc-build     gcc-10            monthly          amd64,arm64
-arm_clang     cross-clang-build   clang             monthly          amd64,arm64
-arm_clang-8   cross-clang-build   clang-8           monthly          amd64,arm64
-arm_clang-9   cross-clang-build   clang-9           monthly          amd64,arm64
-arm_clang-10  cross-clang-build   clang-10          monthly          amd64,arm64
+gcc-9           gcc-build           base-debian11     monthly          amd64,arm64
+x86_64_gcc-9    cross-gcc-build     gcc-9             monthly          amd64,arm64
+arm64_gcc-9     cross-gcc-build     gcc-9             monthly          amd64,arm64
+i386_gcc-9      cross-gcc-build     gcc-9             monthly          amd64,arm64
+arm_gcc-9       cross-gcc-build     gcc-9             monthly          amd64,arm64
+arc_gcc-9       arc                 gcc-9             monthly          amd64
 
-# Cross build images: mips
-# In Debian 11+ the mips gcc cross compilers are not well supported, so for now
-# only gcc-8 from Debian 10 on amd64 is supported, and consequently only clang
-# from there as well.
-mips_gcc      cross-gcc-build     gcc               monthly          amd64
-mips_gcc-8    cross-gcc-build     gcc-8             monthly          amd64
-mips_clang    cross-clang-build   clang             monthly          amd64
 
-# Cross build images: riscv
-# Official Debian packages for riscv cross compilers for both amd64 and arm64
-# are available on Debian 11+ and gcc 10 only. gcc-8 is available from Debian
-# 10, but for amd64 only. all clangs from Debian 11 can be used as well.
-riscv_gcc     cross-gcc-build     gcc-10            monthly          amd64,arm64
-riscv_gcc-10  cross-gcc-build     gcc-10            monthly          amd64,arm64
-riscv_gcc-8   cross-gcc-build     gcc-8             monthly          amd64
-riscv_clang    cross-clang-build  clang             monthly          amd64
-riscv_clang-8  cross-clang-build  clang-8           monthly          amd64,arm64
-riscv_clang-9  cross-clang-build  clang-9           monthly          amd64,arm64
-riscv_clang-10 cross-clang-build  clang-10          monthly          amd64,arm64
+gcc-10          gcc-build           base-debian11     monthly          amd64,arm64
+x86_64_gcc-10   cross-gcc-build     gcc-10            monthly          amd64,arm64
+arm64_gcc-10    cross-gcc-build     gcc-10            monthly          amd64,arm64
+i386_gcc-10     cross-gcc-build     gcc-10            monthly          amd64,arm64
+arm_gcc-10      cross-gcc-build     gcc-10            monthly          amd64,arm64
+riscv_gcc-10    cross-gcc-build     gcc-10            monthly          amd64,arm64
 
-# Cross build images: arc
-# arc is not available in Debian, so we only support the latest release
-# available from ... DesignWare, I guess? The base container, and the host
-# compiler, is chosen to match the gcc version used as based for their patched
-# cross compiler. Also, they only release for x86_64 hosts.
-arc_gcc       arc                 gcc-9             monthly          amd64
-arc_gcc-9     arc                 gcc-9             monthly          amd64
 
-# vim: ts=2 ts=2 sw=2 et
+clang           build               base-debian       monthly          amd64,arm64
+x86_64_clang    cross-clang-build   clang             monthly          amd64,arm64
+arm64_clang     cross-clang-build   clang             monthly          amd64,arm64
+i386_clang      cross-clang-build   clang             monthly          amd64,arm64
+arm_clang       cross-clang-build   clang             monthly          amd64,arm64
+mips_clang      cross-clang-build   clang             monthly          amd64
+riscv_clang     cross-clang-build   clang             monthly          amd64
+
+
+clang-8         build               base-debian11     monthly          amd64,arm64
+x86_64_clang-8  cross-clang-build   clang-8           monthly          amd64,arm64
+arm64_clang-8   cross-clang-build   clang-8           monthly          amd64,arm64
+i386_clang-8    cross-clang-build   clang-8           monthly          amd64,arm64
+arm_clang-8     cross-clang-build   clang-8           monthly          amd64,arm64
+riscv_clang-8   cross-clang-build   clang-8           monthly          amd64,arm64
+
+
+clang-9         build               base-debian11     monthly          amd64,arm64
+x86_64_clang-9  cross-clang-build   clang-9           monthly          amd64,arm64
+arm64_clang-9   cross-clang-build   clang-9           monthly          amd64,arm64
+i386_clang-9    cross-clang-build   clang-9           monthly          amd64,arm64
+arm_clang-9     cross-clang-build   clang-9           monthly          amd64,arm64
+riscv_clang-9   cross-clang-build   clang-9           monthly          amd64,arm64
+
+
+clang-10        build               base-debian11     monthly          amd64,arm64
+x86_64_clang-10 cross-clang-build   clang-10          monthly          amd64,arm64
+arm64_clang-10  cross-clang-build   clang-10          monthly          amd64,arm64
+i386_clang-10   cross-clang-build   clang-10          monthly          amd64,arm64
+arm_clang-10    cross-clang-build   clang-10          monthly          amd64,arm64
+riscv_clang-10  cross-clang-build   clang-10          monthly          amd64,arm64
+

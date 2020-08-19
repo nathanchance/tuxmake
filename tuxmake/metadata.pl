@@ -39,7 +39,7 @@ for my $section (keys(%$metadata)) {
   for my $key (keys(%{$metadata->{$section}})) {
     my $cmd = $metadata->{$section}->{$key};
     my $result = `${cmd}`;
-    chomp $result;
+    chomp $result if $result;
     $metadata->{$section}->{$key} = $result;
   }
 }

@@ -40,9 +40,6 @@ class Runtime(ConfigurableObject):
     def prepare(self, build):
         pass
 
-    def is_supported(self, arch, toolchain):
-        return True
-
 
 class NullRuntime(Runtime):
     name = "null"

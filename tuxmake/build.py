@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import sys
 import time
-from tuxmake.arch import Architecture, Native
+from tuxmake.arch import Architecture, host_arch
 from tuxmake.toolchain import Toolchain, NoExplicitToolchain
 from tuxmake.wrapper import Wrapper, NoWrapper
 from tuxmake.output import get_new_output_dir
@@ -80,7 +80,7 @@ class Build:
         self.build_dir = self.output_dir / "tmp"
         os.mkdir(self.build_dir)
 
-        self.target_arch = target_arch and Architecture(target_arch) or Native()
+        self.target_arch = target_arch and Architecture(target_arch) or host_arch
         self.toolchain = toolchain and Toolchain(toolchain) or NoExplicitToolchain()
         self.wrapper = wrapper and Wrapper(wrapper) or NoWrapper()
 

@@ -22,3 +22,6 @@ class Native(Architecture):
         name = platform.machine()
         super().__init__(name)
         self.makevars = {}
+
+
+host_arch = Native()

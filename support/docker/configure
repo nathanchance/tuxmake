@@ -10,7 +10,7 @@ tuxmake = (pathlib.Path(__file__).parent / "../..").resolve()
 sys.path.insert(0, str(tuxmake))
 
 
-from tuxmake.build import supported
+from tuxmake.runtime import DockerRuntime
 from tuxmake.arch import Architecture
 
 TAG = os.getenv("TAG")
@@ -126,6 +126,10 @@ class BuildImage(Image):
         self.arg("PACKAGES", f'"{packages}"')
 
 
+class ClangBuildImage(BuildImage):
+    pass
+
+
 class GccBuildImage(GccMixin, BuildImage):
     build_cross = True
 
@@ -201,29 +205,21 @@ def generate(name, kind, base, when, hosts):
 
     if TAG:
         host_arch = re.sub("^-", "", TAG)
-        if host_arch not in hosts.split(','):
+        if host_arch not in hosts:
             return
 
     image.generate(output)
 
-def read_file(filename):
-    result = []
-    with open(filename, "r") as f:
-        for line in f.readlines():
-            if re.match(r"^\s*#", line):
-                continue
-            if not re.match(r"\S", line):
-                continue
-            result.append(line.split())
-    return result
 
 if os.getenv("DEBUG"):
     output = sys.stdout
 else:
     output = open("configure.mk", "w")
 
-for item in read_file("base.in"):
-    generate(*item)
+runtime = DockerRuntime()
+for image in runtime.images:
+    generate(image.name, image.kind, image.base, image.rebuild, image.hosts)
+
 ImageList.dump(output)
 
 

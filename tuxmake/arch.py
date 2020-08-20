@@ -1,5 +1,5 @@
 import platform
-from tuxmake.config import ConfigurableObject
+from tuxmake.config import ConfigurableObject, split
 from tuxmake.exceptions import UnsupportedArchitecture
 
 
@@ -11,6 +11,10 @@ class Architecture(ConfigurableObject):
         self.targets = self.config["targets"]
         self.artifacts = self.config["artifacts"]
         self.makevars = self.config["makevars"]
+        try:
+            self.aliases = split(self.config["architecture"]["aliases"])
+        except KeyError:
+            self.aliases = []
 
 
 class Native(Architecture):
@@ -18,3 +22,6 @@ class Native(Architecture):
         name = platform.machine()
         super().__init__(name)
         self.makevars = {}
+
+
+host_arch = Native()

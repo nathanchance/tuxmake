@@ -1,10 +1,12 @@
-#!/bin/sh
+#!/usr/bin/env python3
 
-set -eu
+import os
+import sys
+from tuxmake.runtime import DockerRuntime
 
-img=$1
 
-for arch in $(awk "{if(\$1 == \"$img\") {gsub(\",\", \" \", \$5); print(\$5)}}" base.in); do
-	printf " ${PROJECT:-tuxmake}/${img}:latest-${arch}"
-done
-echo
+project = os.getenv("PROJECT", "tuxmake")
+runtime = DockerRuntime()
+for image in runtime.images:
+    if image.name == sys.argv[1]:
+         print(" ".join([f"{project}/{image.name}:latest-{host}" for host in image.hosts]))

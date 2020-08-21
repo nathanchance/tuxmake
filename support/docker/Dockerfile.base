@@ -22,6 +22,7 @@ RUN apt-get update \
         flex \
         git \
         gzip \
+        jq \
         kmod \
         libssl-dev \
         libelf-dev \

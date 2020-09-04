@@ -54,8 +54,7 @@ class BuildInfo:
 class Build:
     def __init__(
         self,
-        source_tree,
-        *,
+        tree=".",
         output_dir=None,
         target_arch=None,
         toolchain=None,
@@ -69,7 +68,7 @@ class Build:
         verbose=False,
         quiet=False,
     ):
-        self.source_tree = source_tree
+        self.source_tree = tree
 
         if output_dir is None:
             self.output_dir = get_new_output_dir()
@@ -329,7 +328,7 @@ class Build:
         self.cleanup()
 
 
-def build(tree, **kwargs):
-    builder = Build(tree, **kwargs)
+def build(**kwargs):
+    builder = Build(**kwargs)
     builder.run()
     return builder

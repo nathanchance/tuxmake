@@ -195,6 +195,12 @@ class ArcImage(Image):
     kind = "arc"
     extra_lists = ["crossbuild", "arc"]
     releases = {
+        'arc_gcc-8': (
+            ('RELEASE', 'arc-2019.03-release'),
+            ('TARBALL', 'arc_gnu_2019.03_prebuilt_elf32_le_linux_install.tar.gz'),
+            ('GCC_VERSION', '8'),
+            ('GCC_VERSION_FULL', '8.3.1'),
+        ),
         'arc_gcc-9': (
             ('RELEASE', 'arc-2020.03-release'),
             ('TARBALL', 'arc_gnu_2020.03_prebuilt_elf32_le_linux_install.tar.gz'),

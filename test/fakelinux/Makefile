@@ -54,13 +54,16 @@ $(O)/arch/$(ARCHDIRNAME)/boot/$(IMAGE): $(O)/vmlinux
 vmlinux: $(O)/vmlinux
 CLEAN += $(O)/vmlinux
 $(O)/vmlinux: $(O)/.config
-$(O)/vmlinux: vmlinux.c
+$(O)/vmlinux: $(O)/vmlinux.o
 	$(call maybefail,debugkernel)
 	$(CC) $(CFLAGS) -o $@ $<
 	@echo SYSMAP System.map
 	@printf "0000000000000000 D __per_cpu_start\n0000000000000000 D fixed_percpu_data\n" \
 		> $(O)/System.map
 
+CLEAN += $(O)/vmlinux.o
+$(O)/vmlinux.o: vmlinux.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 ########################################################################
 # modules

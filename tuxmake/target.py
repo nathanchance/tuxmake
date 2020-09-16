@@ -1,9 +1,8 @@
 from pathlib import Path
 import re
-import shlex
 import urllib.request
 
-from tuxmake.config import ConfigurableObject
+from tuxmake.config import ConfigurableObject, split_commands
 from tuxmake.exceptions import InvalidKConfig
 from tuxmake.exceptions import UnsupportedTarget
 from tuxmake.exceptions import UnsupportedKconfig
@@ -48,15 +47,7 @@ class Target(ConfigurableObject):
 
     def __split_cmds__(self, section, item):
         s = self.config[section].get(item)
-        if not s:
-            return []
-        result = [[]]
-        for item in shlex.split(s):
-            if item == "&&":
-                result.append([])
-            else:
-                result[-1].append(item)
-        return result
+        return split_commands(s)
 
     def prepare(self):
         pass

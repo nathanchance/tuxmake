@@ -1,4 +1,5 @@
 import re
+import shlex
 from typing import Optional, Type
 from configparser import ConfigParser
 from pathlib import Path
@@ -58,3 +59,15 @@ def splitmap(s):
 
 def splitlistmap(s):
     return {k: split(v, r"\+") for k, v in splitmap(s).items()}
+
+
+def split_commands(s):
+    if not s:
+        return []
+    result = [[]]
+    for item in shlex.split(s):
+        if item == "&&":
+            result.append([])
+        else:
+            result[-1].append(item)
+    return result

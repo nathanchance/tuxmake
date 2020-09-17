@@ -17,6 +17,14 @@ RUN if [ "$(uname -m)" != "${HOSTARCH}" ]; then apt-get update \
         $PACKAGES; \
     fi
 
+# For gcc images, symlink all binaries with unversioned names into $PATH
+RUN for bin in $(ls -1 /usr/bin/*-[0-9]* | xargs -n 1 basename); do \
+    unver=${bin%-[0-9]*}; \
+    if [ ! -x /usr/bin/${unver} ]; then \
+        ln -sfv /usr/bin/$bin /usr/local/bin/${unver}; \
+        fi; \
+    done
+
 # For clang images, symlink all the binaries in $PATH
 RUN if [ -d /usr/lib/llvm-*/bin ]; then ln -sfv /usr/lib/llvm-*/bin/* /usr/local/bin/; fi
 

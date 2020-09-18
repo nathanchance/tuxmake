@@ -44,10 +44,11 @@ class Image:
     def lists(self):
         return self.extra_lists + ["all", self.when]
 
-    def __init__(self, name, base, when):
+    def __init__(self, name, base, when, packages):
         self.name = name
         self.base = base
         self.when = when
+        self.packages = packages
         self.args = []
 
     @property
@@ -67,6 +68,9 @@ class Image:
     def register(self):
         for l in self.lists:
             ImageList.register(l)
+
+    def get_packages(self):
+        return self.packages
 
     def generate(self, stream):
         self.emit()
@@ -101,28 +105,17 @@ class CiImage(BaseImage):
     extra_lists = ["ci"]
 
 
-class GccMixin:
-    @property
-    def packages(self):
-        return [self.pkgname, self.pkgname.replace("gcc", "g++")]
-
-
 class BuildImage(Image):
     kind = "build"
     extra_lists = ["build"]
-    build_cross = False
 
-    def __init__(self, name, base, when):
-        super().__init__(name, base, when)
+    def __init__(self, name, base, when, packages):
+        super().__init__(name, base, when, packages)
         self.pkgname = self.name
-
-    @property
-    def packages(self):
-        return [self.pkgname]
 
     def emit(self):
         super().emit()
-        packages = " ".join(self.packages)
+        packages = " ".join(self.get_packages())
         self.arg("PACKAGES", f'"{packages}"')
 
 
@@ -130,8 +123,8 @@ class ClangBuildImage(BuildImage):
     pass
 
 
-class GccBuildImage(GccMixin, BuildImage):
-    build_cross = True
+class GccBuildImage(BuildImage):
+    pass
 
 
 class CrossBuildMixin:
@@ -166,26 +159,24 @@ class CrossBuildMixin:
         self.arg("HOSTARCH", self.gnu_arch)
 
 
-class CrossGccBuildImage(GccMixin, CrossBuildMixin, BuildImage):
+class CrossGccBuildImage(CrossBuildMixin, BuildImage):
     extra_lists = ["crossbuild", "gcc_all"]
 
-    def __init__(self, name, base, when):
-        super().__init__(name, base, when)
+    def __init__(self, name, base, when, packages):
+        super().__init__(name, base, when, packages)
         self.pkgname = re.sub(r".*_(gcc.*)$", "\g<1>", name)
 
-    @property
-    def packages(self):
+    def get_packages(self):
         suffix = self.cross_package_suffix
-        return super().packages + [pkg + "-" + suffix for pkg in super().packages]
+        return self.packages + [pkg + "-" + suffix for pkg in self.packages]
 
 
-class CrossClangBuildImage(CrossBuildMixin, BuildImage):
+class CrossClangBuildImage(CrossBuildMixin, ClangBuildImage):
     extra_lists = ["crossbuild", "clang_all"]
 
-    @property
-    def packages(self):
+    def get_packages(self):
         cross = self.cross_package_suffix
-        return [
+        return self.packages + [
             f"gcc-{cross}",
             f"g++-{cross}",
         ]
@@ -194,13 +185,33 @@ class CrossClangBuildImage(CrossBuildMixin, BuildImage):
 class ArcImage(Image):
     kind = "arc"
     extra_lists = ["crossbuild", "arc"]
+    releases = {
+        'arc_gcc-8': (
+            ('RELEASE', 'arc-2019.03-release'),
+            ('TARBALL', 'arc_gnu_2019.03_prebuilt_elf32_le_linux_install.tar.gz'),
+            ('GCC_VERSION', '8'),
+            ('GCC_VERSION_FULL', '8.3.1'),
+        ),
+        'arc_gcc-9': (
+            ('RELEASE', 'arc-2020.03-release'),
+            ('TARBALL', 'arc_gnu_2020.03_prebuilt_elf32_le_linux_install.tar.gz'),
+            ('GCC_VERSION', '9'),
+            ('GCC_VERSION_FULL', '9.3.1'),
+        ),
+    }
+    releases['arc_gcc'] = releases['arc_gcc-9']
+
+    def emit(self):
+        super().emit()
+        for k, v in self.releases[self.name]:
+            self.arg(k, v)
 
 
-def generate(name, kind, base, when, hosts):
+def generate(name, kind, base, when, hosts, packages):
     # transforms foo-bar into FooBarImage
     clsname = "".join([w.title() for w in re.split(r"[-_]", kind)]) + "Image"
     cls = globals()[clsname]
-    image = cls(name, base, when)
+    image = cls(name, base, when, packages)
     image.register()
 
     if TAG:
@@ -218,7 +229,7 @@ else:
 
 runtime = DockerRuntime()
 for image in runtime.images:
-    generate(image.name, image.kind, image.base, image.rebuild, image.hosts)
+    generate(image.name, image.kind, image.base, image.rebuild, image.hosts, image.packages)
 
 ImageList.dump(output)
 

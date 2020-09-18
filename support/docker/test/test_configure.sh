@@ -76,18 +76,18 @@ test_x86_64_gcc() {
 
 test_clang() {
     get_build_args clang
-    assertArg 'BASE=$(PROJECT)/base' 'PACKAGES="clang"'
+    assertArg 'BASE=$(PROJECT)/base' 'PACKAGES="clang-10"'
 }
 
 test_arm64_clang() {
     get_build_args arm64_clang
     assertArg 'BASE=$(PROJECT)/clang' 'HOSTARCH=aarch64' \
-        'PACKAGES="gcc-aarch64-linux-gnu g++-aarch64-linux-gnu"'
+        'PACKAGES="clang-10 gcc-aarch64-linux-gnu g++-aarch64-linux-gnu"'
 }
 
-test_clang8() {
-    get_build_args clang-8
-    assertArg 'BASE=$(PROJECT)/base' 'PACKAGES="clang-8"'
+test_clang10() {
+    get_build_args clang-10
+    assertArg 'BASE=$(PROJECT)/base' 'PACKAGES="clang-10"'
 }
 
 . shunit2

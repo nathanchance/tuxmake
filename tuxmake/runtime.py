@@ -62,6 +62,7 @@ class Image:
         target_bases="",
         target_kinds="",
         target_hosts="",
+        packages="",
     ):
         self.name = name
         self.kind = kind
@@ -71,6 +72,7 @@ class Image:
         self.target_bases = splitmap(target_bases)
         self.target_kinds = splitmap(target_kinds)
         self.target_hosts = splitlistmap(target_hosts)
+        self.packages = split(packages)
         self.rebuild = rebuild
 
 
@@ -93,16 +95,13 @@ class DockerRuntime(Runtime):
                 image = Image(name=entry, **self.config[entry])
                 image_list.append(image)
                 for target in image.targets:
-                    base = image.target_bases.get(target, image.name)
-                    kind = image.target_kinds.get(target, "cross-" + image.kind)
-                    hosts = image.target_hosts.get(target, image.hosts)
-                    cross_image = Image(
-                        name=f"{target}_{image.name}",
-                        kind=kind,
-                        base=base,
-                        rebuild=image.rebuild,
-                        hosts=hosts,
+                    cross_config = dict(self.config[entry])
+                    cross_config["base"] = image.target_bases.get(target, image.name)
+                    cross_config["kind"] = image.target_kinds.get(
+                        target, "cross-" + image.kind
                     )
+                    cross_config["hosts"] = image.target_hosts.get(target, image.hosts)
+                    cross_image = Image(name=f"{target}_{image.name}", **cross_config)
                     image_list.append(cross_image)
                     self.support_matrix[(target, image.name)] = cross_image
         self.images = self.base_images + self.ci_images + self.toolchain_images

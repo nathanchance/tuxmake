@@ -143,5 +143,14 @@ test_ccache() {
   assertTrue 'CC=' "grep \"'CC=ccache gcc'\" stdout"
 }
 
+if [ $# -gt 0 ]; then
+  export TESTCASES="$(echo "$@")"
+  set --
+  suite() {
+    for t in $TESTCASES; do
+      suite_addTest "$t"
+    done
+  }
+fi
 
 . shunit2

@@ -161,6 +161,13 @@ test_ccache() {
   assertTrue 'CC=' "grep \"'CC=ccache gcc'\" stdout"
 }
 
+test_output_dir() {
+  run tuxmake --output-dir=output/ config
+  assertEquals "$rc" 0
+  assertTrue 'test -f output/config'
+  assertTrue 'test -f output/build.log'
+}
+
 if [ $# -gt 0 ]; then
   export TESTCASES="$(echo "$@")"
   set --

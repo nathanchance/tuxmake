@@ -1,5 +1,6 @@
 import argparse
 import os
+from pathlib import Path
 import pytest
 import sys
 from tuxmake.build import BuildInfo
@@ -236,3 +237,14 @@ class TestDebug:
         run_cmd = builder.return_value.run_cmd
         tuxmake("--shell")
         run_cmd.assert_called_with(["bash"], interactive=True)
+
+
+class TestOutputDir:
+    def test_output_dir(self, builder):
+        tuxmake("--output-dir=/path/to/output")
+        assert args(builder).output_dir == "/path/to/output"
+
+    def test_output_dir_relative_to_absolute(self, builder):
+        cwd = Path.cwd()
+        tuxmake("--output-dir=output")
+        assert args(builder).output_dir == (cwd / "output")

@@ -194,6 +194,7 @@ class Build:
             toolchain=self.toolchain.name,
             wrapper=self.wrapper.name,
             kconfig=self.kconfig,
+            **self.target_arch.targets,
         )
 
     @property

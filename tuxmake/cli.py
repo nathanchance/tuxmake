@@ -49,6 +49,9 @@ def main(*argv):
         default=None,
         help="Output directory for artifacts",
     )
+    build_output.add_argument(
+        "-b", "--build-dir", type=abspath, default=None, help="Build directory"
+    )
 
     target = parser.add_argument_group("Build output options")
     target.add_argument(

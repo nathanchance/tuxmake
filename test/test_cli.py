@@ -242,9 +242,15 @@ class TestDebug:
 class TestOutputDir:
     def test_output_dir(self, builder):
         tuxmake("--output-dir=/path/to/output")
-        assert args(builder).output_dir == "/path/to/output"
+        assert args(builder).output_dir == Path("/path/to/output")
 
     def test_output_dir_relative_to_absolute(self, builder):
         cwd = Path.cwd()
         tuxmake("--output-dir=output")
         assert args(builder).output_dir == (cwd / "output")
+
+
+class TestBuildDir:
+    def test_build_dir(self, builder):
+        tuxmake("--build-dir=/path/to/build")
+        assert args(builder).build_dir == Path("/path/to/build")

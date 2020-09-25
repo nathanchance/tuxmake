@@ -168,6 +168,11 @@ test_output_dir() {
   assertTrue 'test -f output/build.log'
 }
 
+test_build_dir() {
+  run tuxmake --build-dir=build config
+  assertTrue 'test -f build/.config'
+}
+
 if [ $# -gt 0 ]; then
   export TESTCASES="$(echo "$@")"
   set --

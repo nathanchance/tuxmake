@@ -1,3 +1,3 @@
-IMAGE = vmlinux.bin.gz
+IMAGE = uImage.gz
 COMPRESS = gzip
 ARCHDIRNAME = mips

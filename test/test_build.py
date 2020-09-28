@@ -293,7 +293,7 @@ class TestArchitecture:
 
     def test_mips(self, linux):
         result = build(tree=linux, target_arch="mips")
-        assert "vmlinux.bin.gz" in [str(f.name) for f in result.output_dir.glob("*")]
+        assert "uImage.gz" in [str(f.name) for f in result.output_dir.glob("*")]
 
     def test_riscv(self, linux):
         result = build(tree=linux, target_arch="riscv")

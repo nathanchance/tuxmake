@@ -501,7 +501,7 @@ warning: ssadas
 
 class TestParseLog:
     @pytest.fixture(scope="class")
-    def build(linux):
+    def build(self, linux):
         b = Build(tree=linux)
         (b.output_dir / "build.log").write_text(LOG)
         return b

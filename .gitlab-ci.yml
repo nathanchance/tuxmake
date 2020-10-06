@@ -121,6 +121,27 @@ integration-python3.6-arm64:
     - arm64
   image: tuxmake/ci-python3.6
 
+.docs:
+  extends: .tuxmake
+  image: tuxmake/ci-python3.8
+  before_script:
+    - apt-get update -q
+    - apt-get install -qy python3-docutils mkdocs
+  script:
+    - make man
+    - make doc
+
+build-docs:
+  extends: .docs
+
+pages:
+  extends: .docs
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+
 .docker:
   image: docker:19.03.11-dind
   services:

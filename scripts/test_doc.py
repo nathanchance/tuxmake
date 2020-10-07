@@ -1,5 +1,6 @@
 from pathlib import Path
 from tuxmake.arch import Architecture
+from tuxmake.runtime import Runtime
 from tuxmake.target import Target
 from tuxmake.toolchain import Toolchain
 from tuxmake.wrapper import Wrapper
@@ -54,6 +55,9 @@ class TestDoc:
         check_documented_sections(
             Toolchain.supported(), "docs/toolchains.md", "toolchains"
         )
+
+    def test_runtimes(self):
+        check_documented_sections(Runtime.supported(), "docs/runtimes.md", "runtimes")
 
     def test_wrappers(self):
         check_documented_sections(Wrapper.supported(), "docs/wrappers.md", "wrappers")

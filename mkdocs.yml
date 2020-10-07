@@ -32,6 +32,7 @@ nav:
 - TuxMake community:
   - Code of Conduct: code-of-conduct.md
   - Contributing: contributing.md
+  - Downstream packaging: packaging.md
   - License: license.md
   - Source Code: https://gitlab.com/Linaro/tuxmake
   - Issue Tracker: https://gitlab.com/Linaro/tuxmake/-/issues

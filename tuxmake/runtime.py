@@ -78,6 +78,7 @@ class Image:
 
 class DockerRuntime(Runtime):
     name = "docker"
+    command = "docker"
     prepare_failed_msg = "failed to pull remote image {image}"
 
     def __init_config__(self):
@@ -130,7 +131,7 @@ class DockerRuntime(Runtime):
             )
 
     def do_prepare(self, build):
-        subprocess.check_call(["docker", "pull", self.get_image(build)])
+        subprocess.check_call([self.command, "pull", self.get_image(build)])
 
     def get_command_line(self, build, cmd, interactive):
         source_tree = os.path.abspath(build.source_tree)
@@ -159,7 +160,7 @@ class DockerRuntime(Runtime):
         gid = os.getgid()
         extra_opts = self.__get_extra_opts__()
         return [
-            "docker",
+            self.command,
             "run",
             "--rm",
             "--init",
@@ -189,7 +190,7 @@ class DockerLocalRuntime(DockerRuntime):
 
     def do_prepare(self, build):
         subprocess.check_call(
-            ["docker", "image", "inspect", self.get_image(build)],
+            [self.command, "image", "inspect", self.get_image(build)],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )

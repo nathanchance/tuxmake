@@ -10,6 +10,7 @@ from tuxmake.runtime import NullRuntime
 from tuxmake.runtime import DockerRuntime
 from tuxmake.runtime import DockerLocalRuntime
 from tuxmake.runtime import PodmanRuntime
+from tuxmake.runtime import PodmanLocalRuntime
 from tuxmake.wrapper import Wrapper
 
 
@@ -172,3 +173,32 @@ class TestPodmanRuntime:
     def test_no_user_option(self, build):
         cmd = PodmanRuntime().get_command_line(build, ["date"], False)
         assert len([c for c in cmd if "--user=" in c]) == 0
+
+
+class TestPodmanLocalRuntime:
+    def test_prepare_checks_local_image(self, build, get_docker_image, mocker):
+        get_docker_image.return_value = "mylocalimage"
+        check_call = mocker.patch("subprocess.check_call")
+        runtime = PodmanLocalRuntime()
+
+        runtime.prepare(build)
+        check_call.assert_called_with(
+            ["podman", "image", "inspect", "mylocalimage"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+    def test_prepare_image_not_found(self, build, get_docker_image, mocker):
+        get_docker_image.return_value = "foobar"
+        mocker.patch(
+            "subprocess.check_call",
+            side_effect=subprocess.CalledProcessError(
+                1, ["foo"], stderr="Image not found"
+            ),
+        )
+        with pytest.raises(RuntimePreparationFailed) as exc:
+            PodmanLocalRuntime().prepare(build)
+        assert "image foobar not found locally" in str(exc)
+
+    def test_listed_as_supported(self):
+        assert "podman-local" in Runtime.supported()

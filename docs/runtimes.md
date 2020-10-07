@@ -52,3 +52,8 @@ already have an image.
 
 The podman runtime works exactly like the docker runtime, but calling `podman`
 instead of `docker`.
+
+
+## podman-local
+
+The same as `docker-local`, but using `podman`.

@@ -22,4 +22,9 @@ test_podman() {
   assertEquals 0 "${rc}"
 }
 
+test_podman_local() {
+  run tuxmake --runtime=podman-local --print-support-matrix
+  assertEquals 0 "${rc}"
+}
+
 . shunit2

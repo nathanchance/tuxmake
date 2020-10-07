@@ -29,7 +29,7 @@ def get_runtime(runtime):
 class Runtime(ConfigurableObject):
     basedir = "runtime"
     exception = InvalidRuntimeError
-    not_aliases = ["docker-local.ini", "podman.ini"]
+    not_aliases = ["docker-local.ini", "podman.ini", "podman-local.ini"]
 
     def __init__(self):
         super().__init__(self.name)
@@ -207,8 +207,7 @@ class PodmanRuntime(DockerRuntime):
         return []
 
 
-class DockerLocalRuntime(DockerRuntime):
-    name = "docker-local"
+class LocalMixin:
     prepare_failed_msg = "image {image} not found locally"
 
     def do_prepare(self, build):
@@ -217,3 +216,11 @@ class DockerLocalRuntime(DockerRuntime):
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
+
+
+class DockerLocalRuntime(LocalMixin, DockerRuntime):
+    name = "docker-local"
+
+
+class PodmanLocalRuntime(LocalMixin, PodmanRuntime):
+    name = "podman-local"

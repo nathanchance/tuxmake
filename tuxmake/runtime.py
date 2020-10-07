@@ -29,7 +29,7 @@ def get_runtime(runtime):
 class Runtime(ConfigurableObject):
     basedir = "runtime"
     exception = InvalidRuntimeError
-    not_aliases = ["docker-local.ini"]
+    not_aliases = ["docker-local.ini", "podman.ini"]
 
     def __init__(self):
         super().__init__(self.name)
@@ -170,8 +170,7 @@ class DockerRuntime(Runtime):
             wrapper_opts.append(f"--env={k}={v}")
 
         env = (f"--env={k}={v}" for k, v in build.environment.items())
-        uid = os.getuid()
-        gid = os.getgid()
+        user_opts = self.get_user_opts()
         extra_opts = self.__get_extra_opts__()
         return [
             self.command,
@@ -182,7 +181,7 @@ class DockerRuntime(Runtime):
             *wrapper_opts,
             "--env=KBUILD_BUILD_USER=tuxmake",
             *env,
-            f"--user={uid}:{gid}",
+            *user_opts,
             f"--volume={source_tree}:{source_tree}",
             f"--volume={build_dir}:{build_dir}",
             f"--workdir={source_tree}",
@@ -190,9 +189,22 @@ class DockerRuntime(Runtime):
             self.get_image(build),
         ] + cmd
 
+    def get_user_opts(self):
+        uid = os.getuid()
+        gid = os.getgid()
+        return [f"--user={uid}:{gid}"]
+
     def __get_extra_opts__(self):
         opts = os.getenv("TUXMAKE_DOCKER_RUN", "")
         return shlex.split(opts)
+
+
+class PodmanRuntime(DockerRuntime):
+    name = "podman"
+    command = "podman"
+
+    def get_user_opts(self):
+        return []
 
 
 class DockerLocalRuntime(DockerRuntime):

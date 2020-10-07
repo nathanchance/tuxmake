@@ -9,6 +9,7 @@ from tuxmake.runtime import Runtime
 from tuxmake.runtime import NullRuntime
 from tuxmake.runtime import DockerRuntime
 from tuxmake.runtime import DockerLocalRuntime
+from tuxmake.runtime import PodmanRuntime
 from tuxmake.wrapper import Wrapper
 
 
@@ -151,3 +152,23 @@ class TestDockerLocalRuntime:
 
     def test_listed_as_supported(self):
         assert "docker-local" in Runtime.supported()
+
+
+class TestPodmanRuntime:
+    def test_prepare(self, build, get_docker_image, mocker):
+        get_docker_image.return_value = "myimage"
+        check_call = mocker.patch("subprocess.check_call")
+        PodmanRuntime().prepare(build)
+        check_call.assert_called_with(["podman", "pull", "myimage"])
+
+    def test_get_command_line(self, build):
+        cmd = PodmanRuntime().get_command_line(build, ["date"], False)
+        assert cmd[0:2] == ["podman", "run"]
+        assert cmd[-1] == "date"
+
+    def test_listed_as_supported(self):
+        assert "podman" in Runtime.supported()
+
+    def test_no_user_option(self, build):
+        cmd = PodmanRuntime().get_command_line(build, ["date"], False)
+        assert len([c for c in cmd if "--user=" in c]) == 0

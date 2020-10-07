@@ -46,3 +46,9 @@ If you want to provide your own images, take into consideration that:
 The same as `docker`, but will only use images that you already have locally,
 and fail if you try to use a arch/toolchain combination for which you don't
 already have an image.
+
+
+## podman
+
+The podman runtime works exactly like the docker runtime, but calling `podman`
+instead of `docker`.

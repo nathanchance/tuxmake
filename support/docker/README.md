@@ -1,4 +1,4 @@
-# TuxMake docker containers
+# TuxMake docker images
 
 ## Image design
 
@@ -20,9 +20,7 @@ The images are based on Debian, and organized in three levels:
   release that has them available, usually `stable` or `testing` for newer
   versions.
 
-- Cross build images: based on the build images, plus a crossbuild toolchain
-  when that's needed (e.g. `clang` is already a cross compiler and you don't
-  need this type of images for `clang`).
+- Cross build images: based on the build images, plus a crossbuild toolchain.
 
 ```mermaid
 graph TD
@@ -40,16 +38,27 @@ graph TD
 
 ## Build process
 
-- The list of base and build images is specified in [base.in](base.in).
+- The list of base and build images is specified in the
+  [Docker runtime configuration](../../tuxmake/runtime/docker.ini).
 - Before anything, you need to run [`./configure`](configure) to generate the
   list of images to be built.
 - The build process is then controlled by [Makefile](Makefile).
   - `make list` will list all the images that can be built.
   - `make show` will list all the images that you have already built.
   - `make test` runs tests for [`configure`](configure).
+  - `make` builds all the images
 - The list of achitectures to build cross toolchain images for is provided by
-  tuxmake itself, i.e. all architectures defined in tuxmake will make the
-  corresponding images be built.
+  tuxmake itself, i.e. all architectures defined in tuxmake will have their
+  images built.
 - The dockerfiles are parameterized:
   - Base images are built from [Dockerfile.base](Dockerfile.base).
   - Build and cross build images are built from [Dockerfile.build](Dockerfile.build).
+
+## Automated builds
+
+The TuxMake repository has [scheduled CI
+runs](https://gitlab.com/Linaro/tuxmake/-/pipeline_schedules)  that will
+automatically build all images, and publish them on Dockerhub. Each image has a
+different update periodicity, what is defined in the [Docker runtime
+configuration](../../tuxmake/runtime/docker.ini). Most images are rebuilt once
+a month.

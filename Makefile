@@ -53,4 +53,4 @@ doc: docs/cli.md docs/index.md
 	PYTHONPATH=. mkdocs build
 
 clean:
-	$(RM) -r tuxmake.1 cli_options.rst docs/cli.md docs/index.md
+	$(RM) -r tuxmake.1 cli_options.rst docs/cli.md docs/index.md public/

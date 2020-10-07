@@ -74,6 +74,7 @@ docker-build-tests:
 build:
   extends: .tuxmake
   stage: build
+  needs: []
   script:
     - git status
     - rm -rf dist/
@@ -85,7 +86,7 @@ build:
 .integration:
   extends: .tuxmake
   stage: testbuild
-  dependencies:
+  needs:
     - build
   script:
     - python3 -m pip install dist/*.whl

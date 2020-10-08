@@ -150,6 +150,12 @@ def build_parser(**kwargs):
         help="List supported toolchains and exit. Combine with --runtime to list toolchains supported by that particular runtime.",
     )
     info.add_argument(
+        "-R",
+        "--list-runtimes",
+        action="store_true",
+        help="List supported runtimes and exit.",
+    )
+    info.add_argument(
         "-p",
         "--print-support-matrix",
         action="store_true",
@@ -212,6 +218,10 @@ def main(*argv):
         runtime = get_runtime(options.runtime)
         for toolchain in sorted(runtime.toolchains):
             print(toolchain)
+        return
+    elif options.list_runtimes:
+        for runtime in supported.runtimes:
+            print(runtime)
         return
     elif options.print_support_matrix:
         runtime = get_runtime(options.runtime)

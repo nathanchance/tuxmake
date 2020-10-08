@@ -210,6 +210,13 @@ class TestList:
         assert "clang" in out
         assert "clang-10" in out
 
+    def test_list_runtimes(self, builder, capsys):
+        tuxmake("--list-runtimes")
+        builder.assert_not_called()
+        out, _ = capsys.readouterr()
+        assert "null" in out
+        assert "docker" in out
+
 
 class TestPrintSupportMatrix:
     def test_print_support_matrix(self, builder, capsys):

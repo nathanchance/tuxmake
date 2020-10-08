@@ -29,6 +29,7 @@ def get_runtime(runtime):
 class Runtime(ConfigurableObject):
     basedir = "runtime"
     exception = InvalidRuntimeError
+    not_aliases = ["docker-local.ini"]
 
     def __init__(self):
         super().__init__(self.name)
@@ -184,9 +185,6 @@ class DockerRuntime(Runtime):
 class DockerLocalRuntime(DockerRuntime):
     name = "docker-local"
     prepare_failed_msg = "image {image} not found locally"
-
-    def __init_config__(self):
-        pass
 
     def do_prepare(self, build):
         subprocess.check_call(

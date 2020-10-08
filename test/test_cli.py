@@ -28,13 +28,13 @@ def args(called):
 def test_basic_build(builder, monkeypatch):
     monkeypatch.setattr(sys, "argv", ["tuxmake"])
     tuxmake()
-    assert builder.call_args[1] == {"tree": "."}
+    assert args(builder).tree == "."
 
 
 def test_basic_build_with_directory(linux, builder):
     tree = str(linux)
     tuxmake("--directory", tree)
-    assert builder.call_args[1] == {"tree": tree}
+    assert args(builder).tree == tree
 
 
 def test_build_from_sys_argv(monkeypatch, builder):

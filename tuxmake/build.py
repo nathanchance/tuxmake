@@ -128,6 +128,9 @@ class Build:
       still saved to the output directory, unconditionally.
     - **debug**: produce extra output for debugging tuxmake itself. This output
       will not appear in the build log.
+    - **auto_cleanup**: whether to automatically remove the build directory
+      after the build finishes. Ignored if *build_dir* is passed, in which
+      case the build directory *will not be removed*.
     """
 
     def __init__(
@@ -147,6 +150,7 @@ class Build:
         verbose=False,
         quiet=False,
         debug=False,
+        auto_cleanup=True,
     ):
         self.source_tree = tree
 
@@ -158,11 +162,11 @@ class Build:
 
         if build_dir:
             self.build_dir = Path(build_dir)
-            self.keep_build_dir = True
+            self.auto_cleanup = False
         else:
             self.build_dir = self.output_dir / "tmp"
             self.build_dir.mkdir()
-            self.keep_build_dir = False
+            self.auto_cleanup = auto_cleanup
 
         self.target_arch = target_arch and Architecture(target_arch) or host_arch
         self.toolchain = toolchain and Toolchain(toolchain) or NoExplicitToolchain()
@@ -444,8 +448,7 @@ class Build:
         self.logger.terminate()
 
     def cleanup(self):
-        if not self.keep_build_dir:
-            shutil.rmtree(self.build_dir)
+        shutil.rmtree(self.build_dir)
 
     def run(self):
         """
@@ -467,7 +470,8 @@ class Build:
 
         self.terminate()
 
-        self.cleanup()
+        if self.auto_cleanup:
+            self.cleanup()
 
 
 def build(**kwargs):

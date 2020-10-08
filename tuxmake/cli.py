@@ -248,9 +248,10 @@ def main(*argv):
         if v and k not in ["color", "docker_image", "shell"]
     }
     try:
-        result = build(**build_args)
+        result = build(**build_args, auto_cleanup=(not options.shell))
         if options.shell:
             result.run_cmd(["bash"], interactive=True)
+            result.cleanup()
         for target, info in result.status.items():
             print(f"I: {target}: {info.status} in {info.duration}", file=err)
         print(f"I: build output in {result.output_dir}", file=err)

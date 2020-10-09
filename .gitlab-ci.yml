@@ -145,6 +145,8 @@ integration-docker:
 
 build-docs:
   extends: .docs
+  except:
+    - master
 
 pages:
   extends: .docs

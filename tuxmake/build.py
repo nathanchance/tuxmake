@@ -254,7 +254,7 @@ class Build:
             cmd += self.expand_cmd_part(c)
 
         final_cmd = self.runtime.get_command_line(self, cmd, interactive)
-        extra_env = dict(**self.wrapper.environment, **self.environment)
+        extra_env = dict(**self.wrapper.environment, **self.environment, LANG="C.UTF-8")
         env = dict(os.environ, **extra_env)
 
         logger = self.logger.stdin

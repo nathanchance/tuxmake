@@ -1,6 +1,9 @@
 image:
   name: tuxmake/ci-python3.7
 
+variables:
+  LANG: C.UTF-8
+
 .tuxmake:
   except:
     - schedules

@@ -12,6 +12,7 @@ theme:
 markdown_extensions:
   - mkautodoc
 extra_css:
+  - tuxmake.css
   - mkautodoc.css
 extra_javascript:
   - fix.js # workaround for https://github.com/mkdocs/mkdocs/issues/2028

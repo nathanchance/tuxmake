@@ -101,3 +101,11 @@ class TestArtifacts:
 
     def test_dtbs(self, build):
         assert type(build.metadata["artifacts"]["dtbs"]) is list
+
+
+class TestVmlinux:
+    @pytest.mark.parametrize(
+        "field", ["bss_size", "data_size", "text_size", "file_size"]
+    )
+    def test_field(self, build, field):
+        assert type(build.metadata["vmlinux"][field]) is int

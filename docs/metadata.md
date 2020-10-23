@@ -64,3 +64,8 @@ available.
     - **kernel_version**: output of `uname --kernel-version`.
     - **machine**: output of `uname --machine`.
     - **operating_system**: output of `uname --operating-system`.
+- **vmlinux**: information about the `vmlinux` kernel binary.
+    - **bss_size**: size in bytes of the `.bss` section in the ELF file.
+    - **data_size**: size in bytes of the `.data` section in the ELF file.
+    - **text_size**: size in bytes of the `.text` section in the ELF file.
+    - **file_size**: total file size in bytes

@@ -109,3 +109,8 @@ class TestVmlinux:
     )
     def test_field(self, build, field):
         assert type(build.metadata["vmlinux"][field]) is int
+
+
+class TestSystemMap:
+    def test_text_offset(self, build):
+        assert build.metadata["system_map"]["text_offset"] == "0xc1000000"

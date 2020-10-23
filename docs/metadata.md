@@ -56,6 +56,8 @@ available.
     - **cache_misses**: number of cache misses (integer).
 - **source**: metadata about the source tree.
     - **kernelversion**: output of `make --silent kernelversion`
+- **system_map**: metadata about `System.map`.
+    - **text_offset**: offset of the .text section in hexadecimal (string).
 - **tools**: metadata about tools present in the build system. key/value, with
   the tool name (e.g. "gcc", "make", "ld", etc), and their version
 - **uname**: different components of *uname(1)*.

@@ -1,4 +1,3 @@
-from io import StringIO
 import json
 from pathlib import Path
 import shutil
@@ -29,10 +28,10 @@ class MetadataExtractor:
         script = build.build_dir / "metadata.pl"
         shutil.copy(script_src, script)
 
-        stdout = StringIO()
-        build.run_cmd(["perl", str(script), str(metadata_input)], output=stdout)
-        stdout.seek(0)
-        return self.read_json(stdout.read())
+        stdout = build.build_dir / "extracted-metadata.json"
+        with stdout.open("w") as f:
+            build.run_cmd(["perl", str(script), str(metadata_input)], stdout=f)
+        return self.read_json(stdout.read_text())
 
     def read_json(self, metadata_json):
         if not metadata_json:

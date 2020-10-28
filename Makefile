@@ -32,11 +32,15 @@ docker-build-tests:
 version = $(shell python3 -c "import tuxmake; print(tuxmake.__version__)")
 
 release:
+	@if [ -n "$$(git tag --list v$(version))" ]; then echo "Version $(version) already released. Bump the version in tuxmake/__init__.py to make a new release"; false; fi
 	@if ! git diff-index --exit-code --quiet HEAD; then git status; echo "Commit all changes before releasing"; false; fi
 	git push
-	git tag --sign --message="$(version) release" v$(version)
-	flit publish
-	git push --tags
+	printf "$(version) release\n\n" > relnotes.txt
+	git log --no-merges --reverse --oneline $$(git tag | sort -V | tail -1).. >> relnotes.txt
+	$${EDITOR} relnotes.txt
+	@echo git tag --sign --file=relnotes.txt v$(version)
+	@echo flit publish
+	@echo git push --tags
 
 man: tuxmake.1
 

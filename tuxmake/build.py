@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from collections import OrderedDict
 from pathlib import Path
 import datetime
@@ -270,20 +271,30 @@ class Build:
         self.log_debug(f"Command: {final_cmd}")
         if extra_env:
             self.log_debug(f"Environment: {extra_env}")
-        process = subprocess.Popen(
-            final_cmd,
-            cwd=self.source_tree,
-            env=env,
-            stdin=stdin,
-            stdout=stdout,
-            stderr=stderr,
-        )
         try:
+            with self.measure_duration("Command"):
+                process = subprocess.Popen(
+                    final_cmd,
+                    cwd=self.source_tree,
+                    env=env,
+                    stdin=stdin,
+                    stdout=stdout,
+                    stderr=stderr,
+                )
             process.communicate()
             return process.returncode == 0
         except KeyboardInterrupt:
             process.terminate()
             sys.exit(1)
+
+    @contextmanager
+    def measure_duration(self, name):
+        start = time.time()
+        try:
+            yield
+        finally:
+            duration = time.time() - start
+            self.log_debug(f"{name} finished in {duration} seconds.")
 
     def expand_cmd_part(self, part):
         if part == "{make}":

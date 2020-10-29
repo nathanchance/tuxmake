@@ -530,7 +530,8 @@ class TestDebug:
         return Build(tree=linux, debug=True, environment={"FOO": "BAR"})
 
     @pytest.fixture
-    def err(self, debug_build, capfd):
+    def err(self, debug_build, mocker, capfd):
+        mocker.patch("time.time", side_effect=[1, 43])
         debug_build.run_cmd(["true"])
         _, e = capfd.readouterr()
         return e
@@ -543,3 +544,6 @@ class TestDebug:
 
     def test_log_command_environment(self, err):
         assert "D: Environment: " in err
+
+    def test_log_command_duration(self, err, mocker):
+        assert "D: Command finished in 42 seconds" in err

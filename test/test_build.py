@@ -525,18 +525,21 @@ class TestUnsupportedToolchainArchitectureCombination:
 
 
 class TestDebug:
-    def test_debug_option(self, linux):
-        b = Build(tree=linux, debug=True)
-        assert b.debug
+    @pytest.fixture
+    def debug_build(self, linux):
+        return Build(tree=linux, debug=True, environment={"FOO": "BAR"})
 
-    def test_log_commands(self, linux, capfd):
-        b = Build(tree=linux, debug=True)
-        b.run_cmd(["true"])
-        out, err = capfd.readouterr()
+    @pytest.fixture
+    def err(self, debug_build, capfd):
+        debug_build.run_cmd(["true"])
+        _, e = capfd.readouterr()
+        return e
+
+    def test_debug_option(self, debug_build):
+        assert debug_build.debug
+
+    def test_log_commands(self, err):
         assert "D: Command: " in err
 
-    def test_log_command_environment(self, linux, capfd):
-        b = Build(tree=linux, debug=True, environment={"FOO": "BAR"})
-        b.run_cmd(["true"])
-        out, err = capfd.readouterr()
+    def test_log_command_environment(self, err):
         assert "D: Environment: " in err

@@ -17,8 +17,9 @@ typecheck:
 	mypy tuxmake
 
 codespell:
-	find . -name \*.py | xargs codespell
-	find . -name \*.md | xargs codespell
+	codespell \
+		--check-filenames \
+		--skip '.git,public,*.pyc,tags,*.json,.coverage'
 
 integration-tests:
 	run-parts --verbose test/integration

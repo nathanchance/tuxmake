@@ -43,7 +43,7 @@ release:
 	@$${EDITOR} $(relnotes)
 	@echo "Release notes: "
 	@sed -e 's/^/| /' $(relnotes)
-	@read input -p ""Press ENTER to release version $(version) with the release notes above, or ctrl-c to abort"
+	@read -p "Press ENTER to release version $(version) with the release notes above, or ctrl-c to abort" input
 	git push
 	git tag --sign --file=$(relnotes) v$(version)
 	flit publish

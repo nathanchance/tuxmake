@@ -14,6 +14,7 @@ i386         |             | 32-bit X86
 mips         |             | 32-bit MIPS
 powerpc      |             | 64-bit PowerPC (EL)
 riscv        |             | 64-bit RISC-V
+s390         |             | 64-bit IBM S/390
 sh           |             | 32-bit sh4
 sparc        |             | 64-bit Sparc
 x86_64       | *amd64*     | 64-bit X86

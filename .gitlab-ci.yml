@@ -179,7 +179,7 @@ docker-images-arm64:
   stage: build
   extends: .docker
   tags:
-     - arm64-dind
+    - arm64-dind
   variables:
     TAG: "-arm64"
   script:

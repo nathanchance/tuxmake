@@ -308,6 +308,10 @@ class TestArchitecture:
         result = build(tree=linux, target_arch="riscv")
         assert "Image.gz" in [str(f.name) for f in result.output_dir.glob("*")]
 
+    def test_s390(self, linux):
+        result = build(tree=linux, target_arch="s390")
+        assert "bzImage" in [str(f.name) for f in result.output_dir.glob("*")]
+
     def test_sh(self, linux):
         result = build(tree=linux, target_arch="sh")
         assert "zImage" in [str(f.name) for f in result.output_dir.glob("*")]

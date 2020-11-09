@@ -4,10 +4,11 @@ import shlex
 import sys
 from tuxmake.arch import Architecture
 from tuxmake.toolchain import Toolchain
-from tuxmake.build import build, supported
+from tuxmake.build import build
 from tuxmake.cmdline import build_parser
 from tuxmake.exceptions import TuxMakeException
 from tuxmake.runtime import get_runtime
+from tuxmake.utils import supported
 
 
 def main(*argv):

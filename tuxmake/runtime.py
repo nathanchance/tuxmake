@@ -37,6 +37,9 @@ class Runtime(ConfigurableObject):
     def __init_config__(self):
         self.toolchains = Toolchain.supported()
 
+    def get_image(self, build):
+        return None
+
     def is_supported(self, arch, toolchain):
         return True
 

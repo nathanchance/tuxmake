@@ -1,7 +1,6 @@
 from contextlib import contextmanager
 from collections import OrderedDict
 from pathlib import Path
-import multiprocessing
 import json
 import os
 import shlex
@@ -13,26 +12,13 @@ from tuxmake.arch import Architecture, host_arch
 from tuxmake.toolchain import Toolchain, NoExplicitToolchain
 from tuxmake.wrapper import Wrapper, NoWrapper
 from tuxmake.output import get_new_output_dir
-from tuxmake.target import create_target, supported_targets
-from tuxmake.runtime import get_runtime, Runtime
+from tuxmake.target import create_target
+from tuxmake.runtime import get_runtime
 from tuxmake.metadata import MetadataExtractor
 from tuxmake.exceptions import UnrecognizedSourceTree
 from tuxmake.exceptions import UnsupportedArchitectureToolchainCombination
 from tuxmake.log import LogParser
-
-
-class supported:
-    architectures = Architecture.supported()
-    targets = supported_targets()
-    toolchains = Toolchain.supported()
-    runtimes = Runtime.supported()
-    wrappers = Wrapper.supported()
-
-
-class defaults:
-    kconfig = "defconfig"
-    targets = ["config", "kernel", "modules", "dtbs", "debugkernel"]
-    jobs = multiprocessing.cpu_count() * 2
+from tuxmake.utils import defaults
 
 
 class BuildInfo:

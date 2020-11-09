@@ -1,6 +1,8 @@
 import argparse
 from pathlib import Path
-from tuxmake.build import supported, defaults
+import re
+
+from tuxmake.utils import supported, defaults
 from tuxmake import __version__
 
 
@@ -177,3 +179,75 @@ def build_parser(cls=argparse.ArgumentParser, **kwargs):
         help="Opens a shell in the runtime after the build, regardless of its result, for debugging.",
     )
     return parser
+
+
+class Option:
+    def __init__(self, key, opt, **kwargs):
+        self.key = key
+        self.opt = opt
+        self.type = kwargs.get("type", None)
+        self.action = kwargs.get("action", None)
+
+    def expand(self, value):
+        if self.action == "store_true":
+            return [self.opt]
+
+        if self.key == "environment":
+            values = value.items()
+
+            def f(a):
+                return f"{a[0]}={a[1]}"
+
+        else:
+
+            def f(a):
+                return a
+
+            if self.action == "append":
+                values = value
+            else:
+                values = [value]
+        return [f"{self.opt}={f(v)}" for v in values]
+
+
+class ReverseParser:
+    def __init__(self, **kwargs):
+        self.options = []
+
+    def add_argument_group(self, name):
+        return self
+
+    def add_argument(self, *args, **kwargs):
+        if len(args) == 1:
+            opt = args[0]
+        else:
+            opt = args[1]
+        key = re.sub(r"^--", "", opt)
+        key = re.sub("-", "_", key)
+        self.options.append(Option(key, opt, **kwargs))
+
+
+class CommandLine:
+    ignore = ["targets", "jobs", "output_dir", "build_dir"]
+
+    def __init__(self):
+        self.parser = build_parser(cls=ReverseParser)
+
+    def reproduce(self, build):
+        cmd = ["tuxmake"]
+        for option in self.parser.options:
+            if option.key in self.ignore:
+                continue
+            if hasattr(build, option.key):
+                value = getattr(build, option.key)
+                if not value:
+                    continue
+                for c in option.expand(value):
+                    cmd.append(c)
+        image = build.runtime.get_image(build)
+        if image:
+            cmd.append(f"--docker-image={image}")
+        for target in build.targets:
+            cmd.append(target.name)
+
+        return cmd

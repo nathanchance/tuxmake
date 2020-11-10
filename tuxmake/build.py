@@ -18,6 +18,7 @@ from tuxmake.metadata import MetadataExtractor
 from tuxmake.exceptions import UnrecognizedSourceTree
 from tuxmake.exceptions import UnsupportedArchitectureToolchainCombination
 from tuxmake.log import LogParser
+from tuxmake.cmdline import CommandLine
 from tuxmake.utils import defaults
 
 
@@ -397,6 +398,7 @@ class Build:
         return s and True in set(s)
 
     def extract_metadata(self):
+        cmdline = CommandLine()
         self.metadata["build"] = {
             "targets": [t.name for t in self.targets],
             "target_arch": self.target_arch.name,
@@ -408,6 +410,7 @@ class Build:
             "jobs": self.jobs,
             "runtime": self.runtime.name,
             "verbose": self.verbose,
+            "reproducer_cmdline": cmdline.reproduce(self),
         }
         errors, warnings = self.parse_log()
         self.metadata["results"] = {

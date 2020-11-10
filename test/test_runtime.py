@@ -125,6 +125,9 @@ class TestDockerRuntime:
     def test_listed_as_supported(self):
         assert "docker" in Runtime.supported()
 
+    def test_str(self):
+        assert str(DockerRuntime()) == "docker"
+
 
 class TestDockerLocalRuntime:
     def test_prepare_checks_local_image(self, build, get_docker_image, mocker):
@@ -154,6 +157,9 @@ class TestDockerLocalRuntime:
     def test_listed_as_supported(self):
         assert "docker-local" in Runtime.supported()
 
+    def test_str(self):
+        assert str(DockerLocalRuntime()) == "docker-local"
+
 
 class TestPodmanRuntime:
     def test_prepare(self, build, get_docker_image, mocker):
@@ -173,6 +179,9 @@ class TestPodmanRuntime:
     def test_no_user_option(self, build):
         cmd = PodmanRuntime().get_command_line(build, ["date"], False)
         assert len([c for c in cmd if "--user=" in c]) == 0
+
+    def test_str(self):
+        assert str(PodmanRuntime()) == "podman"
 
 
 class TestPodmanLocalRuntime:
@@ -202,3 +211,6 @@ class TestPodmanLocalRuntime:
 
     def test_listed_as_supported(self):
         assert "podman-local" in Runtime.supported()
+
+    def test_str(self):
+        assert str(PodmanLocalRuntime()) == "podman-local"

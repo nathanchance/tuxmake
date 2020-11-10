@@ -40,8 +40,9 @@ ENVIRONMENT VARIABLES
   overridden in the command line.
 * `TUXMAKE_DOCKER_RUN`: defines extra options for the `docker run` calls made
   by the docker runtime.
-* `TUXMAKE_DOCKER_IMAGE`: defines docker image to use with the docker runtime.
-  The same substitutions described in `--docker-image` apply.
+* `TUXMAKE_IMAGE`: defines the image to use with the selected container runtime
+  (docker, podman etc).  The same substitutions described in `--image`
+  apply.
 
 ..
     END OF ENVIRONMENT VARIABLES

@@ -47,23 +47,23 @@ class TestNullRuntime:
 
 
 @pytest.fixture
-def get_docker_image(mocker):
-    return mocker.patch("tuxmake.toolchain.Toolchain.get_docker_image")
+def get_image(mocker):
+    return mocker.patch("tuxmake.toolchain.Toolchain.get_image")
 
 
 class TestDockerRuntime:
-    def test_docker_image(self, build, get_docker_image):
-        get_docker_image.return_value = "foobarbaz"
+    def test_image(self, build, get_image):
+        get_image.return_value = "foobarbaz"
         runtime = DockerRuntime()
         assert runtime.get_image(build) == "foobarbaz"
 
-    def test_override_docker_image(self, build, monkeypatch):
-        monkeypatch.setenv("TUXMAKE_DOCKER_IMAGE", "foobar")
+    def test_override_image(self, build, monkeypatch):
+        monkeypatch.setenv("TUXMAKE_IMAGE", "foobar")
         runtime = DockerRuntime()
         assert runtime.get_image(build) == "foobar"
 
-    def test_prepare(self, build, get_docker_image, mocker):
-        get_docker_image.return_value = "myimage"
+    def test_prepare(self, build, get_image, mocker):
+        get_image.return_value = "myimage"
         check_call = mocker.patch("subprocess.check_call")
         DockerRuntime().prepare(build)
         check_call.assert_called_with(["docker", "pull", "myimage"])
@@ -130,8 +130,8 @@ class TestDockerRuntime:
 
 
 class TestDockerLocalRuntime:
-    def test_prepare_checks_local_image(self, build, get_docker_image, mocker):
-        get_docker_image.return_value = "mylocalimage"
+    def test_prepare_checks_local_image(self, build, get_image, mocker):
+        get_image.return_value = "mylocalimage"
         check_call = mocker.patch("subprocess.check_call")
         runtime = DockerLocalRuntime()
 
@@ -142,8 +142,8 @@ class TestDockerLocalRuntime:
             stderr=subprocess.DEVNULL,
         )
 
-    def test_prepare_image_not_found(self, build, get_docker_image, mocker):
-        get_docker_image.return_value = "foobar"
+    def test_prepare_image_not_found(self, build, get_image, mocker):
+        get_image.return_value = "foobar"
         mocker.patch(
             "subprocess.check_call",
             side_effect=subprocess.CalledProcessError(
@@ -162,8 +162,8 @@ class TestDockerLocalRuntime:
 
 
 class TestPodmanRuntime:
-    def test_prepare(self, build, get_docker_image, mocker):
-        get_docker_image.return_value = "myimage"
+    def test_prepare(self, build, get_image, mocker):
+        get_image.return_value = "myimage"
         check_call = mocker.patch("subprocess.check_call")
         PodmanRuntime().prepare(build)
         check_call.assert_called_with(["podman", "pull", "myimage"])
@@ -185,8 +185,8 @@ class TestPodmanRuntime:
 
 
 class TestPodmanLocalRuntime:
-    def test_prepare_checks_local_image(self, build, get_docker_image, mocker):
-        get_docker_image.return_value = "mylocalimage"
+    def test_prepare_checks_local_image(self, build, get_image, mocker):
+        get_image.return_value = "mylocalimage"
         check_call = mocker.patch("subprocess.check_call")
         runtime = PodmanLocalRuntime()
 
@@ -197,8 +197,8 @@ class TestPodmanLocalRuntime:
             stderr=subprocess.DEVNULL,
         )
 
-    def test_prepare_image_not_found(self, build, get_docker_image, mocker):
-        get_docker_image.return_value = "foobar"
+    def test_prepare_image_not_found(self, build, get_image, mocker):
+        get_image.return_value = "foobar"
         mocker.patch(
             "subprocess.check_call",
             side_effect=subprocess.CalledProcessError(

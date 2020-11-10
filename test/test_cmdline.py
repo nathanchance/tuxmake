@@ -20,10 +20,10 @@ class TestCommandLine:
         cmd = cmdline.reproduce(Build(runtime="docker"))
         assert "--runtime=docker" in cmd
 
-    def test_docker_image(self, mocker, cmdline):
+    def test_image(self, mocker, cmdline):
         mocker.patch("tuxmake.runtime.DockerRuntime.get_image", return_value="myimage")
         cmd = cmdline.reproduce(Build(runtime="docker"))
-        assert "--docker-image=myimage" in cmd
+        assert "--image=myimage" in cmd
 
     def test_targets(self, cmdline):
         cmd = cmdline.reproduce(Build(targets=["config", "kernel"]))

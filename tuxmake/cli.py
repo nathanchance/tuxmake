@@ -81,13 +81,18 @@ def main(*argv):
         err = sys.stderr
 
     if options.docker_image:
-        options.runtime = "docker"
-        os.environ["TUXMAKE_DOCKER_IMAGE"] = options.docker_image
+        os.environ["TUXMAKE_IMAGE"] = options.docker_image
+        sys.stderr.write("W: --docker-image is deprecated; use --image instead\n")
+
+    if options.image:
+        if not options.runtime:
+            options.runtime = "docker"
+        os.environ["TUXMAKE_IMAGE"] = options.image
 
     build_args = {
         k: v
         for k, v in options.__dict__.items()
-        if v and k not in ["color", "docker_image", "shell"]
+        if v and k not in ["color", "image", "shell"]
     }
     try:
         result = build(**build_args, auto_cleanup=(not options.shell))

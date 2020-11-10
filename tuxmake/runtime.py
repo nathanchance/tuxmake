@@ -124,7 +124,7 @@ class DockerRuntime(Runtime):
         }
 
     def is_supported(self, arch, toolchain):
-        image_name = toolchain.get_docker_image(arch)
+        image_name = toolchain.get_image(arch)
         image = self.toolchain_images_map.get(image_name)
         if image:
             return host_arch.name in image.hosts or any(
@@ -134,8 +134,10 @@ class DockerRuntime(Runtime):
             return False
 
     def get_image(self, build):
-        return os.getenv("TUXMAKE_DOCKER_IMAGE") or build.toolchain.get_docker_image(
-            build.target_arch
+        return (
+            os.getenv("TUXMAKE_IMAGE")
+            or os.getenv("TUXMAKE_DOCKER_IMAGE")
+            or build.toolchain.get_image(build.target_arch)
         )
 
     def prepare(self, build):

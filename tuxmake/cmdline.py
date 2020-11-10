@@ -111,9 +111,10 @@ def build_parser(cls=argparse.ArgumentParser, **kwargs):
     )
     buildenv.add_argument(
         "-i",
-        "--docker-image",
-        help="Docker image to build with (implies --docker). {toolchain} and {arch} get replaced by the names of the toolchain and architecture selected for the build. Implies --runtime=docker. (default: tuxmake-provided images).",
+        "--image",
+        help="Image to build with, for container-based runtimes (docker, podman etc). {toolchain} and {arch} get replaced by the names of the toolchain and architecture selected for the build. Implies --runtime=docker if no runtime is explicit specified. (default: tuxmake-provided images).",
     )
+    buildenv.add_argument("--docker-image", help="Alias for --image (deprecated).")
     buildenv.add_argument(
         "-v",
         "--verbose",
@@ -246,7 +247,7 @@ class CommandLine:
                     cmd.append(c)
         image = build.runtime.get_image(build)
         if image:
-            cmd.append(f"--docker-image={image}")
+            cmd.append(f"--image={image}")
         for target in build.targets:
             cmd.append(target.name)
 

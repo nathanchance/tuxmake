@@ -183,6 +183,14 @@ class TestPodmanRuntime:
     def test_str(self):
         assert str(PodmanRuntime()) == "podman"
 
+    def test_TUXMAKE_PODMAN_RUN(self, build, monkeypatch):
+        monkeypatch.setenv(
+            "TUXMAKE_PODMAN_RUN", "--hostname=foobar --env=FOO='bar baz'"
+        )
+        cmd = PodmanRuntime().get_command_line(build, ["bash"], False)
+        assert "--hostname=foobar" in cmd
+        assert "--env=FOO=bar baz" in cmd
+
 
 class TestPodmanLocalRuntime:
     def test_prepare_checks_local_image(self, build, get_image, mocker):

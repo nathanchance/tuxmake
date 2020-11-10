@@ -92,6 +92,7 @@ class Image:
 class DockerRuntime(Runtime):
     name = "docker"
     command = "docker"
+    extra_opts_env_variable = "TUXMAKE_DOCKER_RUN"
     prepare_failed_msg = "failed to pull remote image {image}"
 
     def __init_config__(self):
@@ -200,13 +201,14 @@ class DockerRuntime(Runtime):
         return [f"--user={uid}:{gid}"]
 
     def __get_extra_opts__(self):
-        opts = os.getenv("TUXMAKE_DOCKER_RUN", "")
+        opts = os.getenv(self.extra_opts_env_variable, "")
         return shlex.split(opts)
 
 
 class PodmanRuntime(DockerRuntime):
     name = "podman"
     command = "podman"
+    extra_opts_env_variable = "TUXMAKE_PODMAN_RUN"
 
     def get_user_opts(self):
         return []

@@ -3,7 +3,6 @@ from collections import OrderedDict
 from pathlib import Path
 import json
 import os
-import shlex
 import shutil
 import subprocess
 import sys
@@ -20,6 +19,7 @@ from tuxmake.exceptions import UnsupportedArchitectureToolchainCombination
 from tuxmake.log import LogParser
 from tuxmake.cmdline import CommandLine
 from tuxmake.utils import defaults
+from tuxmake.utils import quote_command_line
 
 
 class BuildInfo:
@@ -191,6 +191,7 @@ class Build:
         self.__status__ = {}
         self.__durations__ = {}
         self.metadata = OrderedDict()
+        self.cmdline = CommandLine()
 
     @property
     def status(self):
@@ -219,8 +220,8 @@ class Build:
 
     def prepare(self):
         self.log(
-            "# command line: "
-            + " ".join(["tuxmake"] + [shlex.quote(a) for a in sys.argv[1:]])
+            "# to reproduce this build locally: "
+            + quote_command_line(self.cmdline.reproduce(self))
         )
         self.wrapper.prepare(self)
         self.runtime.prepare(self)
@@ -253,7 +254,7 @@ class Build:
             stdin = subprocess.DEVNULL
             stderr = logger
             if not stdout:
-                self.log(" ".join([shlex.quote(c) for c in cmd]))
+                self.log(quote_command_line(cmd))
                 stdout = logger
 
         self.log_debug(f"Command: {final_cmd}")
@@ -398,7 +399,6 @@ class Build:
         return s and True in set(s)
 
     def extract_metadata(self):
-        cmdline = CommandLine()
         self.metadata["build"] = {
             "targets": [t.name for t in self.targets],
             "target_arch": self.target_arch.name,
@@ -410,7 +410,7 @@ class Build:
             "jobs": self.jobs,
             "runtime": self.runtime.name,
             "verbose": self.verbose,
-            "reproducer_cmdline": cmdline.reproduce(self),
+            "reproducer_cmdline": self.cmdline.reproduce(self),
         }
         errors, warnings = self.parse_log()
         self.metadata["results"] = {

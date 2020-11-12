@@ -37,6 +37,13 @@ class TestGetRuntime:
             get_runtime("xyz")
 
 
+class TestRuntime:
+    def test_invalid_runtime(self, monkeypatch):
+        monkeypatch.setattr(Runtime, "name", "invalid")
+        with pytest.raises(InvalidRuntimeError):
+            Runtime()
+
+
 class TestNullRuntime:
     def test_get_command_line(self, build):
         assert NullRuntime().get_command_line(build, ["date"], False) == ["date"]

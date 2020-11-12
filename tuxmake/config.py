@@ -1,5 +1,6 @@
 import re
 import shlex
+from functools import lru_cache
 from typing import Optional, Type, List
 from configparser import ConfigParser
 from pathlib import Path
@@ -15,6 +16,7 @@ class ConfigurableObject:
         self.__init_config__()
 
     @classmethod
+    @lru_cache(None)
     def read_config(cls, name):
         commonconf = Path(__file__).parent / cls.basedir / "common.ini"
         conffile = Path(__file__).parent / cls.basedir / f"{name}.ini"

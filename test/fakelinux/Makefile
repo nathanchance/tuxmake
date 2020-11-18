@@ -84,16 +84,21 @@ modules_install: $(O)/modules
 ########################################################################
 # dtbs
 ########################################################################
-dtbs: $(O)/dtbs
-CLEAN += $(O)/dtbs
-$(O)/dtbs: $(O)/.config
-	$(call maybefail,dtbs)
-	mkdir -p $@/hisilicon
-	touch    $@/hisilicon/hi6220-hikey.dtb
+DTBSDIR= arch/$(ARCHDIRNAME)/boot/dts
+DTBS = $(O)/$(DTBSDIR)
+CLEAN += $(DTBS)/hisilicon
 
-dtbs_install: $(O)/dtbs
+$(DTBS): $(DTBSDIR)
+	mkdir -p $@
+
+dtbs: $(O)/.config $(DTBS)
+	$(call maybefail,dtbs)
+	mkdir -p $(DTBS)/hisilicon
+	touch    $(DTBS)/hisilicon/hi6220-hikey.dtb
+
+dtbs_install: $(DTBS)
 	mkdir -p $(INSTALL_DTBS_PATH)
-	cp -r $(O)/dtbs/* $(INSTALL_DTBS_PATH)/
+	cp -r $(DTBS)/dtbs/* $(INSTALL_DTBS_PATH)/
 
 
 ########################################################################

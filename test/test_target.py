@@ -71,14 +71,11 @@ class TestModules:
     def modules(self, build):
         return Target("modules", build)
 
-    def test_build_modules(self, modules):
-        assert modules.commands[0] == ["{make}", "modules"]
-
     def test_install_modules(self, modules):
-        assert modules.commands[1][0:2] == ["{make}", "modules_install"]
+        assert modules.commands[0][0:2] == ["{make}", "modules_install"]
 
     def test_strip_modules(self, modules):
-        assert "INSTALL_MOD_STRIP=1" in modules.commands[1]
+        assert "INSTALL_MOD_STRIP=1" in modules.commands[0]
 
 
 class TestDtbs:

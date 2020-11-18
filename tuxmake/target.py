@@ -59,6 +59,7 @@ class Config(Target):
         super().__init_config__()
 
     def prepare(self):
+        olddefconfig = False
         build_dir = self.build.build_dir
         config = build_dir / ".config"
         conf = self.build.kconfig
@@ -66,6 +67,7 @@ class Config(Target):
             return
         if self.handle_url(config, conf) or self.handle_local_file(config, conf):
             self.build.log(f"# {conf} -> {config}")
+            olddefconfig = True
         elif self.handle_make_target(conf):
             pass
         else:
@@ -101,6 +103,8 @@ class Config(Target):
                     *merge,
                 ]
             )
+            olddefconfig = True
+        if olddefconfig:
             self.commands.append(["{make}", "olddefconfig"])
 
     def handle_url(self, config, url):

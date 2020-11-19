@@ -98,7 +98,7 @@ dtbs: $(O)/.config $(DTBS)
 
 dtbs_install: $(DTBS)
 	mkdir -p $(INSTALL_DTBS_PATH)
-	cp -r $(DTBS)/dtbs/* $(INSTALL_DTBS_PATH)/
+	cp -r $(DTBS)/* $(INSTALL_DTBS_PATH)/
 
 
 ########################################################################

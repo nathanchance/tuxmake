@@ -125,7 +125,7 @@ class Config(Target):
         return True
 
     def handle_make_target(self, t):
-        if re.match(r"^\w+config$", t):
+        if re.match(r"^[\w\-]+config$", t):
             self.commands.append(["{make}", t])
             return True
         else:

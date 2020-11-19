@@ -1,7 +1,7 @@
 import re
 import shlex
 from functools import lru_cache
-from typing import Optional, Type, List
+from typing import Optional, Type, Dict
 from configparser import ConfigParser
 from pathlib import Path
 
@@ -9,7 +9,7 @@ from pathlib import Path
 class ConfigurableObject:
     basedir: Optional[str] = None
     exception: Optional[Type[Exception]] = None
-    not_aliases: List[str] = []
+    config_aliases: Dict[str, str] = {}
 
     def __init__(self, name):
         self.name, self.config = self.read_config(name)
@@ -22,9 +22,7 @@ class ConfigurableObject:
         conffile = Path(__file__).parent / cls.basedir / f"{name}.ini"
         if not conffile.exists():
             raise cls.exception(name)
-        if conffile.name not in cls.not_aliases:
-            conffile = conffile.resolve()
-        name = conffile.stem
+        name = cls.config_aliases.get(conffile.stem, name)
         config = ConfigParser()
         config.optionxform = str
         config.read(commonconf)
@@ -49,8 +47,7 @@ class ConfigurableObject:
         return [
             str(f.name).replace(".ini", "")
             for f in files
-            if f.name != "common.ini"
-            and (not f.is_symlink() or f.name in cls.not_aliases)
+            if f.name != "common.ini" and f.stem not in cls.config_aliases
         ]
 
 

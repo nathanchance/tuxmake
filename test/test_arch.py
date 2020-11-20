@@ -21,4 +21,4 @@ class TestAlias:
 
     def test_architecture_knows_about_its_aliases(self):
         arch = Architecture("arm64")
-        assert "aarch64" in arch.aliases
+        assert arch.aliases == ["aarch64"]

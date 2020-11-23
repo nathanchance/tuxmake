@@ -50,7 +50,7 @@ sub check_toolchain_image() {
   } else {
     $compiler = $image;
   }
-  if ($compiler =~ /^(.*)-(\d+)$/) {
+  if ($compiler =~ /^(.*)-(nightly|\d+)$/) {
     $compiler = $1;
     $version = $2;
   }
@@ -64,7 +64,7 @@ sub check_toolchain_image() {
     check_program($prefix . "as");
   }
 
-  if ($version) {
+  if ($version && $version =~ /^\d+$/) {
     my $compiler_bin = ($cross_compile && $compiler !~ /clang/) ? ($cross_compile . $compiler) : $compiler;
     my $actual_version = `${compiler_bin} -dumpversion`;
     chomp $actual_version;

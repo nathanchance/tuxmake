@@ -42,7 +42,8 @@ kernel build combinations easier for developers.
 
 TuxMake provides strong defaults, making the easy cases easy. By default,
 tuxmake will build a config, a kernel, and modules and dtbs if applicable.
-Additional targets can be specified with command line flags.
+Additional targets can be specified with command line flags, and are
+defined in the `tuxmake/target/*.ini` files.
 
 Every step of the build is clearly shown so that there is no mystery or
 obfuscation during the build.

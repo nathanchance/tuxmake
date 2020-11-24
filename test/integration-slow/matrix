@@ -85,6 +85,7 @@ for toolchain in options.toolchain:
             print(f"Not testing {toolchain} for {arch} (unsupported)")
             continue
         print(f"Testing {toolchain} for {arch} ... ", end="")
+        sys.stdout.flush()
         with log.open("w") as f:
             rc = subprocess.call(
                 [

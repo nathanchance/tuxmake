@@ -218,8 +218,8 @@ class Build:
             "# to reproduce this build locally: "
             + quote_command_line(self.cmdline.reproduce(self))
         )
-        self.wrapper.prepare(self)
         self.runtime.prepare(self)
+        self.wrapper.prepare(self)
 
     @property
     def output_dir(self):

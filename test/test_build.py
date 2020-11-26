@@ -642,3 +642,19 @@ class TestDebug:
 
     def test_log_command_duration(self, err, mocker):
         assert "D: Command finished in 42 seconds" in err
+
+
+class TestPrepare:
+    def test_prepare_runtime_first(self, mocker):
+        order = []
+        mocker.patch(
+            "tuxmake.runtime.NullRuntime.prepare",
+            side_effect=lambda _: order.append("runtime"),
+        )
+        mocker.patch(
+            "tuxmake.wrapper.Wrapper.prepare",
+            side_effect=lambda _: order.append("wrapper"),
+        )
+        build = Build(wrapper="ccache")
+        build.prepare()
+        assert order == ["runtime", "wrapper"]

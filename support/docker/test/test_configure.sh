@@ -90,4 +90,4 @@ test_clang10() {
     assertArg 'BASE=$(PROJECT)/base' 'PACKAGES="clang-10 llvm-10 lld-10"'
 }
 
-. shunit2
+. /usr/share/shunit2/shunit2

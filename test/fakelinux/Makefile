@@ -11,10 +11,11 @@ HOSTCC = clang
 CC     = clang
 endif
 
+CFLAGS += -nostdlib
 ifneq ($(CROSS_COMPILE),)
 ifneq ($(shell $(CC) --version 2>&1 | head -n1 | grep clang),)
 triplet := $(patsubst %-,%,$(CROSS_COMPILE))
-CFLAGS += --target=$(triplet) -I/usr/$(triplet)/include
+CFLAGS += --target=$(triplet)
 endif
 endif
 

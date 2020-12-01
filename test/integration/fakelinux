@@ -175,4 +175,4 @@ if [ $# -gt 0 ]; then
   }
 fi
 
-. shunit2
+. /usr/share/shunit2/shunit2

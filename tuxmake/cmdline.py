@@ -18,7 +18,7 @@ def abspath(path):
 def build_parser(cls=argparse.ArgumentParser, **kwargs):
     parser = cls(
         prog="tuxmake",
-        usage="%(prog)s [OPTIONS] [targets ...]",
+        usage="%(prog)s [OPTIONS] [VAR=VALUE...] [target ...]",
         description="TuxMake is a python utility that provides portable and repeatable Linux kernel builds across a variety of architectures, toolchains, kernel configurations, and make targets.",
         add_help=False,
         **kwargs,
@@ -27,9 +27,10 @@ def build_parser(cls=argparse.ArgumentParser, **kwargs):
     positional = parser.add_argument_group("Positional arguments")
     positional.add_argument(
         "targets",
+        metavar="[KEY=VALUE | target] ...",
         nargs="*",
         type=str,
-        help=f"Targets to build. If omitted, tuxmake will build  {' + '.join(defaults.targets)}. Supported targets: {', '.join(supported.targets)}.",
+        help=f"Make variables to use and targets to build. If no targets are specified, tuxmake will build  {' + '.join(defaults.targets)}. Supported targets: {', '.join(supported.targets)}.",
     )
 
     build_input = parser.add_argument_group("Build input options")
@@ -248,6 +249,8 @@ class CommandLine:
         image = build.runtime.get_image(build)
         if image:
             cmd.append(f"--image={image}")
+        for k, v in build.make_variables.items():
+            cmd.append(f"{k}={v}")
         for target in build.targets:
             cmd.append(target.name)
 

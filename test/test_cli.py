@@ -59,6 +59,24 @@ class TestTargets:
         assert args(builder).targets == ["config", "kernel"]
 
 
+class TestMakeVariables:
+    def test_basic(self, builder):
+        tuxmake("FOO=BAR")
+        assert args(builder).make_variables == {"FOO": "BAR"}
+        assert "targets" not in args(builder).__dict__
+
+    def test_make_vars_and_targets(self, builder):
+        tuxmake("FOO=BAR", "config")
+        assert args(builder).make_variables == {"FOO": "BAR"}
+        assert args(builder).targets == ["config"]
+
+    def test_rejects_multiple_equal_signs(self, builder):
+        with pytest.raises(SystemExit) as exit:
+            tuxmake("FOO=BAR=QUX", "config")
+        builder.assert_not_called()
+        assert exit.value.code == 1
+
+
 class TestKConfig:
     def test_kconfig(self, builder):
         tuxmake("--kconfig=olddefconfig")

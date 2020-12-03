@@ -410,7 +410,6 @@ class TestXIPKernel:
         assert result.passed
         artifacts = [str(f.name) for f in result.output_dir.glob("*")]
         assert "xipImage" in artifacts
-        assert "modules.tar.xz" in artifacts
 
 
 class TestModules:

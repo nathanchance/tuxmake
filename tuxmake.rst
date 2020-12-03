@@ -12,7 +12,7 @@ A thin wrapper for building Linux kernels
 SYNOPSIS
 ========
 
-tuxmake [OPTIONS] [targets ...]
+tuxmake [OPTIONS] [KEY=VALUE ...] [targets ...]
 
 DESCRIPTION
 ===========
@@ -21,7 +21,10 @@ tuxmake helps you build Linux kernels in a repeatable and consistent way. It
 supports multiple ways of configuring the kernel, multiple architectures,
 toolchains, and can build multiple targets.
 
-You can specify what **targets** to build using positional arguments.  If none
+Any **KEY=VALUE** pairs given in the command line are passed to make as is.
+e.g. **LLVM=1**, **W=3**, etc.
+
+You can specify what **targets** to build in the command line.  If none
 are provided, tuxmake will build a default set of targets: config, kernel,
 modules and DTBs (if applicable). Other build options, such as target
 architecture, toolchain to use, etc can be provided with command line options.

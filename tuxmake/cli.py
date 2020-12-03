@@ -89,6 +89,15 @@ def main(*argv):
             options.runtime = "docker"
         os.environ["TUXMAKE_IMAGE"] = options.image
 
+    if options.targets:
+        key_values = [arg for arg in options.targets if "=" in arg]
+        for kv in key_values:
+            if kv.count("=") > 1:
+                sys.stderr.write(f"E: invalid KEY=VALUE: {kv}")
+                sys.exit(1)
+        options.make_variables = dict((arg.split("=") for arg in key_values))
+        options.targets = [arg for arg in options.targets if "=" not in arg]
+
     build_args = {
         k: v
         for k, v in options.__dict__.items()

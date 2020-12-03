@@ -29,6 +29,12 @@ class TestCommandLine:
         cmd = cmdline.reproduce(Build(targets=["config", "kernel"]))
         assert cmd[-2:] == ["config", "kernel"]
 
+    def test_make_variables(self, cmdline):
+        cmd = cmdline.reproduce(
+            Build(targets=["config"], make_variables={"FOO": "BAR"})
+        )
+        assert cmd[-2:] == ["FOO=BAR", "config"]
+
     @pytest.mark.parametrize("option", ["jobs", "output-dir", "build-dir"])
     def test_ignore(self, cmdline, option):
         build = Build()

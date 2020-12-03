@@ -41,6 +41,13 @@ If you want to provide your own images, take into consideration that:
   that already contain the base tools and can be reused. Look for
   `tuxmake/base-*` [on Dockerhub](https://hub.docker.com/u/tuxmake).
 
+
+By default, the docker runtime will determine which image to use for your build
+based on the selection of target architecture and toolchain that you picked.
+You can override the image to use, the registry to get images from, or which
+image tags to use via environment variables. See the "ENVIRONMENT VARIABLES"
+section in the [command line documentation](cli.md#environment-variables).
+
 ## docker-local
 
 The same as `docker`, but will only use images that you already have locally,

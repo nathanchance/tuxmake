@@ -76,6 +76,25 @@ class TestDockerRuntime:
         runtime = DockerRuntime()
         assert runtime.get_image(build) == "foobar"
 
+    def test_override_image_registry(self, build, monkeypatch, get_image):
+        monkeypatch.setenv("TUXMAKE_IMAGE_REGISTRY", "foobar.com")
+        get_image.return_value = "myimage"
+        runtime = DockerRuntime()
+        assert runtime.get_image(build) == "foobar.com/myimage"
+
+    def test_override_image_tag(self, build, monkeypatch, get_image):
+        monkeypatch.setenv("TUXMAKE_IMAGE_TAG", "20201201")
+        get_image.return_value = "myimage"
+        runtime = DockerRuntime()
+        assert runtime.get_image(build) == "myimage:20201201"
+
+    def test_override_image_registry_and_tag(self, build, monkeypatch, get_image):
+        monkeypatch.setenv("TUXMAKE_IMAGE_REGISTRY", "foobar.com")
+        monkeypatch.setenv("TUXMAKE_IMAGE_TAG", "20201201")
+        get_image.return_value = "myimage"
+        runtime = DockerRuntime()
+        assert runtime.get_image(build) == "foobar.com/myimage:20201201"
+
     def test_prepare(self, build, get_image, mocker):
         get_image.return_value = "myimage"
         check_call = mocker.patch("subprocess.check_call")

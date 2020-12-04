@@ -43,11 +43,19 @@ ENVIRONMENT VARIABLES
   overridden in the command line.
 * `TUXMAKE_DOCKER_RUN`: defines extra options for `docker run` calls made
   by the docker runtime.
-* `TUXMAKE_DOCKER_RUN`: defines extra options for `podman run` calls made
+* `TUXMAKE_PODMAN_RUN`: defines extra options for `podman run` calls made
   by the podman runtime.
 * `TUXMAKE_IMAGE`: defines the image to use with the selected container runtime
   (docker, podman etc).  The same substitutions described in `--image`
   apply.
+* `TUXMAKE_IMAGE_REGISTRY`: defines an container image registry to get any
+  container image from. This string, and a slash character ("/"), gets
+  prepended to the image name, regardless of it being provided via
+  `$TUXMAKE_IMAGE`, `--image`, or determined automatically by tuxmake.
+* `TUXMAKE_IMAGE_TAG`: defines an container image tag to use.  If
+  used, a colon character (":") and this string get appended to the image name
+  that was informed with `$TUXMAKE_IMAGE`, `--image`, or determined
+  automatically by tuxmake.
 
 ..
     END OF ENVIRONMENT VARIABLES

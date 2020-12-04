@@ -138,11 +138,18 @@ class DockerRuntime(Runtime):
             return False
 
     def get_image(self, build):
-        return (
+        image = (
             os.getenv("TUXMAKE_IMAGE")
             or os.getenv("TUXMAKE_DOCKER_IMAGE")
             or build.toolchain.get_image(build.target_arch)
         )
+        registry = os.getenv("TUXMAKE_IMAGE_REGISTRY")
+        if registry:
+            image = registry + "/" + image
+        tag = os.getenv("TUXMAKE_IMAGE_TAG")
+        if tag:
+            image = image + ":" + tag
+        return image
 
     def prepare(self, build):
         super().prepare(build)

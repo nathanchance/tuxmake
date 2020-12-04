@@ -64,5 +64,8 @@ purge:
 	$(docker) image ls --format='{{.Repository}}:{{.Tag}}' $(PROJECT)/\* \
 		| xargs $(docker) rmi
 
+dot:
+	@(echo "digraph images {"; sed -e '/# dot:/!d; s/^# dot: //' configure.mk; echo "}")
 
-.PHONY: $(all_images) $(releases) $(publish_releases) $(publish_multiarch_releases) test show list clean purge
+
+.PHONY: $(all_images) $(releases) $(publish_releases) $(publish_multiarch_releases) test show list clean purge dot

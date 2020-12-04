@@ -78,6 +78,7 @@ class Image:
         for l in sorted(set(self.lists)):
             stream.write(f"{l}_images += {self.name}\n")
         if self.dependency:
+            stream.write(f"# dot: \"{self.name}\" -> \"{self.dependency}\";\n")
             stream.write(f"{self.name}: {self.dependency} log\n")
         else:
             stream.write(f"{self.name}: log\n")

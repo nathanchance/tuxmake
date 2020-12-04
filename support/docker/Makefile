@@ -54,15 +54,15 @@ test:
 test-images: $(patsubst %, test-%, $(all_images))
 
 show:
-	@docker images $(PROJECT)/\* | sort
+	@$(docker) images $(PROJECT)/\* | sort
 
 clean:
 	$(RM) configure.mk
 	$(RM) -r log/
 
 purge:
-	docker image ls --format='{{.Repository}}:{{.Tag}}' $(PROJECT)/\* \
-		| xargs docker rmi
+	$(docker) image ls --format='{{.Repository}}:{{.Tag}}' $(PROJECT)/\* \
+		| xargs $(docker) rmi
 
 
 .PHONY: $(all_images) $(releases) $(publish_releases) $(publish_multiarch_releases) test show list clean purge

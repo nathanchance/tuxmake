@@ -67,5 +67,7 @@ purge:
 dot:
 	@(echo "digraph images {"; sed -e '/# dot:/!d; s/^# dot: //' configure.mk; echo "}")
 
-
 .PHONY: $(all_images) $(releases) $(publish_releases) $(publish_multiarch_releases) test show list clean purge dot
+
+gitlab-ci.yml: gen-gitlab-ci
+	+./gen-gitlab-ci > $@ || ($(RM) $@; false)

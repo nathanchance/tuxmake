@@ -139,7 +139,7 @@ integration-docker:
   image: tuxmake/ci-python3.8
   before_script:
     - apt-get update -q
-    - python3 -m pip install mkautodoc  # FIXME not in Debian
+    - python3 -m pip install mkautodoc mkdocs-material  # FIXME not in Debian
   script:
     - make man
     - make doc

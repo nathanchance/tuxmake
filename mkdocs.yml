@@ -16,8 +16,6 @@ markdown_extensions:
 extra_css:
   - mkautodoc.css
   - extra.css
-extra_javascript:
-  - fix.js # workaround for https://github.com/mkdocs/mkdocs/issues/2028
 
 nav:
 - Introduction:

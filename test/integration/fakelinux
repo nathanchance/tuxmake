@@ -164,6 +164,15 @@ test_build_dir_with_incremental_build() {
   assertTrue 'test -f build/vmlinux.xz'
 }
 
+test_missing_artifact() {
+  # hack fakelinux so that it does not produce a kernel image
+  sed -i -e '/\$(COMPRESS)/d' Makefile
+
+  run tuxmake
+  assertNotEquals 0 "$rc"
+  assertTrue "grep '^I: kernel: FAIL' stderr"
+}
+
 
 if [ $# -gt 0 ]; then
   export TESTCASES="$(echo "$@")"

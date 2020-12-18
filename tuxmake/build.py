@@ -424,10 +424,23 @@ class Build:
                 if not self.run_cmd(cmd):
                     fail = True
                     break
+
+        if not self.check_artifacts(target):
+            fail = True
+
         if fail:
             return BuildInfo("FAIL")
 
         return BuildInfo("PASS")
+
+    def check_artifacts(self, target):
+        ret = True
+        for _, f in target.artifacts.items():
+            artifact = self.build_dir / f
+            if not artifact.exists():
+                self.log(f"ERROR: expected artifact {f} not found!")
+                ret = False
+        return ret
 
     def copy_artifacts(self, target):
         if not self.status[target.name].passed:

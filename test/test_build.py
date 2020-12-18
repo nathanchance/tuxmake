@@ -24,8 +24,13 @@ def output_dir(tmp_path):
     return out
 
 
+@pytest.fixture
+def check_artfifacts(mocker):
+    return mocker.patch("tuxmake.build.Build.check_artifacts", return_value=True)
+
+
 @pytest.fixture()
-def Popen(mocker):
+def Popen(mocker, check_artfifacts):
     _Popen = mocker.patch("subprocess.Popen")
     _Popen.return_value.communicate.return_value = (
         mocker.MagicMock(),
@@ -668,3 +673,19 @@ class TestPrepare:
         build = Build(wrapper="ccache")
         build.prepare()
         assert order[0] == "runtime"
+
+
+class TestMissingArtifacts:
+    def test_missing_kernel(self, linux, mocker):
+        # hack fakelinux Makefile so that it does not produce a kernel image
+        makefile = Path(linux) / "Makefile"
+        text = makefile.read_text()
+        with makefile.open("w") as f:
+            for line in text.splitlines():
+                if "$(COMPRESS)" not in line:
+                    f.write(line)
+                    f.write("\n")
+
+        build = Build(tree=linux)
+        build.run()
+        assert build.failed

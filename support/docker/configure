@@ -59,13 +59,13 @@ class Image:
 
     @property
     def base_image(self):
-        return f"$(PROJECT)/{self.base}:latest$(TAG)"
+        return f"$(REGISTRY)$(PROJECT)/{self.base}:latest$(TAG)"
 
     def arg(self, k, v):
         self.args.append((k, v))
 
     def emit(self):
-        self.args = [("BASE", self.base_image)]
+        self.args.append(("BASE", self.base_image))
 
     def register(self):
         for l in self.lists:

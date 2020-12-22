@@ -1,5 +1,5 @@
 ARG BASE
-FROM tuxmake/${BASE}
+FROM ${BASE}
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN wget -O /etc/apt/trusted.gpg.d/llvm.asc https://apt.llvm.org/llvm-snapshot.gpg.key

@@ -1,4 +1,5 @@
 export PYTHONPATH := $(shell readlink -f $(CURDIR)/../..)
+REGISTRY := docker.io/
 PROJECT := tuxmake
 
 docker := docker

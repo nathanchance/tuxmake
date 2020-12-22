@@ -38,7 +38,7 @@ assertArg() {
 
 test_base() {
     get_build_args base-debian
-    assertArg 'BASE=debian:stable-slim'
+    assertArg 'BASE=docker.io/library/debian:stable-slim'
 }
 
 test_gcc() {

@@ -19,8 +19,9 @@ targets.
 Building Linux is easy, right? You just run "make defconfig; make"!
 
 It gets complicated when you want to support the following combinations:
-- Architectures (x86, i386, arm64, arm, mips, arc, riscv, powerpc, s390, sparc, etc)
-- Toolchains (gcc-8, gcc-9, gcc-10, clang-8, clang-9, clang-10, etc)
+- Architectures (arc, arm, arm64, i386, mips, parisc, powerpc, riscv, s390, sh,
+  sparc, x86_64, etc)
+- Toolchains (gcc-8, gcc-9, gcc-10, clang-10, clang-11, clang-nightly, etc)
 - Configurations (defconfig, distro configs, allmodconfigs, randconfig, etc)
 - Targets (kernel image, documentation, selftests, perf, cpupower, etc)
 - Build-time validation (coccinelle, sparse checker, etc)
@@ -28,40 +29,15 @@ It gets complicated when you want to support the following combinations:
 Each of those items requires specific configuration, and supporting all
 combinations is difficult. TuxMake seeks to simplify Linux kernel building by
 providing a consistent command line interface to each of those combinations
-listed above. E.g. the following command builds an arm64 kernel with gcc-9:
+listed above. You specify what to build at the command line, and TuxMake drives
+the build for you, doing the same steps the same way every time.
 
-```sh
-tuxmake --kconfig defconfig --target-arch arm64 --toolchain clang-9
-```
-
-While bit-for-bit [reproducible
-builds](https://www.kernel.org/doc/html/latest/kbuild/reproducible-builds.html)
-are out of scope for the initial version of this project, the above command
-should be portable such that if there is a problem with the build, any other
-user should be able to use the same command to produce the same build problem.
-
-Such an interface provides portability and simplicity, making arbitrary Linux
-kernel build combinations easier for developers.
-
-TuxMake provides strong defaults, making the easy cases easy. By default,
-tuxmake will build a config, a kernel, and modules and dtbs if applicable.
-Additional targets can be specified with command line flags, and are
-defined in the `tuxmake/target/*.ini` files.
-
-Every step of the build is clearly shown so that there is no mystery or
-obfuscation during the build.
-
-TuxMake does not 'fix' any problems in Linux - rather it provides a thin
-veneer over the top of the existing Linux source tree to make building Linux
-easier. e.g. if a build combination fails in Linux, it should fail the same way
-when building with TuxMake.
-
-The resulting build artifacts and metadata are automatically saved in a single
-local per-build directory.
-
-Finally, TuxMake strives to be well tested and robust so that developers can
-rely on it to save time and make it worth the additional complexity that
-another layer of abstraction introduces.
+The real power comes from using TuxMake's curated, portable build environments
+distributed as Docker/Podman [container
+images]((https://hub.docker.com/u/tuxmake)). When using these versioned and
+hermetic filesystem images, your team can use the same exact toolchain(s)
+across different workstation platforms. Reporting and reproducing build
+failures is trivial by sharing TuxMake command lines with others.
 
 # Installing TuxMake
 
@@ -111,6 +87,10 @@ Build from current directory:
 
     $ tuxmake
 
+Build using Podman:
+
+    $ tuxmake --runtime podman
+
 Build from specific directory:
 
     $ tuxmake --directory /path/to/linux
@@ -151,9 +131,9 @@ Build tinyconfig on arm64 with gcc-9 using docker:
 
     $ tuxmake -r docker -a arm64 -t gcc-9 -k tinyconfig
 
-Build DTBs on arm64 using docker:
+Build DTBs on arm64 using podman:
 
-    $ tuxmake -r docker -a arm64 -t gcc-9 dtbs
+    $ tuxmake -r podman -a arm64 -t gcc-9 dtbs
 
 Incremental builds can be done by reusing a build directory:
 

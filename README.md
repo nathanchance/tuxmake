@@ -4,9 +4,12 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![PyPI - License](https://img.shields.io/pypi/l/tuxmake)](https://gitlab.com/Linaro/tuxmake/blob/master/LICENSE)
 
-TuxMake is a command line tool and Python library that provides portable and
-repeatable Linux kernel builds across a variety of architectures, toolchains,
-kernel configurations, and make targets.
+[Documentation](https://docs.tuxmake.org/) - [Repository](https://gitlab.com/Linaro/tuxmake) - [Issues](https://gitlab.com/Linaro/tuxmake/-/issues)
+
+TuxMake, by [Linaro](https://www.linaro.org/), is a command line tool and
+Python library that provides portable and repeatable Linux kernel builds across
+a variety of architectures, toolchains, kernel configurations, and make
+targets.
 
 [[_TOC_]]
 
@@ -23,8 +26,8 @@ It gets complicated when you want to support the following combinations:
 - Build-time validation (coccinelle, sparse checker, etc)
 
 Each of those items requires specific configuration, and supporting all
-combinations becomes difficult. TuxMake seeks to simplify Linux kernel building
-by providing a consistent command line interface to each of those combinations
+combinations is difficult. TuxMake seeks to simplify Linux kernel building by
+providing a consistent command line interface to each of those combinations
 listed above. E.g. the following command builds an arm64 kernel with gcc-9:
 
 ```sh

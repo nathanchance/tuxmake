@@ -1,7 +1,7 @@
 OS := $(shell sh -c 'eval "$$(grep ^ID= /etc/os-release)"; echo $$ID')
 -include scripts/config/$(OS).mk
 
-.PHONY: test
+.PHONY: test tags
 
 ALL_TESTS_PASSED = ======================== All tests passed ========================
 
@@ -73,5 +73,8 @@ doc: docs/cli.md docs/index.md
 	python3 -m pytest scripts/test_doc.py
 	PYTHONPATH=. mkdocs build
 
+tags:
+	ctags --exclude=public --exclude=tmp -R
+
 clean:
-	$(RM) -r tuxmake.1 cli_options.rst docs/cli.md docs/index.md public/
+	$(RM) -r tuxmake.1 cli_options.rst docs/cli.md docs/index.md public/ tags

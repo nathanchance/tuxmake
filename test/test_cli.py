@@ -118,7 +118,7 @@ class TestRuntime:
 class TestImage:
     @pytest.fixture(autouse=True)
     def environment(self, monkeypatch):
-        env = {}
+        env = dict(os.environ)
         monkeypatch.setattr(os, "environ", env)
         return env
 

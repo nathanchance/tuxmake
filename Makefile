@@ -49,7 +49,9 @@ docs/cli.md: tuxmake.rst tuxmake/cli.py scripts/cli2md.sh
 docs/index.md: README.md scripts/readme2index.sh
 	scripts/readme2index.sh $@
 
-doc: docs/cli.md docs/index.md
+doc: public
+
+public: docs/cli.md docs/index.md $(wildcard docs/*)
 	python3 -m pytest scripts/test_doc.py
 	PYTHONPATH=. mkdocs build
 

@@ -309,3 +309,68 @@ class TestOptionsFromEnvironment:
         monkeypatch.setattr(sys, "argv", ["tuxmake", "--toolchain=clang"])
         tuxmake()
         assert args(builder).toolchain == "clang"
+
+
+class TestConfigurationFiles:
+    @pytest.fixture(autouse=True)
+    def config_dir(self, home):
+        confdir = home / ".config" / "tuxmake"
+        confdir.mkdir(parents=True)
+        return confdir
+
+    def test_basics(self, builder, config_dir):
+        with (config_dir / "ccache").open("w") as f:
+            f.write("--wrapper=ccache\n")
+        tuxmake("@ccache")
+        assert args(builder).wrapper == "ccache"
+
+    def test_default(self, builder, config_dir, monkeypatch):
+        with (config_dir / "default").open("w") as f:
+            f.write("--runtime=podman\n")
+        monkeypatch.setattr(sys, "argv", [])
+        tuxmake()
+        assert args(builder).runtime == "podman"
+
+    def test_escaping(self, builder, config_dir):
+        with (config_dir / "escaping").open("w") as f:
+            f.write("--environment=FOO='bar baz'\n")
+        tuxmake("@escaping")
+        assert args(builder).environment["FOO"] == "bar baz"
+
+    def test_order(self, builder, config_dir):
+        with (config_dir / "before").open("w") as f:
+            f.write("--runtime=podman\n")
+        with (config_dir / "after").open("w") as f:
+            f.write("--kconfig=defconfig\n")
+        tuxmake("@before", "--runtime=null", "--kconfig=tinyconfig", "@after")
+        assert args(builder).runtime == "null"
+        assert args(builder).kconfig == "defconfig"
+
+    def test_comments(self, builder, config_dir):
+        with (config_dir / "comments").open("w") as f:
+            f.write("# this is a comment\n")
+        tuxmake("@comments")
+        assert "targets" not in args(builder)
+
+    def test_missing_config_file(self, capsys):
+        with pytest.raises(SystemExit) as exit:
+            tuxmake("@missing")
+        _, err = capsys.readouterr()
+
+        assert exit.value.code == 1
+        assert "E: missing configuration file: " in err
+
+    def test_absolute_path(self, builder, home):
+        with (home / "file").open("w") as f:
+            f.write("--environment=FOO=BAR\n")
+        tuxmake(f"@{home}/file")
+        assert args(builder).environment["FOO"] == "BAR"
+
+    def test_XDG_CONFIG_HOME(self, builder, home, monkeypatch):
+        custom_config_dir = home / "customconfig"
+        (custom_config_dir / "tuxmake").mkdir(parents=True)
+        with (custom_config_dir / "tuxmake" / "myconfig").open("w") as f:
+            f.write("--environment=CONFIG=custom")
+        monkeypatch.setenv("XDG_CONFIG_HOME", str(custom_config_dir))
+        tuxmake("@myconfig")
+        assert args(builder).environment["CONFIG"] == "custom"

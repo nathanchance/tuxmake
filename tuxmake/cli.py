@@ -2,6 +2,7 @@ from datetime import timedelta
 import os
 import shlex
 import sys
+from tuxmake import xdg
 from tuxmake.arch import Architecture
 from tuxmake.toolchain import Toolchain
 from tuxmake.build import build
@@ -11,9 +12,33 @@ from tuxmake.runtime import get_runtime
 from tuxmake.utils import supported
 
 
-def main(*argv):
-    if not argv:
-        argv = tuple(sys.argv[1:])
+def read_config(filename, missing_ok=False):
+    configdir = xdg.config_home() / "tuxmake"
+    path = configdir / filename
+    if not path.exists():
+        if missing_ok:
+            return []
+        else:
+            sys.stderr.write(f"E: missing configuration file: {path}\n")
+            sys.exit(1)
+
+    res = []
+    for line in (configdir / filename).read_text().splitlines():
+        if not line.startswith("#"):
+            res += shlex.split(line)
+    return res
+
+
+def main(*origargv):
+    if not origargv:
+        origargv = tuple(sys.argv[1:])
+    argv = read_config("default", missing_ok=True)
+    for a in origargv:
+        if a.startswith("@"):
+            argv += read_config(a[1:])
+        else:
+            argv.append(a)
+    argv = tuple(argv)
 
     env_options = os.getenv("TUXMAKE")
     if env_options:

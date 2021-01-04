@@ -2,9 +2,17 @@ import os
 from pathlib import Path
 
 
-def cache_home():
-    home = os.getenv("XDG_CACHE_HOME")
+def _resolve(var, default):
+    home = os.getenv(var)
     if home:
         return Path(home)
     else:
-        return Path.home() / ".cache"
+        return Path.home() / default
+
+
+def cache_home():
+    return _resolve("XDG_CACHE_HOME", ".cache")
+
+
+def config_home():
+    return _resolve("XDG_CONFIG_HOME", ".config")

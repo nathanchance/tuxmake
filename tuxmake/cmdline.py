@@ -27,10 +27,10 @@ def build_parser(cls=argparse.ArgumentParser, **kwargs):
     positional = parser.add_argument_group("Positional arguments")
     positional.add_argument(
         "targets",
-        metavar="[KEY=VALUE | target] ...",
+        metavar="[@config | KEY=VALUE | target] ...",
         nargs="*",
         type=str,
-        help=f"Make variables to use and targets to build. If no targets are specified, tuxmake will build  {' + '.join(defaults.targets)}. Supported targets: {', '.join(supported.targets)}.",
+        help=f"Configuration files to load, Make variables to use and targets to build. If no targets are specified, tuxmake will build  {' + '.join(defaults.targets)}. Supported targets: {', '.join(supported.targets)}.",
     )
 
     build_input = parser.add_argument_group("Build input options")

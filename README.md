@@ -143,6 +143,13 @@ Incremental builds can be done by reusing a build directory:
     $ tuxmake --build-dir=/path/to/output
     # only rebuilds what is needed
 
+Using configuration files:
+
+    # reads command line options from ~/.config/tuxmake/myconfig
+    $ tuxmake @myconfig
+    # reads command line options from /tmp/myconfig
+    $ tuxmake @/tmp/myconfig
+
 Display all options:
 
     $ tuxmake --help

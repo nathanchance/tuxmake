@@ -1,13 +1,8 @@
-from pathlib import Path
-import os
+from tuxmake import xdg
 
 
 def get_default_output_basedir():
-    base = os.getenv("XDG_CACHE_HOME")
-    if base:
-        return Path(base) / "tuxmake" / "builds"
-    else:
-        return Path.home() / ".cache" / "tuxmake" / "builds"
+    return xdg.cache_home() / "tuxmake" / "builds"
 
 
 def get_new_output_dir():

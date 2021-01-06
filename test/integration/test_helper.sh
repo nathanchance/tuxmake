@@ -34,6 +34,7 @@ oneTimeTearDown() {
 
 setUp() {
   tmpdir=$(mktemp --directory --tmpdir="${basetmpdir}")
+  export XDG_CONFIG_HOME="${tmpdir}/.config"
   export XDG_CACHE_HOME="${tmpdir}/cache"
   cp -r $testdir/fakelinux/ "${tmpdir}/linux"
   cd "${tmpdir}/linux"

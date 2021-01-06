@@ -12,7 +12,7 @@ A thin wrapper for building Linux kernels
 SYNOPSIS
 ========
 
-tuxmake [OPTIONS] [KEY=VALUE ...] [targets ...]
+tuxmake [@config ...] [OPTIONS] [KEY=VALUE ...] [targets ...]
 
 DESCRIPTION
 ===========
@@ -20,6 +20,9 @@ DESCRIPTION
 tuxmake helps you build Linux kernels in a repeatable and consistent way. It
 supports multiple ways of configuring the kernel, multiple architectures,
 toolchains, and can build multiple targets.
+
+Any positional arguments in the command line that start with an `@` are used as
+configuration file references. See **CONFIGURATION FILES** below.
 
 Any **KEY=VALUE** pairs given in the command line are passed to make as is.
 e.g. **LLVM=1**, **W=3**, etc.
@@ -35,6 +38,42 @@ OPTIONS
     Include the options from --help
 .. include:: cli_options.rst
 
+CONFIGURATION FILES
+===================
+
+Configuration files can be passed as positional arguments that start with `@`.
+Absolute filenames are read as is, and relative ones are assumed to be relative
+to `${XDG_CONFIG_HOME}/tuxmake` (where `${XDG_CONFIG_HOME}` defaults to
+`${HOME}/.config`).
+
+The configuration files must contain command line options, for example::
+
+    $ cat ~/.config/tuxmake/default
+    --wrapper=ccache
+    --runtime=podman
+
+Whitespace is ignored in general, so your option can be one per line, or all in
+one line.  Any option values containing spaces and other shell metacharacters
+must be properly quoted and escaped, as if you were writing them in shell
+script::
+
+    --environment=KBUILD_BUILD_TIMESTAMP='Tue May 26 16:16:14 2020 -0500'
+
+Lines starting with an `#` are comments and are ignored. No inline comments are
+supported, only full lines.
+
+When a configuration file reference is found in the command line, the file will
+be read, and the command line options in it will be inserted in the command
+line in the same position as the configuration file reference. So, any options
+given before the configuration file reference can potentially be overridden by
+the ones in the configuration file, and any options after the configuration
+file reference can override the ones set in it.
+
+If `${XDG_CONFIG_HOME}/tuxmake/default` exists, it is always loaded as if it
+was the first argument in the command line.
+
+**Note:** configuration files are only supported in the tuxmake command line.
+The Python API always requires any options to be specified explicitly.
 
 ENVIRONMENT VARIABLES
 =====================
@@ -59,6 +98,12 @@ ENVIRONMENT VARIABLES
 
 ..
     END OF ENVIRONMENT VARIABLES
+
+FILES
+=====
+
+* `${XDG_CONFIG_HOME}/tuxmake/default` (`~/.config/tuxmake/default`): default
+  configuration file.
 
 SEE ALSO
 ========

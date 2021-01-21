@@ -35,8 +35,9 @@ class Target(ConfigurableObject):
         try:
             self.artifacts = self.config["artifacts"]
         except KeyError:
-            key = self.target_arch.targets[self.name]
-            value = self.target_arch.artifacts[key]
+            mapping = self.target_arch.targets
+            key = mapping[self.name]
+            value = self.target_arch.artifacts[self.name].format(**mapping)
             self.artifacts = {key: value}
 
     def __str__(self):

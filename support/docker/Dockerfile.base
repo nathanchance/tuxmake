@@ -41,6 +41,9 @@ RUN apt-get update \
 RUN true \
     && useradd --create-home tuxmake \
     && ln -s /usr/bin/python3 /usr/local/bin/python \
+    && if grep -q '^deb .* \(sid\|unstable\) main' /etc/apt/sources.list; then \
+        sed -e  '/^deb .* sid main/ !d; s/sid/experimental/' /etc/apt/sources.list \
+        > /etc/apt/sources.list.d/experimental.list; fi \
     && true
 
 # vim: ft=dockerfile

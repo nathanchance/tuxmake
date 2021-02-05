@@ -26,12 +26,12 @@ def output_dir(tmp_path):
 
 
 @pytest.fixture
-def check_artfifacts(mocker):
+def check_artifacts(mocker):
     return mocker.patch("tuxmake.build.Build.check_artifacts", return_value=True)
 
 
 @pytest.fixture()
-def Popen(mocker, check_artfifacts):
+def Popen(mocker, check_artifacts):
     _Popen = mocker.patch("subprocess.Popen")
     _Popen.return_value.communicate.return_value = (
         mocker.MagicMock(),

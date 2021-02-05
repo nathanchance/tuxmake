@@ -1,6 +1,7 @@
 export PYTHONPATH := $(shell readlink -f $(CURDIR)/../..)
 REGISTRY := docker.io/
 PROJECT := tuxmake
+LOG = > log/$@.log 2>&1 || (cat log/$@.log; false)
 
 docker := docker
 
@@ -18,8 +19,6 @@ publish_releases = $(patsubst %, publish-%, $(releases))
 publish_multiarch_releases = $(patsubst %, publish-multiarch-%, $(releases))
 
 $(noop_releases):
-
-LOG = > log/$@.log 2>&1 || (cat log/$@.log; false)
 
 log:
 	mkdir $@

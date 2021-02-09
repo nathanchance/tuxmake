@@ -75,6 +75,12 @@ When this target is built, the `kernel` target is not.
 This target builds the Kernel modules. The modules are compressed in a tarball,
 which is copied into the output directory as `modules.tar.gz`.
 
+
+## headers
+
+This target builds the Kernel headers. The headers are compressed in a tarball.
+which is copied into the output directory as `headers.tar.xz`.
+
 ## kselftest
 
 Build the kernsel selftests. The resulting, installed tests are compressed in a

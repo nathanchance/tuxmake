@@ -19,6 +19,7 @@ RUN apt-get update \
         bzip2 \
         ccache \
         cpio \
+        dpkg-dev \
         flex \
         git \
         gzip \
@@ -29,6 +30,7 @@ RUN apt-get update \
         lz4 \
         lzop \
         make \
+        pkg-config \
         python3 \
         rsync \
         tar \

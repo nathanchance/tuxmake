@@ -175,6 +175,32 @@ def build_parser(cls=argparse.ArgumentParser, **kwargs):
         help="Control use of colored output. `always` and `never` do what you expect; `auto` (the default) outputs colors when stdout is a tty.",
     )
 
+    hooks = parser.add_argument_group("Hooks")
+    hooks.add_argument(
+        "--pre-build-hook",
+        type=str,
+        action="append",
+        dest="before_hooks",
+        metavar="COMMAND",
+        help="Execute COMMAND before the build, if the build is valid and will be executed. Can be specified multiple times. The command is executed with the Linux source tree as working directory. If any pre build hook fails, the build it NOT executed, and tuxmake exits with a non-zero exit code.",
+    )
+    hooks.add_argument(
+        "--post-build-hook",
+        type=str,
+        action="append",
+        dest="after_hooks",
+        metavar="COMMAND",
+        help="Execute COMMAND after the build is finished, if the build is successful. Can be specified multiple times. The command is executed with the Linux source tree as working directory. If any post build hook fails, tuxmake exits with a non-zero exit code.",
+    )
+    hooks.add_argument(
+        "--results-hook",
+        type=str,
+        action="append",
+        dest="results_hooks",
+        metavar="COMMAND",
+        help="Execute COMMAND after the build is finished, if the build is successful, and after any post build hooks given by --post-build-hook, if none of them failed. Can be specified multiple times. The command is executed with the build output directory (i.e. where all the artifacts are) as working directory. If any results hook fails, tuxmake exits with a non-zero exit code.",
+    )
+
     debug = parser.add_argument_group("Debugging options")
     debug.add_argument(
         "-d",

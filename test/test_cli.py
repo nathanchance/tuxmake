@@ -14,10 +14,12 @@ def builds(home):
 
 
 @pytest.fixture(autouse=True)
-def builder(mocker):
+def builder(mocker, linux, tmp_path):
     b = mocker.patch("tuxmake.cli.Build")
     b.return_value.passed = True
     b.return_value.failed = False
+    b.return_value.source_tree = linux
+    b.return_value.output_dir = tmp_path
     return b
 
 
@@ -392,3 +394,54 @@ class TestKernel:
     def test_kernel(self, builder):
         tuxmake("--kernel-image=Image.bz2")
         assert args(builder).kernel_image == "Image.bz2"
+
+
+@pytest.fixture
+def check_call(mocker):
+    return mocker.patch("subprocess.check_call")
+
+
+class TestHooks:
+    def test_pre_build_hook(self, check_call, linux):
+        tuxmake('--pre-build-hook=echo "hello world"')
+        check_call.assert_called_with(
+            ["sh", "-c", 'echo "hello world"'], cwd=str(linux)
+        )
+
+    def test_failed_pre_build_hook_stops_build(self, build, linux):
+        with pytest.raises(SystemExit):
+            tuxmake("--pre-build-hook=false")
+        build.run.assert_not_called()
+
+    def test_post_build_hook(self, check_call, linux):
+        tuxmake("--post-build-hook=git clean -dxf")
+        check_call.assert_called_with(["sh", "-c", "git clean -dxf"], cwd=str(linux))
+
+    def test_post_build_hook_failure_means_exit_failure(self):
+        with pytest.raises(SystemExit) as exit:
+            tuxmake("--post-build-hook=false")
+        assert exit.value.code == 2
+
+    def test_post_build__hook_does_not_run_if_build_failed(self, build, check_call):
+        build.passed = False
+        build.failed = True
+        with pytest.raises(SystemExit) as exit:
+            tuxmake("--post-build-hook=true")
+        assert exit.value.code == 2
+        check_call.assert_not_called()
+
+    def test_results_hook(self, check_call, tmp_path):
+        tuxmake("--results-hook=ls -1")
+        check_call.assert_called_with(["sh", "-c", "ls -1"], cwd=str(tmp_path))
+
+    def test_results_hook_failure_means_exit_failure(self):
+        with pytest.raises(SystemExit) as exit:
+            tuxmake("--results-hook=false")
+        assert exit.value.code == 2
+
+    def test_results_hook_does_not_run_if_build_failed(self, build, check_call):
+        build.passed = False
+        build.failed = True
+        with pytest.raises(SystemExit):
+            tuxmake("--results-hook=true")
+        check_call.assert_not_called()

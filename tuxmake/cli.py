@@ -1,5 +1,6 @@
 from datetime import timedelta
 import os
+import subprocess
 import shlex
 import sys
 from tuxmake import xdg
@@ -27,6 +28,18 @@ def read_config(filename, missing_ok=False):
         if not line.startswith("#"):
             res += shlex.split(line)
     return res
+
+
+def run_hooks(hooks, cwd):
+    if not hooks:
+        return
+    for hook in hooks:
+        try:
+            print(hook)
+            subprocess.check_call(["sh", "-c", hook], cwd=str(cwd))
+        except subprocess.CalledProcessError as e:
+            sys.stderr.write(f"E: hook `{hook}` failed with exit code {e.returncode}\n")
+            sys.exit(2)
 
 
 def main(*origargv):
@@ -126,10 +139,21 @@ def main(*origargv):
     build_args = {
         k: v
         for k, v in options.__dict__.items()
-        if v and k not in ["color", "docker_image", "image", "shell"]
+        if v
+        and k
+        not in [
+            "color",
+            "docker_image",
+            "image",
+            "shell",
+            "before_hooks",
+            "after_hooks",
+            "results_hooks",
+        ]
     }
     try:
         build = Build(**build_args, auto_cleanup=(not options.shell))
+        run_hooks(options.before_hooks, build.source_tree)
         build.run()
         if options.shell:
             build.run_cmd(["bash"], interactive=True)
@@ -140,6 +164,9 @@ def main(*origargv):
         print(f"I: build output in {build.output_dir}", file=err)
         if build.failed:
             sys.exit(2)
+        else:
+            run_hooks(options.after_hooks, build.source_tree)
+            run_hooks(options.results_hooks, build.output_dir)
     except TuxMakeException as e:
         sys.stderr.write("E: " + str(e) + "\n")
         sys.exit(1)

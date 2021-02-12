@@ -2,7 +2,7 @@
 
 ALL_TESTS_PASSED = ======================== All tests passed ========================
 
-all: unit-tests integration-tests docker-build-tests man doc typecheck codespell style
+all: unit-tests integration-tests docker-build-tests man doc typecheck codespell style bash_completion
 	@printf "\033[01;32m$(ALL_TESTS_PASSED)\033[m\n"
 
 
@@ -40,6 +40,12 @@ man: tuxmake.1
 tuxmake.1: tuxmake.rst cli_options.rst
 	rst2man tuxmake.rst $@
 
+bash_completion: bash_completion/tuxmake
+
+bash_completion/tuxmake: tuxmake/cmdline.py
+	mkdir -p $$(dirname $@)
+	python3 -m tuxmake.cmdline bash_completion > $@ || ($(RM) $@; false)
+
 cli_options.rst: tuxmake/cli.py scripts/cli2rst.sh
 	scripts/cli2rst.sh $@
 
@@ -59,7 +65,7 @@ tags:
 	ctags --exclude=public --exclude=tmp -R
 
 clean:
-	$(RM) -r tuxmake.1 cli_options.rst docs/cli.md docs/index.md public/ tags dist/
+	$(RM) -r tuxmake.1 cli_options.rst docs/cli.md docs/index.md public/ tags dist/ bash_completion/
 
 version = $(shell sed -e '/^__version__/ !d; s/"\s*$$//; s/.*"//' tuxmake/__init__.py)
 

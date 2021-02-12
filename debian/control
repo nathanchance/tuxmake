@@ -2,7 +2,8 @@ Source: tuxmake
 Maintainer: Antonio Terceiro <antonio.terceiro@linaro.org>
 Section: python
 Priority: optional
-Build-Depends: debhelper-compat (= 12),
+Build-Depends: bash-completion,
+               debhelper-compat (= 12),
                dh-python,
                flit,
                git,

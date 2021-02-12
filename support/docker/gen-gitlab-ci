@@ -47,7 +47,7 @@ docker-images-{group}-{host}:
     tags: [{tag}]
     needs: {needs}
     rules:
-        - if: '$CI_PIPELINE_SOURCE == "schedule" && $TUXMAKE_DOCKER_IMAGES == "{rebuild}"'
+        - if: '$CI_PIPELINE_SOURCE == "schedule" && ($TUXMAKE_DOCKER_IMAGES == "{rebuild}" || $TUXMAKE_DOCKER_IMAGES == "{group}")'
 """
 
 PUBLISH_MULTIARCH_JOB = """
@@ -61,7 +61,7 @@ docker-images-{group}-multiarch:
         - "make publish-multiarch-{group}"
     needs: {needs}
     rules:
-        - if: '$CI_PIPELINE_SOURCE == "schedule" && $TUXMAKE_DOCKER_IMAGES == "{rebuild}"'
+        - if: '$CI_PIPELINE_SOURCE == "schedule" && ($TUXMAKE_DOCKER_IMAGES == "{rebuild}" || $TUXMAKE_DOCKER_IMAGES == "{group}")'
 """
 
 

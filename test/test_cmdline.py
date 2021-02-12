@@ -1,5 +1,10 @@
+from io import StringIO
+import sys
 import pytest
+import tuxmake.cmdline
 from tuxmake.cmdline import CommandLine
+from tuxmake.cmdline import BashCompletion
+from tuxmake.cmdline import main
 from tuxmake.build import Build
 
 
@@ -56,3 +61,19 @@ class TestCommandLine:
     def test_debug(self, cmdline):
         cmd = cmdline.reproduce(Build(debug=True))
         assert "--debug" in cmd
+
+
+class TestBashCompletion:
+    def test_basic(self):
+        stream = StringIO()
+        completion = BashCompletion()
+        completion.emit(stream)
+        output = stream.getvalue()
+        assert "complete -F _tuxmake tuxmake" in output
+
+    def test_main(self, monkeypatch, mocker):
+        emit = mocker.patch("tuxmake.cmdline.BashCompletion.emit")
+        monkeypatch.setattr(tuxmake.cmdline, "__name__", "__main__")
+        monkeypatch.setattr(sys, "argv", ["", "bash_completion"])
+        main()
+        emit.assert_called()

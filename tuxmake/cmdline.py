@@ -1,7 +1,9 @@
 import argparse
 from pathlib import Path
 import re
+import sys
 
+from tuxmake.runtime import get_runtime
 from tuxmake.utils import supported, defaults
 from tuxmake import __version__
 
@@ -190,9 +192,10 @@ def build_parser(cls=argparse.ArgumentParser, **kwargs):
 
 
 class Option:
-    def __init__(self, key, opt, **kwargs):
+    def __init__(self, key, opt, short_opt, **kwargs):
         self.key = key
         self.opt = opt
+        self.short_opt = short_opt
         self.type = kwargs.get("type", None)
         self.action = kwargs.get("action", None)
 
@@ -227,12 +230,14 @@ class ReverseParser:
 
     def add_argument(self, *args, **kwargs):
         if len(args) == 1:
+            short_opt = None
             opt = args[0]
         else:
+            short_opt = args[0]
             opt = args[1]
         key = re.sub(r"^--", "", opt)
         key = re.sub("-", "_", key)
-        self.options.append(Option(key, opt, **kwargs))
+        self.options.append(Option(key, opt, short_opt, **kwargs))
 
 
 class CommandLine:
@@ -261,3 +266,73 @@ class CommandLine:
             cmd.append(target.name)
 
         return cmd
+
+
+__bash_completion__ = """
+_tuxmake() {{
+    cur="${{COMP_WORDS[COMP_CWORD]}}"
+    prev="${{COMP_WORDS[COMP_CWORD-1]}}"
+    case "${{prev}}" in
+        -C|--directory|-o|--output|-b|--build-dir)
+            COMPREPLY=($(compgen -A directory))
+            ;;
+        -a|--target-arch)
+            COMPREPLY=($(compgen -W "{runtimes}" -- ${{cur}}))
+            ;;
+        -t|--toolchain)
+            COMPREPLY=($(compgen -W "{toolchains}" -- ${{cur}}))
+            ;;
+        -w|--wrapper)
+            COMPREPLY=($(compgen -W "{wrappers}" -- ${{cur}}))
+            ;;
+        -r|--runtime)
+            COMPREPLY=($(compgen -W "{runtimes}" -- ${{cur}}))
+            ;;
+        *)
+            COMPREPLY=($(compgen -W "{options}" -- ${{cur}}))
+            ;;
+    esac
+    return 0
+}}
+complete -F _tuxmake tuxmake
+"""
+
+
+class BashCompletion:
+    def __init__(self):
+        self.parser = build_parser(cls=ReverseParser)
+
+    def emit(self, stream=sys.stdout):
+        options = []
+        for option in self.parser.options:
+            if option.key == "targets":
+                pass
+            else:
+                if option.short_opt:
+                    options.append(option.short_opt)
+                options.append(option.opt)
+        for target in supported.targets:
+            options.append(target)
+
+        all_toolchains = get_runtime("podman").toolchains
+
+        print(
+            __bash_completion__.format(
+                options=" ".join(options),
+                target_arches=" ".join(supported.architectures),
+                toolchains=" ".join(all_toolchains),
+                runtimes=" ".join(supported.runtimes),
+                wrappers=" ".join(supported.wrappers),
+            ),
+            file=stream,
+        )
+
+
+def main():
+    if __name__ == "__main__":
+        if len(sys.argv) > 1 and sys.argv[1] == "bash_completion":
+            bash_completion = BashCompletion()
+            bash_completion.emit()
+
+
+main()

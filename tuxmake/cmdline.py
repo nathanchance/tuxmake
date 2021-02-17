@@ -299,9 +299,6 @@ _tuxmake() {{
     cur="${{COMP_WORDS[COMP_CWORD]}}"
     prev="${{COMP_WORDS[COMP_CWORD-1]}}"
     case "${{prev}}" in
-        -C|--directory|-o|--output|-b|--build-dir)
-            COMPREPLY=($(compgen -A directory))
-            ;;
         -a|--target-arch)
             COMPREPLY=($(compgen -W "{architectures}" -- ${{cur}}))
             ;;
@@ -318,9 +315,8 @@ _tuxmake() {{
             COMPREPLY=($(compgen -W "{options}" -- ${{cur}}))
             ;;
     esac
-    return 0
 }}
-complete -F _tuxmake tuxmake
+complete -o bashdefault -o default -F _tuxmake tuxmake
 """
 
 

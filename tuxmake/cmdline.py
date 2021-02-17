@@ -303,7 +303,7 @@ _tuxmake() {{
             COMPREPLY=($(compgen -A directory))
             ;;
         -a|--target-arch)
-            COMPREPLY=($(compgen -W "{runtimes}" -- ${{cur}}))
+            COMPREPLY=($(compgen -W "{architectures}" -- ${{cur}}))
             ;;
         -t|--toolchain)
             COMPREPLY=($(compgen -W "{toolchains}" -- ${{cur}}))
@@ -345,7 +345,7 @@ class BashCompletion:
         print(
             __bash_completion__.format(
                 options=" ".join(options),
-                target_arches=" ".join(supported.architectures),
+                architectures=" ".join(supported.architectures),
                 toolchains=" ".join(all_toolchains),
                 runtimes=" ".join(supported.runtimes),
                 wrappers=" ".join(supported.wrappers),

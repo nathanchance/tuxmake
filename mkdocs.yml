@@ -19,6 +19,11 @@ extra_css:
 
 nav:
 - Getting Started: index.md
+- Installing TuxMake:
+  - PyPI: install-pypi.md
+  - Debian packages: install-deb.md
+  - RPM packages: install-rpm.md
+  - Run uninstalled: run-uninstalled.md
 - Features:
   - Make Targets: targets.md
   - Target Architectures: architectures.md

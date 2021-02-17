@@ -299,11 +299,8 @@ _tuxmake() {{
     cur="${{COMP_WORDS[COMP_CWORD]}}"
     prev="${{COMP_WORDS[COMP_CWORD-1]}}"
     case "${{prev}}" in
-        -C|--directory|-o|--output|-b|--build-dir)
-            COMPREPLY=($(compgen -A directory))
-            ;;
         -a|--target-arch)
-            COMPREPLY=($(compgen -W "{runtimes}" -- ${{cur}}))
+            COMPREPLY=($(compgen -W "{architectures}" -- ${{cur}}))
             ;;
         -t|--toolchain)
             COMPREPLY=($(compgen -W "{toolchains}" -- ${{cur}}))
@@ -318,9 +315,8 @@ _tuxmake() {{
             COMPREPLY=($(compgen -W "{options}" -- ${{cur}}))
             ;;
     esac
-    return 0
 }}
-complete -F _tuxmake tuxmake
+complete -o bashdefault -o default -F _tuxmake tuxmake
 """
 
 
@@ -345,7 +341,7 @@ class BashCompletion:
         print(
             __bash_completion__.format(
                 options=" ".join(options),
-                target_arches=" ".join(supported.architectures),
+                architectures=" ".join(supported.architectures),
                 toolchains=" ".join(all_toolchains),
                 runtimes=" ".join(supported.runtimes),
                 wrappers=" ".join(supported.wrappers),

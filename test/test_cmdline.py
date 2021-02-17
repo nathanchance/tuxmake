@@ -69,7 +69,7 @@ class TestBashCompletion:
         completion = BashCompletion()
         completion.emit(stream)
         output = stream.getvalue()
-        assert "complete -F _tuxmake tuxmake" in output
+        assert "complete -o bashdefault -o default -F _tuxmake tuxmake" in output
 
     def test_main(self, monkeypatch, mocker):
         emit = mocker.patch("tuxmake.cmdline.BashCompletion.emit")

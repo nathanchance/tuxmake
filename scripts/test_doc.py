@@ -61,3 +61,9 @@ class TestDoc:
 
     def test_wrappers(self):
         check_documented_sections(Wrapper.supported(), "docs/wrappers.md", "wrappers")
+
+    def test_no_packages_page(self):
+        """
+        /packages/ is reserved for the actual packages in the published website.
+        """
+        assert not Path("docs/packages.md").exists()

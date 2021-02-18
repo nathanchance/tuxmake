@@ -217,6 +217,7 @@ class DockerRuntime(Runtime):
             self.volume(source_tree, source_tree),
             self.volume(build_dir, build_dir),
             f"--workdir={source_tree}",
+            *self.get_logging_opts(),
             *extra_opts,
             self.get_image(build),
         ] + cmd
@@ -225,6 +226,9 @@ class DockerRuntime(Runtime):
         uid = os.getuid()
         gid = os.getgid()
         return [f"--user={uid}:{gid}"]
+
+    def get_logging_opts(self):
+        return []
 
     def volume(self, source, target):
         return f"--volume={source}:{target}"
@@ -241,6 +245,9 @@ class PodmanRuntime(DockerRuntime):
 
     def get_user_opts(self):
         return []
+
+    def get_logging_opts(self):
+        return ["--log-level=ERROR"]
 
     def volume(self, source, target):
         return super().volume(source, target) + ":z"

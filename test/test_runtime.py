@@ -239,6 +239,10 @@ class TestPodmanRuntime:
         volumes = [o for o in cmd if o.startswith("--volume=")]
         assert all([v.endswith(":z") for v in volumes])
 
+    def test_logging_level(self, build):
+        cmd = PodmanRuntime().get_command_line(build, ["bash"], False)
+        assert "--log-level=ERROR" in cmd
+
 
 class TestPodmanLocalRuntime:
     def test_prepare_checks_local_image(self, build, get_image, mocker):

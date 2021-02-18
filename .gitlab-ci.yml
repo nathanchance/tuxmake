@@ -132,7 +132,7 @@ integration-docker:
     - chown -R nobody:nogroup nobody
     - runuser -u nobody make integration-tests-docker TMV=1 HOME=$(pwd)/nobody TMPDIR=$(pwd)/nobody/tmp
 
-.docs:
+build-docs:
   extends: .tuxmake
   stage: build
   needs: []
@@ -143,19 +143,22 @@ integration-docker:
   script:
     - make man
     - make doc
-
-build-docs:
-  extends: .docs
-  except:
-    - master
+  artifacts:
+    paths:
+      - public
 
 pages:
-  extends: .docs
+  stage: publish
+  needs:
+    - build-docs
+    - packages
   artifacts:
     paths:
       - public
   only:
-    - master
+    - tags
+  script:
+    - cp -r dist/repo public/packages
 
 rpm:
   extends: .tuxmake
@@ -167,6 +170,9 @@ rpm:
     - make rpm
     - rpm --install dist/tuxmake*.rpm
     - make integration-tests
+  artifacts:
+    paths:
+      - dist/*.rpm
 
 deb:
   extends: .tuxmake
@@ -180,3 +186,24 @@ deb:
     - make deb
     - apt-get install -qy ./dist/tuxmake*.deb
     - make integration-tests
+  artifacts:
+    paths:
+      - dist/*.deb
+
+packages:
+  image: debian:bullseye
+  stage: build
+  extends: .tuxmake
+  only:
+    - tags
+  needs:
+    - deb
+    - rpm
+  script:
+    - apt-get update
+    - apt-get install --no-install-recommends -qy dpkg-dev apt-utils createrepo-c rpm gpg gpg-agent
+    - gpg --batch --import ${TUXMAKE_RELEASE_KEY}
+    - ./scripts/package-repos
+  artifacts:
+    paths:
+      - dist/repo

@@ -43,36 +43,12 @@ failures is trivial by sharing TuxMake command lines with others.
 
 # Installing TuxMake
 
-## Using pip
+There are several options for installing TuxMake:
 
-TuxMake requires Python version 3, and is available using pip.
-
-To install TuxMake on your system globally:
-
-```
-sudo pip3 install -U tuxmake
-```
-
-To install tuxbuild to your home directory at ~/.local/bin:
-
-```
-pip3 install -U --user tuxmake
-```
-
-To upgrade TuxMake to the latest version, run the same command you ran to
-install it.
-
-## Running TuxMake From Source
-
-If you don't want to or can't install TuxMake, you can run it directly from the
-source directory. After getting the sources via git or something else, there is
-a `run` script that will do the right think for you: you can either use that
-script, or symlink it to a directory in your `PATH`.
-
-```
-/path/to/tuxmake/run --help
-sudo ln -s /path/to/tuxmake/run /usr/local/bin/tuxmake && tuxmake --help
-```
+- [From PyPI](docs/install-pypi.md)
+- [Debian packages](docs/install-deb.md)
+- [RPM packages](docs/install-rpm.md)
+- [Run uninstalled](docs/run-uninstalled.md)
 
 # Using TuxMake
 

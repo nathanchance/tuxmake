@@ -3,7 +3,7 @@
 You can think about targets in TuxMake in terms of `make` targets when
 building Linux. TuxMake does very little beyond running `make` with the
 correct parameters and collecting the resulting artifacts.  TuxMake will not
-fix or work around any problems in the Linux build system: if those exists,
+fix or work around any problems in the Linux build system: if those exist,
 they should be fixed in Linux.
 
 Targets can have dependencies between them. TuxMake ensures that dependencies

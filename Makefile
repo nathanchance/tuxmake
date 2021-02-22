@@ -61,6 +61,9 @@ public: docs/cli.md docs/index.md $(wildcard docs/*)
 	python3 -m pytest scripts/test_doc.py
 	PYTHONPATH=. mkdocs build
 
+serve-public: public
+	mkdocs serve --livereload --strict
+
 tags:
 	ctags --exclude=public --exclude=tmp -R
 

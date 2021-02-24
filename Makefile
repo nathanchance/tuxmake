@@ -42,7 +42,7 @@ tuxmake.1: tuxmake.rst cli_options.rst
 
 bash_completion: bash_completion/tuxmake
 
-bash_completion/tuxmake: tuxmake/cmdline.py
+bash_completion/tuxmake: tuxmake/cmdline.py $(wildcard tuxmake/*/*.ini)
 	mkdir -p $$(dirname $@)
 	python3 -m tuxmake.cmdline bash_completion > $@ || ($(RM) $@; false)
 

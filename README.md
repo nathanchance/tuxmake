@@ -39,7 +39,7 @@ listed above. You specify what to build at the command line, and TuxMake drives
 the build for you, doing the same steps the same way every time.
 
 The real power comes from using TuxMake's curated, portable build environments
-distributed as Docker/Podman [container images]((https://hub.docker.com/u/tuxmake)).
+distributed as Docker/Podman [container images](https://hub.docker.com/u/tuxmake).
 When using these versioned and hermetic filesystem images, your team can use
 the same exact toolchain(s) across different workstation platforms. Reporting
 and reproducing build failures is trivial by sharing TuxMake command lines with

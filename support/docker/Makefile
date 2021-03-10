@@ -1,7 +1,23 @@
 export PYTHONPATH := $(shell readlink -f $(CURDIR)/../..)
 REGISTRY := docker.io/
 PROJECT := tuxmake
-LOG = > log/$@.log 2>&1 || (cat log/$@.log; false)
+
+ANN := echo
+ifneq ($(findstring s,$(filter-out --%,$(MAKEFLAGS))),)
+  ANN := true
+endif
+
+ifeq ($(V), 1)
+Q         :=
+LOG       :=
+ANN       := true
+else
+Q         := @
+LOG       := > log/$@.log 2>&1 || (cat log/$@.log; false)
+endif
+
+ANN_BUILD := @$(ANN) " BUILD"
+ANN_TEST  := @$(ANN) "  TEST"
 
 docker := docker
 
@@ -57,6 +73,11 @@ test:
 	sh test/test_gitlab_ci.sh
 
 test-images: $(patsubst %, test-%, $(all_images))
+
+SMOKE_ARCH = x86_64 arm64
+SMOKE_TOOLCHAINS = gcc gcc-8 gcc-9 gcc-10 clang-11 clang-12
+SMOKE_IMAGES = $(foreach toolchain,$(SMOKE_TOOLCHAINS),test-$(toolchain) $(foreach arch,$(SMOKE_ARCH),test-$(arch)_$(toolchain)))
+smoke-test: test-base-debian10 test-base-debian11 test-base-debiantesting $(SMOKE_IMAGES)
 
 show:
 	@$(docker) images $(PROJECT)/\* | sed -e 1d | sort

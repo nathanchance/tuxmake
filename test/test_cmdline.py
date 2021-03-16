@@ -64,12 +64,19 @@ class TestCommandLine:
 
 
 class TestBashCompletion:
-    def test_basic(self):
+    def test_basic(self, home):
+        config_dir = home / ".config" / "tuxmake"
+        config_dir.mkdir(parents=True)
+        (config_dir / "foobar").write_text("")
+        (config_dir / "default").write_text("")
+
         stream = StringIO()
         completion = BashCompletion()
         completion.emit(stream)
         output = stream.getvalue()
         assert "complete -o bashdefault -o default -F _tuxmake tuxmake" in output
+        assert "@foobar" in output
+        assert "@default" not in output
 
     def test_main(self, monkeypatch, mocker):
         emit = mocker.patch("tuxmake.cmdline.BashCompletion.emit")

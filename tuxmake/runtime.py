@@ -54,6 +54,9 @@ class Runtime(ConfigurableObject):
     def prepare(self, build):
         pass
 
+    def cleanup(self):
+        pass
+
 
 class NullRuntime(Runtime):
     name = "null"
@@ -140,6 +143,7 @@ class DockerRuntime(Runtime):
         self.toolchain_images_map = {
             f"tuxmake/{image.name}": image for image in self.toolchain_images
         }
+        self.container_id = None
 
     @lru_cache(None)
     def is_supported(self, arch, toolchain):
@@ -172,13 +176,14 @@ class DockerRuntime(Runtime):
     def prepare(self, build):
         super().prepare(build)
         try:
-            self.do_prepare(build)
+            self.prepare_image(build)
+            self.start_container(build)
         except subprocess.CalledProcessError:
             raise RuntimePreparationFailed(
                 self.prepare_failed_msg.format(image=self.get_image(build))
             )
 
-    def do_prepare(self, build):
+    def prepare_image(self, build):
         pull = [self.command, "pull", self.get_image(build)]
         last_pull = cache.get(pull)
         now = time.time()
@@ -189,14 +194,9 @@ class DockerRuntime(Runtime):
         subprocess.check_call(pull)
         cache.set(pull, time.time())
 
-    def get_command_line(self, build, cmd, interactive):
+    def start_container(self, build):
         source_tree = os.path.abspath(build.source_tree)
         build_dir = os.path.abspath(build.build_dir)
-
-        if interactive:
-            interactive_opts = ["--interactive", "--tty"]
-        else:
-            interactive_opts = []
 
         wrapper = build.wrapper
         wrapper_opts = []
@@ -214,12 +214,12 @@ class DockerRuntime(Runtime):
         env = (f"--env={k}={v}" for k, v in build.environment.items())
         user_opts = self.get_user_opts()
         extra_opts = self.__get_extra_opts__()
-        return [
+        cmd = [
             self.command,
             "run",
             "--rm",
             "--init",
-            *interactive_opts,
+            "--detach",
             *wrapper_opts,
             "--env=KBUILD_BUILD_USER=tuxmake",
             *env,
@@ -230,7 +230,27 @@ class DockerRuntime(Runtime):
             *self.get_logging_opts(),
             *extra_opts,
             self.get_image(build),
-        ] + cmd
+            "sleep",
+            "1d",
+        ]
+        build.log_debug(f"Starting container: {cmd}")
+        self.container_id = self.spawn_container(cmd)
+        build.log_debug(f"Container ID: {self.container_id}")
+
+    def spawn_container(self, cmd):
+        return subprocess.check_output(cmd, text=True).strip()
+
+    def get_command_line(self, build, cmd, interactive):
+        if interactive:
+            interactive_opts = ["--interactive", "--tty"]
+        else:
+            interactive_opts = []
+        return [self.command, "exec", *interactive_opts, self.container_id] + cmd
+
+    def cleanup(self):
+        subprocess.check_call(
+            [self.command, "stop", self.container_id], stdout=subprocess.DEVNULL
+        )
 
     def get_user_opts(self):
         uid = os.getuid()
@@ -266,7 +286,7 @@ class PodmanRuntime(DockerRuntime):
 class LocalMixin:
     prepare_failed_msg = "image {image} not found locally"
 
-    def do_prepare(self, build):
+    def prepare_image(self, build):
         subprocess.check_call(
             [self.command, "image", "inspect", self.get_image(build)],
             stdout=subprocess.DEVNULL,

@@ -543,6 +543,7 @@ class Build:
         self.logger.terminate()
 
     def cleanup(self):
+        self.runtime.cleanup()
         shutil.rmtree(self.build_dir, ignore_errors=True)
 
     def run(self):

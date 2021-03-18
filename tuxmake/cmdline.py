@@ -312,7 +312,7 @@ _tuxmake() {{
             COMPREPLY=($(compgen -W "{runtimes}" -- ${{cur}}))
             ;;
         *)
-            COMPREPLY=($(compgen -W "{options}" -- ${{cur}}))
+            COMPREPLY=($(compgen -W "{options} $(ls -1 ${{XDG_CONFIG_HOME:-~/.config}}/tuxmake/ 2>/dev/null | sed -e '/^default$/d; s/^/@/')" -- ${{cur}}))
             ;;
     esac
 }}

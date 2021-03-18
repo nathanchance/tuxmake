@@ -19,10 +19,13 @@ class Test_ccache:
         ccache = Wrapper("ccache")
         assert ccache.environment["CCACHE_DIR"] == "/ccache"
 
-    def test_prepare(self, home, mocker):
-        build = mocker.MagicMock()
-        Wrapper("ccache").prepare(build)
+    def test_prepare_host(self, home):
+        Wrapper("ccache").prepare_host()
         assert (home / ".ccache").exists()
+
+    def test_prepare_runtime(self, mocker):
+        build = mocker.MagicMock()
+        Wrapper("ccache").prepare_runtime(build)
         build.run_cmd.assert_called_with(["ccache", "--zero-stats"], stdout=mocker.ANY)
 
 
@@ -37,3 +40,7 @@ class Test_sccache:
         wrapper = Wrapper("/path/to/sccache")
         assert wrapper.name == "sccache"
         assert wrapper.path == "/path/to/sccache"
+
+    def test_prepare_host(self, home):
+        Wrapper("sccache").prepare_host()
+        assert (home / ".cache" / "sccache").exists()

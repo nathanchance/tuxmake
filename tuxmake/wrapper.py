@@ -30,10 +30,12 @@ class Wrapper(ConfigurableObject):
         self.prepare_cmds = split_commands(self.config["commands"].get("prepare", ""))
         self.command = self.config["commands"].get("wrapper")
 
-    def prepare(self, build):
+    def prepare_host(self):
         for k, v in self.environment.items():
             if k.endswith("_DIR"):
                 Path(v).mkdir(parents=True, exist_ok=True)
+
+    def prepare_runtime(self, build):
         for cmd in self.prepare_cmds:
             build.run_cmd(cmd, stdout=subprocess.DEVNULL)
 

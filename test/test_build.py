@@ -698,19 +698,23 @@ class TestDebug:
 
 
 class TestPrepare:
-    def test_prepare_runtime_first(self, mocker):
+    def test_prepare_runtime_and_wrapper(self, mocker):
         order = []
+        mocker.patch(
+            "tuxmake.wrapper.Wrapper.prepare_host",
+            side_effect=lambda: order.append("wrapper_host"),
+        )
         mocker.patch(
             "tuxmake.runtime.NullRuntime.prepare",
             side_effect=lambda _: order.append("runtime"),
         )
         mocker.patch(
-            "tuxmake.wrapper.Wrapper.prepare",
-            side_effect=lambda _: order.append("wrapper"),
+            "tuxmake.wrapper.Wrapper.prepare_runtime",
+            side_effect=lambda _: order.append("wrapper_runtime"),
         )
         build = Build(wrapper="ccache")
         build.prepare()
-        assert order[0] == "runtime"
+        assert order == ["wrapper_host", "runtime", "wrapper_runtime"]
 
 
 class TestMissingArtifacts:

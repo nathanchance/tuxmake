@@ -202,6 +202,7 @@ class Build:
         for t in targets:
             self.add_target(t)
         self.cleanup_targets()
+        self.extend_kconfig()
 
         if jobs:
             self.jobs = jobs
@@ -256,6 +257,10 @@ class Build:
         self.targets = [
             t for t in self.targets if not self.__ordering_only_targets__[t.name]
         ]
+
+    def extend_kconfig(self):
+        for target in self.targets:
+            self.kconfig_add.extend(target.kconfig_add)
 
     def validate(self):
         source = Path(self.source_tree)

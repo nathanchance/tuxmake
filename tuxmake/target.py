@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import shlex
 import urllib.request
 
 from tuxmake import __version__
@@ -29,6 +30,7 @@ class Target(ConfigurableObject):
         self.runs_after = self.config["target"].get("runs_after", "").split()
         self.preconditions = self.__split_cmds__("target", "preconditions")
         self.commands = self.__split_cmds__("target", "commands")
+        self.kconfig_add = self.__split_kconfigs__()
         try:
             self.artifacts = self.config["artifacts"]
         except KeyError:
@@ -49,6 +51,10 @@ class Target(ConfigurableObject):
 
     def prepare(self):
         pass
+
+    def __split_kconfigs__(self):
+        s = self.config["target"].get("kconfig_add", "")
+        return shlex.split(s)
 
 
 class Config(Target):

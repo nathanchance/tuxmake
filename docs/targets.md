@@ -96,6 +96,13 @@ which is copied into the output directory as `headers.tar.xz`.
 Build the kernsel selftests. The resulting, installed tests are compressed in a
 tarball which is copied into the output directory as `kselftest.tar.xz`.
 
+## kselftest-bpf
+
+Build the kernel BPF selftests. These are normally excluded from the kernel
+selftests because they require the most recent clang toolchain and a specific
+kernel configuration. The resulting, installed tests are compressed in a
+tarball which is copied into the output directory as `kselftest-bpf.tar.xz`.
+
 ## kselftest-merge
 
 This target merges some configuration required by `kselftest` in the kernel

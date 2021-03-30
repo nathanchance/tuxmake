@@ -41,9 +41,14 @@ RUN arch=$(dpkg-architecture --host-type=${HOSTARCH}-linux-gnu --query=DEB_HOST_
         --no-install-recommends \
         --option=debug::pkgProblemResolver=yes \
         ${INSTALL_OPTIONS} \
-        libbabeltrace-dev:${arch} \
         libbinutils:${arch} \
         libc6-dev:${arch} \
+        libc-dev-bin && \
+    apt-get install \
+        --assume-yes \
+        --no-install-recommends \
+        --option=debug::pkgProblemResolver=yes \
+        libbabeltrace-dev:${arch} \
         libcap-dev:${arch} \
         libcap-ng-dev:${arch} \
         libdrm-dev:${arch} \
@@ -64,11 +69,10 @@ RUN arch=$(dpkg-architecture --host-type=${HOSTARCH}-linux-gnu --query=DEB_HOST_
         $(test "${arch}" != "s390x" && echo libunwind-dev:${arch}) \
         libzstd-dev:${arch} \
         systemtap-sdt-dev:${arch} \
-        libc-dev-bin \
         && \
     # This is a horrible hack, but a foreign binutils-dev is not installable \
     # See https://bugs.debian.org/983540 \
-    apt-get download binutils-dev:${arch} && \
+    apt-get download ${INSTALL_OPTIONS} binutils-dev:${arch} && \
     dpkg -x binutils-dev*.deb /tmp/binutils-dev && \
     rsync -avp /tmp/binutils-dev/ / && \
     rm -rf binutils-dev*.deb /tmp/binutils-dev

@@ -8,8 +8,8 @@ if [ -z "${TUXMAKE_OFFLINE_BUILD:-}" ]; then
     if [ -n "${TUXMAKE_OFFLINE_BUILD_ALLOW_LOCAL_PORT:-}" ]; then
         # determine socket location
         uid="$(id -u)"
-        export TUXMAKE_OFFLINE_BUILD_SOCKET="/run/user/${uid}/tuxmake-${TUXMAKE_OFFLINE_BUILD_ALLOW_LOCAL_PORT}.sock"
-
+        socket_dir="$(mktemp --tmpdir --directory tuxmake.XXXXXXXXX)"
+        export TUXMAKE_OFFLINE_BUILD_SOCKET="${socket_dir}/${TUXMAKE_OFFLINE_BUILD_ALLOW_LOCAL_PORT}.sock"
         # start TCP -> UNIX socket tunnel
         socat \
             "unix-listen:${TUXMAKE_OFFLINE_BUILD_SOCKET},reuseaddr,fork" \
@@ -49,6 +49,7 @@ else
     fi
     if [ -n "${TUXMAKE_OFFLINE_BUILD_SOCKET:-}" ]; then
         rm -f "${TUXMAKE_OFFLINE_BUILD_SOCKET}"
+        rm -rf "$(dirname "${TUXMAKE_OFFLINE_BUILD_SOCKET}")"
     fi
 
     exit "$rc"

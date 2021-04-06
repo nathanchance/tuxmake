@@ -1,4 +1,4 @@
-.PHONY: test tags rpm rpmsrc deb debsrc dist
+.PHONY: test tags dist
 
 ALL_TESTS_PASSED = ======================== All tests passed ========================
 

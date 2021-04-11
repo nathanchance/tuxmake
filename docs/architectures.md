@@ -24,6 +24,7 @@ riscv        |             | 64-bit RISC-V            | yes      | no
 s390         |             | 64-bit IBM S/390         | yes      | yes
 sh           |             | 32-bit sh4               | yes¹     | no
 sparc        |             | 64-bit Sparc             | yes      | no
+um           |             | User-Mode Linux          | yes      | no
 x86_64       | *amd64*     | 64-bit X86               | yes      | yes
 
 ¹ `gcc` only  

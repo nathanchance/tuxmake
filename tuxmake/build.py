@@ -11,7 +11,7 @@ from tuxmake import __version__
 from tuxmake.arch import Architecture, host_arch
 from tuxmake.toolchain import Toolchain, NoExplicitToolchain
 from tuxmake.wrapper import Wrapper
-from tuxmake.output import get_new_output_dir
+from tuxmake.output import get_default_build_dir, get_new_output_dir
 from tuxmake.target import create_target
 from tuxmake.runtime import get_runtime
 from tuxmake.metadata import MetadataExtractor
@@ -301,7 +301,7 @@ class Build:
             self.__build_dir__ = Path(self.__build_dir_input__)
             self.__build_dir__.mkdir(parents=True, exist_ok=True)
         else:
-            self.__build_dir__ = self.output_dir / "tmp"
+            self.__build_dir__ = get_default_build_dir()
             self.__build_dir__.mkdir()
         return self.__build_dir__
 

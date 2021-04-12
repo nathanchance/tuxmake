@@ -578,17 +578,18 @@ class Build:
         with self.measure_duration("Preparation", metadata="prepare"):
             self.prepare()
 
-        with self.go_offline():
-            with self.measure_duration("Build", metadata="build"):
-                self.build_all_targets()
+        try:
+            with self.go_offline():
+                with self.measure_duration("Build", metadata="build"):
+                    self.build_all_targets()
 
-            with self.measure_duration("Copying Artifacts", metadata="copy"):
-                for target in self.targets:
-                    self.copy_artifacts(target)
+                with self.measure_duration("Copying Artifacts", metadata="copy"):
+                    for target in self.targets:
+                        self.copy_artifacts(target)
 
-            with self.measure_duration("Metadata Extraction", metadata="metadata"):
-                self.extract_metadata()
-
+                with self.measure_duration("Metadata Extraction", metadata="metadata"):
+                    self.extract_metadata()
+        finally:
             with self.measure_duration("Cleanup", metadata="cleanup"):
                 self.terminate()
                 if self.auto_cleanup:

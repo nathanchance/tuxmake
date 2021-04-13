@@ -15,6 +15,7 @@ from tuxmake.output import get_default_build_dir, get_new_output_dir
 from tuxmake.target import create_target
 from tuxmake.runtime import get_runtime
 from tuxmake.metadata import MetadataExtractor
+from tuxmake.exceptions import BuildDirAlreadyExists
 from tuxmake.exceptions import UnrecognizedSourceTree
 from tuxmake.exceptions import UnsupportedArchitectureToolchainCombination
 from tuxmake.exceptions import UnsupportedMakeVariable
@@ -302,7 +303,10 @@ class Build:
             self.__build_dir__.mkdir(parents=True, exist_ok=True)
         else:
             self.__build_dir__ = get_default_build_dir()
-            self.__build_dir__.mkdir()
+            try:
+                self.__build_dir__.mkdir()
+            except FileExistsError:
+                raise BuildDirAlreadyExists(self.__build_dir__)
         return self.__build_dir__
 
     def get_silent(self):

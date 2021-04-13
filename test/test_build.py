@@ -310,6 +310,13 @@ def test_always_run_cleanup(linux, mocker):
     assert not build.build_dir.exists()
 
 
+def test_existing_build_dir(linux, home):
+    (home / ".cache" / "tuxmake" / "builds" / "current").mkdir(parents=True)
+    build = Build(tree=linux)
+    with pytest.raises(tuxmake.exceptions.TuxMakeException):
+        build.build_dir
+
+
 class TestArchitecture:
     def test_x86_64(self, linux):
         result = build(tree=linux, target_arch="x86_64")

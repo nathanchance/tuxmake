@@ -274,7 +274,7 @@ class DockerRuntime(Runtime):
         build.log_debug(f"Container ID: {self.container_id}")
 
     def spawn_container(self, cmd):
-        return subprocess.check_output(cmd, text=True).strip()
+        return subprocess.check_output(cmd).strip().decode("utf-8")
 
     def get_command_prefix(self, interactive):
         if interactive:

@@ -242,7 +242,7 @@ class TestDockerRuntime(TestContainerRuntime):
 class TestDockerRuntimeSpawnContainer:
     def test_spawn_container(self, build, mocker, container_id):
         check_output = mocker.patch(
-            "subprocess.check_output", return_value=container_id
+            "subprocess.check_output", return_value=container_id.encode("utf-8")
         )
         runtime = DockerRuntime()
         runtime.start_container(build)

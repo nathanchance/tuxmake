@@ -16,6 +16,7 @@ from tuxmake.target import create_target
 from tuxmake.runtime import get_runtime
 from tuxmake.metadata import MetadataExtractor
 from tuxmake.exceptions import BuildDirAlreadyExists
+from tuxmake.exceptions import EnvironmentCheckFailed
 from tuxmake.exceptions import UnrecognizedSourceTree
 from tuxmake.exceptions import UnsupportedArchitectureToolchainCombination
 from tuxmake.exceptions import UnsupportedMakeVariable
@@ -569,6 +570,18 @@ class Build:
         self.runtime.cleanup()
         if self.clean_build_tree:
             shutil.rmtree(self.build_dir, ignore_errors=True)
+
+    def check_environment(self):
+        self.runtime.prepare(self)
+        cmd = [str(self.runtime.get_check_environment_command())]
+        cmd.append(f"{self.target_arch.name}_{self.toolchain.name}")
+        cross = self.makevars.get("CROSS_COMPILE")
+        if cross:
+            cmd.append(cross)
+        result = self.run_cmd(cmd)
+        self.cleanup()
+        if not result:
+            raise EnvironmentCheckFailed()
 
     def run(self):
         """

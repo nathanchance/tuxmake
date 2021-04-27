@@ -195,6 +195,25 @@ test_no_network_access() {
   assertTrue 'network access attempt should fail the build' 'grep wget stdout && [ $rc -ne 0 ]'
 }
 
+test_check_environment() {
+  if docker_in_docker; then
+      echo "I: test skipped, not supported when using the docker runtime under docker"
+    return
+  fi
+  run tuxmake --check-environment
+  assertEquals 0 "${rc}"
+}
+
+test_check_environment_fails() {
+  if docker_in_docker; then
+      echo "I: test skipped, not supported when using the docker runtime under docker"
+    return
+  fi
+  export TUXMAKE_WHICH_MISSING=make
+  run tuxmake --check-environment
+  assertNotEquals 0 "${rc}"
+}
+
 
 if [ $# -gt 0 ]; then
   export TESTCASES="$(echo "$@")"

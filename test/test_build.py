@@ -814,3 +814,20 @@ class TestHeaders:
         build = Build(tree=linux, targets=["headers"])
         build.run()
         assert "headers.tar.xz" in build.artifacts["headers"]
+
+
+class TestCheckEnvironment:
+    def test_basics(self, linux, Popen):
+        Popen.return_value.returncode = 0
+        build = Build(tree=linux, target_arch="arm64")
+        build.check_environment()
+        cmdline = args(Popen)
+        assert cmdline[0].endswith("/tuxmake-check-environment")
+        assert cmdline[1] == "arm64_gcc"
+        assert cmdline[2] == "aarch64-linux-gnu-"
+
+    def test_fails(self, linux, Popen):
+        Popen.return_value.returncode = 1
+        build = Build(tree=linux)
+        with pytest.raises(tuxmake.exceptions.EnvironmentCheckFailed):
+            build.check_environment()

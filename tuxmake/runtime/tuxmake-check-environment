@@ -26,17 +26,20 @@ sub check_base_image() {
   check_program("bc");
   check_program("bison");
   check_program("bzip2");
+  check_program("ccache");
   check_program("cpio");
   check_program("flex");
   check_program("git");
   check_program("gzip");
   check_program("lzop");
+  check_program("lz4");
   check_program("make");
   check_program("rsync");
+  check_program("socat");
   check_program("tar");
   check_program("wget");
   check_program("xz");
-  check_program("lz4");
+  check_program("zstd");
 }
 
 sub check_toolchain_image() {

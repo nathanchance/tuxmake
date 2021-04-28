@@ -56,3 +56,19 @@ run() {
   fi
   export rc
 }
+
+docker_runtime() {
+  case "${TUXMAKE:-}" in
+    *--runtime=docker*)
+      return 0
+      ;;
+  esac
+  return 1
+}
+
+under_docker() {
+  if [ -f /.dockerenv ]; then
+    return 0
+  fi
+  return 1
+}

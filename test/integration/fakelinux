@@ -180,13 +180,11 @@ test_custom_kernel_image() {
 }
 
 test_no_network_access() {
-  case "${TUXMAKE:-}" in
-    *--runtime=docker*)
-      echo "I: test skipped, not supported when using the docker runtime"
-      return
-      ;;
-  esac
-  if [ -f /.dockerenv ]; then
+  if docker_runtime; then
+    echo "I: test skipped, not supported when using the docker runtime"
+    return
+  fi
+  if under_docker;then
     echo "I: test skipped, not supported when running inside docker"
     return
   fi
@@ -195,6 +193,25 @@ test_no_network_access() {
   assertFalse 'wget needs to be installed in the build environment' 'grep "wget: Command not found" stdout'
   assertFalse 'wget needs to be installed in the build environment' 'grep "wget: No such file or directory" stdout'
   assertTrue 'network access attempt should fail the build' 'grep wget stdout && [ $rc -ne 0 ]'
+}
+
+test_check_environment() {
+  if docker_in_docker; then
+      echo "I: test skipped, not supported when using the docker runtime under docker"
+    return
+  fi
+  run tuxmake --check-environment
+  assertEquals 0 "${rc}"
+}
+
+test_check_environment_fails() {
+  if docker_in_docker; then
+      echo "I: test skipped, not supported when using the docker runtime under docker"
+    return
+  fi
+  export TUXMAKE_WHICH_MISSING=make
+  run tuxmake --check-environment
+  assertNotEquals 0 "${rc}"
 }
 
 

@@ -86,6 +86,9 @@ class Runtime(ConfigurableObject):
     def get_go_offline_command(self):
         return Path(__file__).parent / self.basedir / "tuxmake-offline-build"
 
+    def get_check_environment_command(self):
+        return Path(__file__).parent / self.basedir / "tuxmake-check-environment"
+
 
 class NullRuntime(Runtime):
     name = "null"
@@ -245,6 +248,11 @@ class DockerRuntime(Runtime):
         orig_go_offline = super().get_go_offline_command()
         go_offline = self.get_go_offline_command()
         go_offline_volume = self.volume(orig_go_offline, f"/usr/local/bin/{go_offline}")
+        orig_check_environment = super().get_check_environment_command()
+        check_environment = self.get_check_environment_command()
+        check_environment_volume = self.volume(
+            orig_check_environment, f"/usr/local/bin/{check_environment}"
+        )
 
         env = (f"--env={k}={v}" for k, v in build.environment.items())
         user_opts = self.get_user_opts()
@@ -262,6 +270,7 @@ class DockerRuntime(Runtime):
             self.volume(source_tree, source_tree),
             self.volume(build_dir, build_dir),
             go_offline_volume,
+            check_environment_volume,
             f"--workdir={source_tree}",
             *self.get_logging_opts(),
             *extra_opts,
@@ -285,6 +294,9 @@ class DockerRuntime(Runtime):
 
     def get_go_offline_command(self):
         return super().get_go_offline_command().name
+
+    def get_check_environment_command(self):
+        return super().get_check_environment_command().name
 
     def cleanup(self):
         subprocess.check_call(

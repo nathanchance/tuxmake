@@ -445,3 +445,10 @@ class TestHooks:
         with pytest.raises(SystemExit):
             tuxmake("--results-hook=true")
         check_call.assert_not_called()
+
+
+class TestCheckEnvironment:
+    def test_check_environment(self, build):
+        tuxmake("--check-environment")
+        build.check_environment.assert_called()
+        build.run.assert_not_called()

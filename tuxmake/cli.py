@@ -1,8 +1,10 @@
 from datetime import timedelta
 import os
+import pathlib
 import subprocess
 import shlex
 import sys
+import tempfile
 from tuxmake import xdg
 from tuxmake.arch import Architecture
 from tuxmake.toolchain import Toolchain
@@ -142,6 +144,7 @@ def main(*origargv):
         if v
         and k
         not in [
+            "check_environment",
             "color",
             "docker_image",
             "image",
@@ -152,6 +155,12 @@ def main(*origargv):
         ]
     }
     try:
+        if options.check_environment:
+            with tempfile.TemporaryDirectory() as _tmpdir:
+                tmpdir = pathlib.Path(_tmpdir)
+                build = Build(**build_args, build_dir=tmpdir, output_dir=tmpdir)
+                build.check_environment()
+            return
         build = Build(**build_args, auto_cleanup=(not options.shell))
         run_hooks(options.before_hooks, build.source_tree)
         build.run()

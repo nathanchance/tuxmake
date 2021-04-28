@@ -2,11 +2,12 @@ set -u
 export testdir=$(readlink -f $(dirname $0)/..)
 export LANG=C.UTF-8 LC_ALL=C.UTF-8 LANGUAGE=C.UTF-8
 
+base=$(readlink -f $(dirname $0)/../..)
 if ! command -v tuxmake >/dev/null; then
-  base=$(readlink -f $(dirname $0)/../..)
   export PYTHONPATH="${base}:${PYTHONPATH:+:}${PYTHONPATH:-}"
   export PATH="${base}/test/integration/bin:${PATH}"
 fi
+export PATH="${base}/test/integration/auxbin:${PATH}"
 
 oneTimeSetUp() {
   rootdir=${TMPDIR:-/tmp}/tuxmake-integration-tests-${USER:-user}
@@ -55,4 +56,24 @@ run() {
     cat stdout stderr | sed -e 's/^/    /'
   fi
   export rc
+}
+
+docker_runtime() {
+  case "${TUXMAKE:-}" in
+    *--runtime=docker*)
+      return 0
+      ;;
+  esac
+  return 1
+}
+
+under_docker() {
+  if [ -f /.dockerenv ]; then
+    return 0
+  fi
+  return 1
+}
+
+docker_in_docker() {
+  docker_runtime && under_docker
 }

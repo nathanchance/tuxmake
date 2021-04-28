@@ -2,23 +2,26 @@
 
 use strict;
 use warnings;
-use Test::More;
 
 my $LATEST_CLANG_NIGHTLY = "13";
 
 my $image = shift;
 my $cross_compile = shift;
 
+my $failures = 0;
+my $PASS = "\033[32mPASS\033[m";
+my $FAIL = "\033[31mFAIL\033[m";
+
+
 sub check($$) {
   my ($name, $command) = @_;
   my $output = `$command 2>&1`;
   my $rc = $?;
-  is($rc, 0, "${name} (\`${command}\`)");
   if ($rc == 0) {
-    my @lines = split(/\n/, $output);
-    diag($lines[0]);
+    print STDERR "${PASS} - ${name} (\`${command}\`)\n";
   } else {
-    diag($output);
+    print STDERR "${FAIL} - ${name} (\`${command}\`)\n";
+    $failures++;
   }
 }
 
@@ -32,17 +35,20 @@ sub check_base_image() {
   check_program("bc");
   check_program("bison");
   check_program("bzip2");
+  check_program("ccache");
   check_program("cpio");
   check_program("flex");
   check_program("git");
   check_program("gzip");
   check_program("lzop");
+  check_program("lz4");
   check_program("make");
   check_program("rsync");
+  check_program("socat");
   check_program("tar");
   check_program("wget");
   check_program("xz");
-  check_program("lz4");
+  check_program("zstd");
 }
 
 sub check_toolchain_image() {
@@ -75,7 +81,6 @@ sub check_toolchain_image() {
     my $actual_version = `${compiler_bin} -dumpversion`;
     chomp $actual_version;
     like($actual_version, qr/^${version}(\.\d+)*/, "${compiler_bin} version ${version}");
-    diag("${compiler_bin} version: ${actual_version}");
   }
 
   if ($compiler =~ /clang/) {
@@ -88,4 +93,6 @@ exit(0) if ($image =~ /^ci-/);
 check_base_image();
 check_toolchain_image unless ($image =~ /^base-/);
 
-done_testing();
+if ($failures > 0) {
+  exit(1)
+}

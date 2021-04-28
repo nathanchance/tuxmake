@@ -167,6 +167,11 @@ def build_parser(cls=argparse.ArgumentParser, **kwargs):
         help="Print support matrix (architectures x toolchains). Combine with --runtime to list support matrix for that particular runtime.",
     )
     info.add_argument(
+        "--check-environment",
+        action="store_true",
+        help="Instead of running the build, just check if the build environment has the necessary tools for it. The check is run on the exact environment (e.g. container image) that the rest of the options would select cause to be selected.",
+    )
+    info.add_argument(
         "-c",
         "--color",
         type=str,

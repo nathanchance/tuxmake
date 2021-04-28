@@ -10,10 +10,13 @@ tuxmake = (pathlib.Path(__file__).parent / "../..").resolve()
 sys.path.insert(0, str(tuxmake))
 
 
-from tuxmake.runtime import DockerRuntime
+from tuxmake.runtime import NullRuntime, DockerRuntime
 from tuxmake.arch import Architecture
 
 TAG = os.getenv("TAG")
+
+
+IMAGE_TEST_SCRIPT = NullRuntime().get_check_environment_command()
 
 
 class ImageList:
@@ -98,7 +101,7 @@ class Image:
         test_args = " ".join(self.test_args)
         stream.write(f"test-{self.name}: {self.name}\n")
         stream.write(f"\t$(ANN_TEST) {self.name}\n")
-        stream.write(f"\t$(Q)$(docker) run --rm --volume=$(CURDIR)/test-image:/test $(PROJECT)/{self.name}:latest$(TAG) /test {test_args} $(LOG)\n\n")
+        stream.write(f"\t$(Q)$(docker) run --rm --volume={IMAGE_TEST_SCRIPT}:/test $(PROJECT)/{self.name}:latest$(TAG) /test {test_args} $(LOG)\n\n")
 
 
 class BaseImage(Image):

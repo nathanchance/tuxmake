@@ -90,3 +90,7 @@ class UnsupportedMetadataType(TuxMakeInfrastructureError):
 
 class BuildDirAlreadyExists(TuxMakeUserError):
     msg = "Build directory {name} already exists. If you are doing parallel builds, you need to specify a build directory explicitly"
+
+
+class EnvironmentCheckFailed(TuxMakeUserError):
+    msg = "Environment check failed"

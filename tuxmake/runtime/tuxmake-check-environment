@@ -104,6 +104,11 @@ sub check_toolchain_image() {
 
   check_compiler($compiler);
   my $compiler_bin = ($cross_compile && $compiler !~ /clang/) ? ($cross_compile . $compiler) : $compiler;
+  if ($compiler =~ /clang/ && $cross_compile) {
+    my $target = $cross_compile;
+    $target =~ s/-$//;
+    $compiler_bin = "${compiler_bin} --target=${target}";
+  }
   check_compiler($compiler_bin) if ($compiler_bin ne $compiler);
   if ($version && $version =~ /^\d+$/) {
     my $actual_version = `${compiler_bin} -dumpversion`;

@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use File::Temp qw(tempdir);
 
 my $LATEST_CLANG_NIGHTLY = "13";
 
@@ -60,6 +61,22 @@ sub check_base_image() {
   check_program("zstd");
 }
 
+my $PROGRAM = <<PROGRAM;
+#include <stdio.h>
+int main(int argc, char** argv) {
+  return 0;
+}
+PROGRAM
+
+sub check_compiler($) {
+  my $compiler = shift;
+  my $tmpdir = tempdir(CLEANUP => 1);
+  open PROGRAM, ">", "${tmpdir}/program.c" or die($!);
+  print PROGRAM $PROGRAM;
+  close PROGRAM;
+  check_run("${compiler} can produce binaries", "${compiler} -o ${tmpdir}/program ${tmpdir}/program.c");
+}
+
 sub check_toolchain_image() {
   my ($arch, $compiler, $version);
   if ($image =~ /^(.*)_(.*)$/) {
@@ -85,8 +102,10 @@ sub check_toolchain_image() {
     check_program($prefix . "as");
   }
 
+  check_compiler($compiler);
+  my $compiler_bin = ($cross_compile && $compiler !~ /clang/) ? ($cross_compile . $compiler) : $compiler;
+  check_compiler($compiler_bin) if ($compiler_bin ne $compiler);
   if ($version && $version =~ /^\d+$/) {
-    my $compiler_bin = ($cross_compile && $compiler !~ /clang/) ? ($cross_compile . $compiler) : $compiler;
     my $actual_version = `${compiler_bin} -dumpversion`;
     chomp $actual_version;
     check("${compiler_bin} version is ${version}", $actual_version =~ qr/^${version}(\.\d+)*/);

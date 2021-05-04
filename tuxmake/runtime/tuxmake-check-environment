@@ -85,7 +85,7 @@ sub check_toolchain_image() {
   } else {
     $compiler = $image;
   }
-  if ($compiler =~ /^(.*)-(nightly|\d+)$/) {
+  if ($compiler =~ /^(.*)-(nightly|android|\d+)$/) {
     $compiler = $1;
     $version = $2;
     if ($compiler eq "clang" && $version eq "nightly") {

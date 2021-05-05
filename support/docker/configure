@@ -205,6 +205,15 @@ class CrossClangBuildImage(CrossBuildMixin, ClangBuildImage):
         ]
 
 
+class ClangAndroidBuildImage(ClangBuildImage):
+    kind = "clang-android"
+    pass
+
+
+class CrossClangAndroidBuildImage(CrossClangBuildImage):
+    pass
+
+
 class ArcImage(Image):
     kind = "arc"
     extra_lists = ["crossbuild", "arc"]

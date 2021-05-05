@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use File::Temp qw(tempdir);
 
 my $LATEST_CLANG_NIGHTLY = "13";
 
@@ -14,20 +15,29 @@ my $FAIL = "\033[31mFAIL\033[m";
 
 
 sub check($$) {
-  my ($name, $command) = @_;
-  my $output = `$command 2>&1`;
-  my $rc = $?;
-  if ($rc == 0) {
-    print STDERR "${PASS} - ${name} (\`${command}\`)\n";
+  my ($name, $test) = @_;
+  if ($test) {
+    print STDERR "${PASS} - ${name}\n";
   } else {
-    print STDERR "${FAIL} - ${name} (\`${command}\`)\n";
+    print STDERR "${FAIL} - ${name}\n";
     $failures++;
   }
 }
 
+sub check_run($$) {
+  my ($name, $command) = @_;
+  my $output = `$command 2>&1`;
+  my $rc = $?;
+  if ($rc != 0) {
+    print(STDERR $command, "\n");
+    print(STDERR $output);
+  }
+  check("${name}", $rc == 0);
+}
+
 sub check_program($) {
   my $program = shift;
-  check("${program} in PATH", "which ${program}");
+  check_run("${program} in PATH", "which ${program}");
 }
 
 sub check_base_image() {
@@ -51,6 +61,22 @@ sub check_base_image() {
   check_program("zstd");
 }
 
+my $PROGRAM = <<PROGRAM;
+#include <stdio.h>
+int main(int argc, char** argv) {
+  return 0;
+}
+PROGRAM
+
+sub check_compiler($) {
+  my $compiler = shift;
+  my $tmpdir = tempdir(CLEANUP => 1);
+  open PROGRAM, ">", "${tmpdir}/program.c" or die($!);
+  print PROGRAM $PROGRAM;
+  close PROGRAM;
+  check_run("${compiler} can produce binaries", "${compiler} -o ${tmpdir}/program ${tmpdir}/program.c");
+}
+
 sub check_toolchain_image() {
   my ($arch, $compiler, $version);
   if ($image =~ /^(.*)_(.*)$/) {
@@ -59,7 +85,7 @@ sub check_toolchain_image() {
   } else {
     $compiler = $image;
   }
-  if ($compiler =~ /^(.*)-(nightly|\d+)$/) {
+  if ($compiler =~ /^(.*)-(nightly|android|\d+)$/) {
     $compiler = $1;
     $version = $2;
     if ($compiler eq "clang" && $version eq "nightly") {
@@ -76,11 +102,18 @@ sub check_toolchain_image() {
     check_program($prefix . "as");
   }
 
+  check_compiler($compiler);
+  my $compiler_bin = ($cross_compile && $compiler !~ /clang/) ? ($cross_compile . $compiler) : $compiler;
+  if ($compiler =~ /clang/ && $cross_compile) {
+    my $target = $cross_compile;
+    $target =~ s/-$//;
+    $compiler_bin = "${compiler_bin} --target=${target}";
+  }
+  check_compiler($compiler_bin) if ($compiler_bin ne $compiler);
   if ($version && $version =~ /^\d+$/) {
-    my $compiler_bin = ($cross_compile && $compiler !~ /clang/) ? ($cross_compile . $compiler) : $compiler;
     my $actual_version = `${compiler_bin} -dumpversion`;
     chomp $actual_version;
-    like($actual_version, qr/^${version}(\.\d+)*/, "${compiler_bin} version ${version}");
+    check("${compiler_bin} version is ${version}", $actual_version =~ qr/^${version}(\.\d+)*/);
   }
 
   if ($compiler =~ /clang/) {

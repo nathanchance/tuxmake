@@ -55,6 +55,10 @@ test_clang_arm64() {
 }
 
 test_llvm_x86_64() {
+  if ! program_installed ld.lld; then
+    echo "I: skipping test as ld.lld is not installed"
+    return
+  fi
   run tuxmake --target-arch=x86_64 --toolchain=llvm
   assertTrue 'LLVM=1 in output' 'grep LLVM=1 stdout'
   assertEquals 'exits with 0' 0 "$rc"
@@ -64,6 +68,10 @@ test_llvm_x86_64() {
 }
 
 test_llvm_arm64() {
+  if ! program_installed ld.lld; then
+    echo "I: skipping test as ld.lld is not installed"
+    return
+  fi
   run tuxmake --target-arch=arm64 --toolchain=llvm
   assertTrue 'LLVM=1 in output' 'grep LLVM=1 stdout'
   assertEquals 'exits with 0' 0 "$rc"

@@ -77,3 +77,7 @@ under_docker() {
 docker_in_docker() {
   docker_runtime && under_docker
 }
+
+program_installed() {
+  /usr/bin/which "${@}" > /dev/null
+}

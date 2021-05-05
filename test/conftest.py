@@ -36,15 +36,15 @@ def linux(tmpdir_factory):
 
 @pytest.fixture(autouse=True, scope="session")
 def fake_cross_compilers(tmpdir_factory):
-    missing = []
+    missing = {}
     for a in Architecture.supported():
         arch = Architecture(a)
-        binary = arch.makevars["CROSS_COMPILE"] + "gcc"
-        if not shutil.which(binary):
-            missing.append(binary)
+        for tool in ["gcc", "ld"]:
+            binary = arch.makevars["CROSS_COMPILE"] + tool
+            if not shutil.which(binary):
+                missing[binary] = tool
     if missing:
         testbin = tmpdir_factory.mktemp("bin")
-        gcc = "/usr/bin/gcc"
-        for p in missing:
-            os.symlink(gcc, testbin / p)
+        for p, real in missing.items():
+            os.symlink(f"/usr/bin/{real}", testbin / p)
         os.environ["PATH"] = f"{testbin}:" + os.environ["PATH"]

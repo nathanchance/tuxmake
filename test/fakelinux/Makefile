@@ -6,9 +6,11 @@ VERSION := $(shell uname -r)
 ifeq ($(LLVM), )
 HOSTCC = gcc
 CC     = $(CROSS_COMPILE)gcc
+LD     = $(CROSS_COMPILE)ld
 else
 HOSTCC = clang
 CC     = clang
+LD     = ld.lld
 endif
 
 CFLAGS += -nostdlib
@@ -64,14 +66,14 @@ endif
 
 ########################################################################
 # debug kernel image
-#########################################################################
+########################################################################
 vmlinux: $(O)/vmlinux
 CLEAN += $(O)/vmlinux
 CLEAN += $(O)/System.map
 $(O)/vmlinux: $(O)/.config
 $(O)/vmlinux: $(O)/vmlinux.o
 	$(call maybefail,debugkernel)
-	$(CC) $(CFLAGS) -o $@ $<
+	$(LD) -o $@ $<
 	@echo SYSMAP System.map
 	@printf "c1000000 T _text\n0000000000000000 D __per_cpu_start\n0000000000000000 D fixed_percpu_data\n" \
 		> $(O)/System.map

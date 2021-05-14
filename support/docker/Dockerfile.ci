@@ -12,6 +12,7 @@ RUN apt-get update \
         clang \
         codespell \
         docker.io \
+        faketime \
         flake8 \
         gcc \
         git \

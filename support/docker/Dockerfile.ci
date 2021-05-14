@@ -4,6 +4,7 @@ FROM ${BASE}
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
+    && apt-get install --assume-yes auto-apt-proxy \
     && apt-get install --assume-yes --option=debug::pkgProblemResolver=yes \
         bash \
         bzip2 \

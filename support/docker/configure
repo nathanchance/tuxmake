@@ -72,7 +72,7 @@ class Image:
         base = self.base_image
         if "tuxmake/" in base:
             base += ":latest$(TAG)"
-        self.args.append(("BASE", base))
+        self.arg("BASE", base)
 
     def register(self):
         for l in self.lists:

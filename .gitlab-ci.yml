@@ -29,6 +29,7 @@ stages:
 
 
 .build-ci-image:
+  extends: .tuxmake
   stage: build-ci-images
   only:
     refs:

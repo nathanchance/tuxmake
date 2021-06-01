@@ -245,16 +245,16 @@ class ArcImage(Image):
             self.arg(k, v)
 
 
-def generate(image):
+def generate(image_data):
     # transforms foo-bar into FooBarImage
-    clsname = "".join([w.title() for w in re.split(r"[-_]", image.kind)]) + "Image"
+    clsname = "".join([w.title() for w in re.split(r"[-_]", image_data.kind)]) + "Image"
     cls = globals()[clsname]
-    image = cls(image)
+    image = cls(image_data)
     image.register()
 
     if TAG:
         host_arch = re.sub("^-", "", TAG)
-        if host_arch not in hosts:
+        if host_arch not in image_data.hosts:
             return
 
     image.generate(output)

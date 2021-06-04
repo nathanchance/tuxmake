@@ -34,6 +34,11 @@ if [ -z "${TUXMAKE_OFFLINE_BUILD:-}" ]; then
             "tcp-connect:localhost:${port}" \
             &
         export TUXMAKE_OFFLINE_BUILD_FORWARDER1_PID="$!"
+
+        # wait until socket is ready
+        while ! socat -u OPEN:/dev/null "unix-connect:${TUXMAKE_OFFLINE_BUILD_SOCKET}" 2>/dev/null; do
+            sleep 0.1
+        done
     fi
 
     # run itself under a new and empty network namespace

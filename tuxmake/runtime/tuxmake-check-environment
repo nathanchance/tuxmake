@@ -115,6 +115,7 @@ sub check_toolchain_image() {
     chomp $actual_version;
     check("${compiler_bin} version is ${version}", $actual_version =~ qr/^${version}(\.\d+)*/);
   }
+  check_compiler("${compiler_bin} -use-ld=lld" ) if ($compiler =~ /clang/);
 
   if ($compiler =~ /clang/) {
     check_program("ld.lld");

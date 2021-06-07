@@ -3,6 +3,11 @@
 use strict;
 use warnings;
 use File::Temp qw(tempdir);
+use Getopt::Long;
+my $libc_compile_nonfatal = 0;
+GetOptions(
+  "libc-compile-nonfatal" => \$libc_compile_nonfatal,
+) or exit(1);
 
 my $LATEST_CLANG_NIGHTLY = "13";
 
@@ -12,32 +17,35 @@ my $cross_compile = shift;
 my $failures = 0;
 my $PASS = "\033[32mPASS\033[m";
 my $FAIL = "\033[31mFAIL\033[m";
+my $WARN = "\033[33mWARN\033[m";
 
 
-sub check($$) {
-  my ($name, $test) = @_;
+sub check($$$) {
+  my ($name, $test, $ok_to_fail) = @_;
   if ($test) {
     print STDERR "${PASS} - ${name}\n";
+  } elsif ($ok_to_fail) {
+    print STDERR "${WARN} - non fatal failure: ${name}\n";
   } else {
     print STDERR "${FAIL} - ${name}\n";
     $failures++;
   }
 }
 
-sub check_run($$) {
-  my ($name, $command) = @_;
+sub check_run($$$) {
+  my ($name, $command, $ok_to_fail) = @_;
   my $output = `$command 2>&1`;
   my $rc = $?;
   if ($rc != 0) {
     print(STDERR $command, "\n");
     print(STDERR $output);
   }
-  check("${name}", $rc == 0);
+  check("${name}", $rc == 0, $ok_to_fail);
 }
 
 sub check_program($) {
   my $program = shift;
-  check_run("${program} in PATH", "which ${program}");
+  check_run("${program} in PATH", "which ${program}", 0);
 }
 
 sub check_base_image() {
@@ -62,19 +70,35 @@ sub check_base_image() {
 }
 
 my $PROGRAM = <<PROGRAM;
-#include <stdio.h>
 int main(int argc, char** argv) {
   return 0;
 }
 PROGRAM
 
-sub check_compiler($) {
-  my $compiler = shift;
+sub check_compile_program($$$$) {
+  my ($name, $compiler, $preamble, $ok_to_fail) = @_;
   my $tmpdir = tempdir(CLEANUP => 1);
   open PROGRAM, ">", "${tmpdir}/program.c" or die($!);
+  print PROGRAM $preamble if $preamble;
   print PROGRAM $PROGRAM;
   close PROGRAM;
-  check_run("${compiler} can produce binaries", "${compiler} -o ${tmpdir}/program ${tmpdir}/program.c");
+  check_run($name, "${compiler} -o ${tmpdir}/program ${tmpdir}/program.c", $ok_to_fail);
+}
+
+sub check_compiler($) {
+  my $compiler = shift;
+  check_compiler_no_libc($compiler);
+  check_compiler_libc($compiler);
+}
+
+sub check_compiler_no_libc($) {
+  my $compiler = shift;
+  check_compile_program("${compiler} can produce binaries", $compiler, undef, 0);
+}
+
+sub check_compiler_libc($) {
+  my $compiler = shift;
+  check_compile_program("${compiler} can produce binaries using the libc", $compiler, "#include <stdio.h>\n", $libc_compile_nonfatal);
 }
 
 sub check_toolchain_image() {
@@ -113,7 +137,7 @@ sub check_toolchain_image() {
   if ($version && $version =~ /^\d+$/) {
     my $actual_version = `${compiler_bin} -dumpversion`;
     chomp $actual_version;
-    check("${compiler_bin} version is ${version}", $actual_version =~ qr/^${version}(\.\d+)*/);
+    check("${compiler_bin} version is ${version}", $actual_version =~ qr/^${version}(\.\d+)*/, 0);
   }
   check_compiler("${compiler_bin} -use-ld=lld" ) if ($compiler =~ /clang/);
 

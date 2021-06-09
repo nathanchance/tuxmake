@@ -11,9 +11,11 @@ ifeq ($(V), 1)
 Q         :=
 LOG       :=
 ANN       := true
+NOSTDOUT  :=
 else
 Q         := @
 LOG       := > log/$@.log 2>&1 || (cat log/$@.log; false)
+NOSTDOUT  := > /dev/null
 endif
 
 ANN_BUILD := @$(ANN) " BUILD"
@@ -32,6 +34,7 @@ checkconfig:
 
 noop_releases = $(patsubst %, noop-%, $(releases))
 publish_releases = $(patsubst %, publish-%, $(releases))
+test_releases = $(patsubst %, test-%, $(releases))
 publish_multiarch_releases = $(patsubst %, publish-multiarch-%, $(releases))
 
 $(noop_releases):
@@ -45,13 +48,15 @@ else
 xargs = xargs -r -t
 endif
 
-$(publish_releases): publish-%: %
+$(publish_releases): publish-%: test-%
 	images=$$(./list-images $*); \
 	if [ "x$$images" != x ]; then \
-	  $(MAKE) $(patsubst %, test-%, $(shell ./list-images $*)); \
 	  echo $(patsubst %, $(PROJECT)/%:latest$(TAG), $(shell ./list-images $*)) | \
 	    $(xargs) -n 1 $(docker) push; \
 	fi
+
+$(test_releases): test-%: Makefile
+	  @$(MAKE) $(patsubst %, test-%, $(shell ./list-images $*))
 
 TIMESTAMP = $(shell date +%Y%m%d)
 

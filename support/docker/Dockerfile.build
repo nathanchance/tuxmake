@@ -20,8 +20,8 @@ RUN if [ -f /etc/apt/sources.list.d/extra.list ]; then exit; fi; \
     fi
 
 
-# Skip package installation if arch to build for is the same as the native. For
-# multi-arch images, only the foreign one will need a cross toolchain.
+# Install basic toolchain packages. Which toolchain exactly is defined by the
+# $PACKAGES build argument
 RUN if [ "$(uname -m)" != "${HOSTARCH}" ]; then apt-get update \
     && apt-get install \
         --assume-yes \
@@ -31,18 +31,25 @@ RUN if [ "$(uname -m)" != "${HOSTARCH}" ]; then apt-get update \
         $PACKAGES; \
     fi
 
-# Install development libraries for kselftest
-# Only official Debian architectures are supported, as those are the only ones
-# where we can ensure that the foreign userspace libraries needed to cross
-# compile are available and in good shape enough to be installable and usable.
-RUN arch=$(dpkg-architecture --host-type=${HOSTARCH}-linux-gnu --query=DEB_HOST_ARCH); \
+# Install extra development packages
+#
+# The first set of packages is for basic cross building and is supported on all
+# architectures that are also supported in some way by Debian.
+#
+# The second set is the requirements to built (most of) kselftest. Only
+# official Debian architectures are supported, as those are the only ones where
+# we can ensure that the foreign userspace libraries needed to cross compile
+# are available and in good shape enough to be installable and usable.
+RUN if [ -z "${HOSTARCH}" ]; then exit; fi; \
+    arch=$(dpkg-architecture --host-type=${HOSTARCH}-linux-gnu --query=DEB_HOST_ARCH); \
     triplet=$(echo ${HOSTARCH}-linux-gnu | tr _ -); \
     if [ "${arch}" = "arm" ]; then arch=armhf; triplet=arm-linux-gnueabihf; fi; \
     case "${arch}" in \
         amd64|arm64|armel|armhf|i386|mips64el|mipsel|ppc64el|s390x) \
+            supported=yes; \
             ;; \
         *) \
-            exit; \
+            supported=no; \
             ;; \
     esac; \
     if [ "$(uname -m)" != "${HOSTARCH}" -a -n "${HOSTARCH}" ]; then \
@@ -56,11 +63,17 @@ RUN arch=$(dpkg-architecture --host-type=${HOSTARCH}-linux-gnu --query=DEB_HOST_
         --option=debug::pkgProblemResolver=yes \
         ${INSTALL_OPTIONS} \
         binutils-${triplet} \
-        libbinutils:${arch} \
-        libc6-dev:${arch} \
         libgcc-${gccversion}-dev-${arch}-cross \
         libstdc++-${gccversion}-dev-${arch}-cross \
         libc-dev-bin && \
+    if [ "${supported}" = no ]; then exit; fi && \
+    apt-get install \
+        --assume-yes \
+        --no-install-recommends \
+        --option=debug::pkgProblemResolver=yes \
+        ${INSTALL_OPTIONS} \
+        libbinutils:${arch} \
+        libc6-dev:${arch} && \
     apt-get install \
         --assume-yes \
         --no-install-recommends \

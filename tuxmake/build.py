@@ -500,10 +500,9 @@ class Build:
 
     def check_artifacts(self, target):
         ret = True
-        for _, f in target.artifacts.items():
-            artifact = self.build_dir / f
+        for _, artifact in target.find_artifacts(self.build_dir):
             if not artifact.exists():
-                self.log(f"E: expected artifact {f} does not exist!")
+                self.log(f"E: expected artifact {artifact} does not exist!")
                 ret = False
         return ret
 
@@ -511,9 +510,8 @@ class Build:
         if not self.status[target.name].passed:
             return
         self.artifacts[target.name] = []
-        for origdest, origsrc in target.artifacts.items():
+        for origdest, src in target.find_artifacts(self.build_dir):
             dest = self.output_dir / origdest
-            src = self.build_dir / origsrc
             shutil.copy(src, Path(self.output_dir / dest))
             self.artifacts[target.name].append(origdest)
 

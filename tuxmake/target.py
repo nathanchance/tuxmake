@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from pathlib import Path
 import re
 import shlex
@@ -51,6 +53,9 @@ class Target(ConfigurableObject):
 
     def prepare(self):
         pass
+
+    def find_artifacts(self, build_dir: Path) -> List[Tuple[str, Path]]:
+        return list((dest, build_dir / src) for dest, src in self.artifacts.items())
 
     def __split_kconfigs__(self):
         s = self.config["target"].get("kconfig_add", "")

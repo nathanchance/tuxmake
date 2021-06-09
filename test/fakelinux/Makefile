@@ -35,7 +35,7 @@ all:
 include arch/$(ARCH).mk
 ARCHDIRNAME ?= $(ARCH)
 
-.PHONY: config vmlinux $(IMAGE) modules modules_install dtbs dtbs_install
+.PHONY: config vmlinux $(IMAGE) modules modules_install dtbs dtbs_install targz-pkg
 
 all: vmlinux $(IMAGE)
 
@@ -178,6 +178,23 @@ qemu-gdb.config: config
 	$(call maybefail,qemu-gdb.config)
 	echo CONFIG_DEBUG_INFO=y >> $(O)/.config
 
+########################################################################
+# targz-pkg: very loosely based on linux/scripts/package/buildtar
+########################################################################
+KERNELRELEASE = 5.13.0-rc3
+tmpdir = $(O)/tar-install
+tarball = $(O)/linux-$(KERNELRELEASE)-$(ARCHDIRNAME).tar.gz
+dirs = boot
+CLEAN += $(tarball)
+targz-pkg: all
+	mkdir -p -- $(tmpdir)/boot
+	cp -v -- $(O)/System.map $(tmpdir)/boot/System.map-$(KERNELRELEASE)
+	cp -v -- Kconfig $(tmpdir)/boot/config-$(KERNELRELEASE)
+	cp -v -- $(O)/vmlinux $(tmpdir)/boot/vmlinux-$(KERNELRELEASE)
+	cp -v -- $(O)/arch/$(ARCHDIRNAME)/boot/$(IMAGE) $(tmpdir)/boot/vmlinuz-$(KERNELRELEASE)
+
+	tar zcf $(tarball) -C $(tmpdir) $(dirs)
+	echo "Tarball successfully created in $(tarball)"
 
 ########################################################################
 # cleaning

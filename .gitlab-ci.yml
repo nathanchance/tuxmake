@@ -256,7 +256,7 @@ build-docs:
   extends: .tuxmake
   stage: build
   needs: []
-  image: $CI_REGISTRY/linaro/tuxmake/ci-ubuntu-20.04
+  image: $CI_REGISTRY/linaro/tuxmake/ci-debian-11
   before_script:
     - apt-get update -q
     - python3 -m pip install mkautodoc mkdocs-material  # FIXME not in Debian

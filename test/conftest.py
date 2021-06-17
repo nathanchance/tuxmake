@@ -1,6 +1,7 @@
 import os
 import pathlib
 import pytest
+import subprocess
 import shutil
 
 
@@ -41,6 +42,16 @@ def linux(test_directory, tmpdir_factory):
     src = test_directory / "fakelinux"
     dst = tmpdir_factory.mktemp("source") / "linux"
     shutil.copytree(src, dst)
+    subprocess.check_call(["chmod", "-R", "ugo-w", str(dst)])
+    return dst
+
+
+@pytest.fixture
+def linux_rw(tmp_path):
+    src = pathlib.Path(__file__).parent / "fakelinux"
+    dst = tmp_path / "linux"
+    shutil.copytree(src, dst)
+    subprocess.check_call(["chmod", "-R", "u+w", str(dst)])
     return dst
 
 

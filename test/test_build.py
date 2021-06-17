@@ -502,13 +502,11 @@ class TestDtbs:
 
 class TestDtbsLegacy:
     @pytest.fixture
-    def oldlinux(self, linux, tmp_path):
-        old = tmp_path / "oldlinux"
-        shutil.copytree(linux, old)
+    def oldlinux(self, linux_rw, tmp_path):
         subprocess.check_call(
-            ["sed", "-i", "-e", "s/dtbs_install/XXXX/g", str(old / "Makefile")]
+            ["sed", "-i", "-e", "s/dtbs_install/XXXX/g", str(linux_rw / "Makefile")]
         )
-        return old
+        return linux_rw
 
     def test_collect_dtbs_manually_without_dtbs_install(self, oldlinux):
         result = build(tree=oldlinux, target_arch="arm64")
@@ -747,9 +745,9 @@ class TestPrepare:
 
 
 class TestMissingArtifacts:
-    def test_missing_kernel(self, linux, mocker):
+    def test_missing_kernel(self, linux_rw, mocker):
         # hack fakelinux Makefile so that it does not produce a kernel image
-        makefile = Path(linux) / "Makefile"
+        makefile = linux_rw / "Makefile"
         text = makefile.read_text()
         with makefile.open("w") as f:
             for line in text.splitlines():
@@ -757,7 +755,7 @@ class TestMissingArtifacts:
                     f.write(line)
                     f.write("\n")
 
-        build = Build(tree=linux)
+        build = Build(tree=linux_rw)
         build.run()
         assert build.failed
         errors, _ = build.parse_log()

@@ -257,6 +257,12 @@ test_reproducible_builds_arm64() {
   __test_reproducible_builds__ --target-arch=arm64
 }
 
+test_targz_pkg() {
+  run tuxmake targz-pkg
+  assertEquals 0 "${rc}"
+  assertTrue "test -f $XDG_CACHE_HOME/tuxmake/builds/1/linux-*.tar.gz"
+}
+
 if [ $# -gt 0 ]; then
   export TESTCASES="$(echo "$@")"
   set --

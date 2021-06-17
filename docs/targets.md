@@ -73,6 +73,12 @@ x86_64 | bzImage
 This can be overridden using the `--kernel-image` option in the [CLI](cli.md)
 and the `kernel_image` parameter in the [Python API](python.md).
 
+## targz-pkg
+
+Builds the kernel as a gzip compressed tarball, which is copied to the output
+directory. The tarball may include dtbs, modules, the kernel image, and other
+files.
+
 ## xipkernel
 
 Builds the XIP Kernel image, named `xipImage`, which is then copied into the

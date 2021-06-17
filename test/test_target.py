@@ -107,3 +107,14 @@ class TestDefault:
     def test_depends_on_config(self, build):
         default = Target("default", build)
         assert default.dependencies == ["config"]
+
+
+class TestTargzPkg:
+    def test_wildcards_in_artifacts(self, build, tmp_path):
+        filename = "linux-5.13.0-rc2+-x86.tar.gz"
+        (tmp_path / filename).touch()
+
+        targzpkg = Target("targz-pkg", build)
+        artifacts = targzpkg.find_artifacts(tmp_path)
+        assert artifacts[0][0] == filename
+        assert artifacts[0][1].name == filename

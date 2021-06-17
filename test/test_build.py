@@ -502,13 +502,11 @@ class TestDtbs:
 
 class TestDtbsLegacy:
     @pytest.fixture
-    def oldlinux(self, linux, tmp_path):
-        old = tmp_path / "oldlinux"
-        shutil.copytree(linux, old)
+    def oldlinux(self, linux_rw, tmp_path):
         subprocess.check_call(
-            ["sed", "-i", "-e", "s/dtbs_install/XXXX/g", str(old / "Makefile")]
+            ["sed", "-i", "-e", "s/dtbs_install/XXXX/g", str(linux_rw / "Makefile")]
         )
-        return old
+        return linux_rw
 
     def test_collect_dtbs_manually_without_dtbs_install(self, oldlinux):
         result = build(tree=oldlinux, target_arch="arm64")
@@ -675,14 +673,12 @@ class TestMetadata:
         assert type(metadata["build"]["reproducer_cmdline"]) is list
 
 
-LOG = (Path(__file__).parent / "logs/simple.log").read_text()
-
-
 class TestParseLog:
     @pytest.fixture(scope="class")
-    def build(self, linux):
+    def build(self, linux, logs_directory):
         b = Build(tree=linux)
-        (b.output_dir / "build.log").write_text(LOG)
+        log = (logs_directory / "simple.log").read_text()
+        (b.output_dir / "build.log").write_text(log)
         return b
 
     def test_warnings(self, build):
@@ -749,9 +745,9 @@ class TestPrepare:
 
 
 class TestMissingArtifacts:
-    def test_missing_kernel(self, linux, mocker):
+    def test_missing_kernel(self, linux_rw, mocker):
         # hack fakelinux Makefile so that it does not produce a kernel image
-        makefile = Path(linux) / "Makefile"
+        makefile = linux_rw / "Makefile"
         text = makefile.read_text()
         with makefile.open("w") as f:
             for line in text.splitlines():
@@ -759,7 +755,7 @@ class TestMissingArtifacts:
                     f.write(line)
                     f.write("\n")
 
-        build = Build(tree=linux)
+        build = Build(tree=linux_rw)
         build.run()
         assert build.failed
         errors, _ = build.parse_log()

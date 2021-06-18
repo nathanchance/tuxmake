@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 from tuxmake import cache
+from tuxmake import deprecated
 from tuxmake.logging import debug, warning
 from tuxmake.config import ConfigurableObject, split, splitmap, splitlistmap
 from tuxmake.exceptions import RuntimePreparationFailed
@@ -195,7 +196,7 @@ class DockerRuntime(Runtime):
     def get_image(self, build):
         image = (
             os.getenv("TUXMAKE_IMAGE")
-            or os.getenv("TUXMAKE_DOCKER_IMAGE")
+            or deprecated.getenv("TUXMAKE_DOCKER_IMAGE", "TUXMAKE_IMAGE")
             or build.target_arch.get_image(build.toolchain)
             or build.toolchain.get_image(build.target_arch)
         )

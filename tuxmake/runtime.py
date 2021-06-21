@@ -9,6 +9,8 @@ from pathlib import Path
 
 
 from tuxmake import cache
+from tuxmake import deprecated
+from tuxmake.logging import debug, warning
 from tuxmake.config import ConfigurableObject, split, splitmap, splitlistmap
 from tuxmake.exceptions import RuntimePreparationFailed
 from tuxmake.exceptions import InvalidRuntimeError
@@ -20,7 +22,6 @@ DEFAULT_RUNTIME = "null"
 DEFAULT_CONTAINER_REGISTRY = "docker.io"
 
 
-@lru_cache(None)
 def get_runtime(runtime):
     runtime = runtime or DEFAULT_RUNTIME
     name = "".join([w.title() for w in re.split(r"[_-]", runtime)]) + "Runtime"
@@ -62,7 +63,7 @@ class Runtime(ConfigurableObject):
                 self.__offline_available__ = True
             except subprocess.CalledProcessError as exc:
                 error = exc.output.decode("utf-8").strip()
-                print(f"W: offline builds not available ({error})", file=sys.stderr)
+                warning(f"W: offline builds not available ({error})")
                 self.__offline_available__ = False
         return self.__offline_available__
 
@@ -139,10 +140,7 @@ class Image:
         self.extra_apt_repo_key = extra_apt_repo_key
 
 
-class DockerRuntime(Runtime):
-    name = "docker"
-    command = "docker"
-    extra_opts_env_variable = "TUXMAKE_DOCKER_RUN"
+class ContainerRuntime(Runtime):
     prepare_failed_msg = "failed to pull remote image {image}"
 
     def __init_config__(self):
@@ -191,10 +189,11 @@ class DockerRuntime(Runtime):
         else:
             return False
 
+    @lru_cache(None)
     def get_image(self, build):
         image = (
             os.getenv("TUXMAKE_IMAGE")
-            or os.getenv("TUXMAKE_DOCKER_IMAGE")
+            or deprecated.getenv("TUXMAKE_DOCKER_IMAGE", "TUXMAKE_IMAGE")
             or build.target_arch.get_image(build.toolchain)
             or build.toolchain.get_image(build.target_arch)
         )
@@ -280,9 +279,9 @@ class DockerRuntime(Runtime):
             "sleep",
             "1d",
         ]
-        build.log_debug(f"Starting container: {cmd}")
+        debug(f"Starting container: {cmd}")
         self.container_id = self.spawn_container(cmd)
-        build.log_debug(f"Container ID: {self.container_id}")
+        debug(f"Container ID: {self.container_id}")
 
     def spawn_container(self, cmd):
         return subprocess.check_output(cmd).strip().decode("utf-8")
@@ -305,6 +304,16 @@ class DockerRuntime(Runtime):
             [self.command, "stop", self.container_id], stdout=subprocess.DEVNULL
         )
 
+    def __get_extra_opts__(self):
+        opts = os.getenv(self.extra_opts_env_variable, "")
+        return shlex.split(opts)
+
+
+class DockerRuntime(ContainerRuntime):
+    name = "docker"
+    command = "docker"
+    extra_opts_env_variable = "TUXMAKE_DOCKER_RUN"
+
     def get_user_opts(self):
         uid = os.getuid()
         gid = os.getgid()
@@ -316,12 +325,8 @@ class DockerRuntime(Runtime):
     def volume(self, source, target):
         return f"--volume={source}:{target}"
 
-    def __get_extra_opts__(self):
-        opts = os.getenv(self.extra_opts_env_variable, "")
-        return shlex.split(opts)
 
-
-class PodmanRuntime(DockerRuntime):
+class PodmanRuntime(ContainerRuntime):
     name = "podman"
     command = "podman"
     extra_opts_env_variable = "TUXMAKE_PODMAN_RUN"
@@ -333,7 +338,7 @@ class PodmanRuntime(DockerRuntime):
         return ["--log-level=ERROR"]
 
     def volume(self, source, target):
-        return super().volume(source, target) + ":z"
+        return f"--volume={source}:{target}:z"
 
 
 class LocalMixin:

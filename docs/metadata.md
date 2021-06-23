@@ -44,6 +44,9 @@ available.
   system.
     - **name**: OS name.
     - **version**: OS version.
+- **resources:** resources used by the build
+    - **disk_usage:** amount of disk space used in the kernel build directory,
+      in megabytes (does not include the disk space taken by the source directory).
 - **results**: metadata about the build results
     - **status**: "PASS" or "FAIL" (string).
     - **targets**: key/value with target names as keys. Values are objects with

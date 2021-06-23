@@ -136,3 +136,8 @@ class TestSystemMap:
 class TestTuxmake:
     def test_tuxmake_versino(self, build):
         assert build.metadata["tuxmake"]["version"] == __version__
+
+
+class TestResources:
+    def test_disk_space(self, build):
+        assert type(build.metadata["resources"]["disk_space"]) is int

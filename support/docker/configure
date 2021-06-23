@@ -199,12 +199,23 @@ class CrossGccBuildImage(CrossBuildMixin, BuildImage):
         self.pkgname = re.sub(r".*_(gcc.*)$", "\g<1>", self.name)
 
     def get_packages(self):
-        suffix = self.cross_package_suffix
-        return self.packages + [pkg + "-" + suffix for pkg in self.packages]
+        packages = self.packages.copy()
+        suffixes = [self.cross_package_suffix]
+        if self.cross_package_suffix == "aarch64-linux-gnu":
+            suffixes.append("arm-linux-gnueabihf")
+        for suffix in suffixes:
+            packages += [pkg + "-" + suffix for pkg in self.packages]
+        return packages
 
 
 class CrossClangBuildImage(CrossBuildMixin, ClangBuildImage):
     extra_lists = ["crossbuild"]
+
+    def get_packages(self):
+        binutils = ["binutils-" + self.cross_package_suffix]
+        if self.cross_package_suffix == "aarch64-linux-gnu":
+            binutils.append("binutils-arm-linux-gnueabihf")
+        return self.packages + binutils
 
 
 class ClangAndroidBuildImage(ClangBuildImage):

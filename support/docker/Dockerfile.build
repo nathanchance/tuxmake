@@ -42,8 +42,7 @@ RUN if [ "$(uname -m)" != "${HOSTARCH}" ]; then apt-get update \
 # are available and in good shape enough to be installable and usable.
 RUN if [ -z "${HOSTARCH}" ]; then exit; fi; \
     arch=$(dpkg-architecture --host-type=${HOSTARCH}-linux-gnu --query=DEB_HOST_ARCH); \
-    triplet=$(echo ${HOSTARCH}-linux-gnu | tr _ -); \
-    if [ "${arch}" = "arm" ]; then arch=armhf; triplet=arm-linux-gnueabihf; fi; \
+    if [ "${arch}" = "arm" ]; then arch=armhf; fi; \
     case "${arch}" in \
         amd64|arm64|armel|armhf|i386|mips64el|mipsel|ppc64el|s390x) \
             supported=yes; \
@@ -62,7 +61,6 @@ RUN if [ -z "${HOSTARCH}" ]; then exit; fi; \
         --no-install-recommends \
         --option=debug::pkgProblemResolver=yes \
         ${INSTALL_OPTIONS} \
-        binutils-${triplet} \
         libgcc-${gccversion}-dev-${arch}-cross \
         libstdc++-${gccversion}-dev-${arch}-cross \
         libc-dev-bin && \

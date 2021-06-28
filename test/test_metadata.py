@@ -141,3 +141,14 @@ class TestTuxmake:
 class TestResources:
     def test_disk_space(self, build):
         assert type(build.metadata["resources"]["disk_space"]) is int
+
+
+class TestHardware:
+    def test_cores(self, build):
+        assert type(build.metadata["hardware"]["cores"]) is int
+
+    def test_ram(self, build):
+        assert type(build.metadata["hardware"]["ram"]) is int
+
+    def test_free_disk_space(self, build):
+        assert type(build.metadata["hardware"]["free_disk_space"]) is int

@@ -7,7 +7,7 @@ from tuxmake import __version__
 from tuxmake.build import Build
 from tuxmake.exceptions import UnsupportedMetadataType
 from tuxmake.metadata import Metadata
-from tuxmake.metadata import MetadataExtractor
+from tuxmake.metadata import MetadataCollector
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -41,10 +41,10 @@ def build(linux):
     return b
 
 
-class TestExtractor:
+class TestMetadataCollector:
     @pytest.fixture
     def extractor(self, build):
-        return MetadataExtractor(build)
+        return MetadataCollector(build)
 
     @pytest.mark.parametrize("data", [None, "", "{}", '{"invalid":'])
     def test_dont_crash_on_corner_cases(self, extractor, data):

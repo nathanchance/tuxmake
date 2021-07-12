@@ -36,9 +36,9 @@ class FreeDiskSpace(MetadataItemExtactor):
 
 
 class MetadataCollector:
-    def __init__(self, build):
+    def __init__(self, build, handlers=None):
         self.build = build
-        self.handlers = Metadata.all()
+        self.handlers = handlers or Metadata.all()
         self.extractors = {}
         self.init_extractors()
 
@@ -105,6 +105,7 @@ class MetadataCollector:
 
     def collect_extra_metadata(self, metadata):
         for handler, item, extractor in self.each_extractor():
+            metadata.setdefault(handler, {})
             metadata[handler][item] = extractor.get()
 
 

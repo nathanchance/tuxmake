@@ -129,6 +129,12 @@ def build_parser(cls=argparse.ArgumentParser, **kwargs):
     )
     buildenv.add_argument("--docker-image", help="Alias for --image (deprecated).")
     buildenv.add_argument(
+        "-F",
+        "--fail-fast",
+        action="store_true",
+        help="Stop the build at the first failure (default: continue building even in the presence of failures, to find the maximum number of build errors)",
+    )
+    buildenv.add_argument(
         "-v",
         "--verbose",
         action="store_true",

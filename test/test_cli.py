@@ -182,6 +182,12 @@ class TestImageRegistry:
         assert args(builder).runtime == "podman"
 
 
+class TestFailFast:
+    def test_fail_fast(self, builder):
+        tuxmake("--fail-fast")
+        assert args(builder).fail_fast
+
+
 class TestVerbosity:
     def test_verbose(self, builder):
         tuxmake("--verbose")

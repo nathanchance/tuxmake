@@ -212,7 +212,7 @@ test_check_environment_fails() {
 __test_reproducible_builds__() {
   skip_if not command -v diffoscope
 
-  diffoscope_version="$(diffoscope --version | awk '{print($2)}')"
+  diffoscope_version="$(diffoscope --version 2>/dev/null | awk '{print($2)}')"
   skip_if [ "${diffoscope_version}" -lt 113 ]
 
   git init --quiet

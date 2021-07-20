@@ -278,6 +278,10 @@ pages:
   only:
     - tags
   script:
+    # TUXMAKE_RELEASE_MANAGERS_GPG_KEYS is defined on gitlab, in the CI/CD
+    # settings, section "Variables"
+    - gpg --import ${TUXMAKE_RELEASE_MANAGERS_GPG_KEYS}
+    - git tag --verify ${CI_COMMIT_TAG}
     - cp -r dist/repo public/packages
 
 rpm:

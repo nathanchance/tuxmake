@@ -15,6 +15,7 @@ RUN apt-get update \
         flake8 \
         gcc \
         git \
+        gpg \
         iproute2 \
         make \
         mkdocs \

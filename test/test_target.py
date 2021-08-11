@@ -85,7 +85,7 @@ class TestModules:
         assert modules.commands[0][0:2] == ["{make}", "modules_install"]
 
     def test_strip_modules(self, modules):
-        assert "INSTALL_MOD_STRIP=1" in modules.commands[0]
+        assert modules.makevars["INSTALL_MOD_STRIP"] == "1"
 
     def test_depends_on_default(self, modules):
         assert modules.dependencies == ["default"]
@@ -96,7 +96,7 @@ class TestDtbs:
         dtbs = Target("dtbs", build)
         assert dtbs.commands[0] == ["{make}", "dtbs"]
         assert dtbs.commands[2][1] == "dtbs_install"
-        assert "INSTALL_DTBS_PATH=" in dtbs.commands[2][2]
+        assert dtbs.makevars["INSTALL_DTBS_PATH"] == "{build_dir}/dtbsinstall/dtbs"
 
     def test_depends_on_config(self, build):
         dtbs = Target("dtbs", build)

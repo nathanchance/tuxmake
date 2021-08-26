@@ -72,6 +72,19 @@ RUN if [ -z "${HOSTARCH}" ]; then exit; fi; \
         ${INSTALL_OPTIONS} \
         libbinutils:${arch} \
         libc6-dev:${arch} && \
+    if [ "${INSTALL_OPTIONS}" = "-t llvm-toolchain" ]; then \
+        apt-get -t unstable install \
+            --assume-yes \
+            --no-install-recommends \
+            --option=debug::pkgProblemResolver=yes \
+            libssl1.1:${arch} libssl-dev:${arch}; \
+    else \
+        apt-get install \
+            --assume-yes \
+            --no-install-recommends \
+            --option=debug::pkgProblemResolver=yes \
+            libssl1.1:${arch} libssl-dev:${arch}; \
+    fi && \
     apt-get install \
         --assume-yes \
         --no-install-recommends \
@@ -94,7 +107,6 @@ RUN if [ -z "${HOSTARCH}" ]; then exit; fi; \
         libpopt-dev:${arch} \
         libreadline-dev:${arch} \
         libslang2-dev:${arch} \
-        libssl-dev:${arch} \
         $(test "${arch}" != "s390x" && echo libunwind-dev:${arch}) \
         libzstd-dev:${arch} \
         linux-libc-dev \

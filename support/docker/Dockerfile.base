@@ -41,6 +41,7 @@ RUN apt-get update \
         python3-docutils \
         rsync \
         socat \
+        sparse \
         tar \
         u-boot-tools \
         wget \

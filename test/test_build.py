@@ -224,6 +224,23 @@ class TestKconfig:
         with pytest.raises(tuxmake.exceptions.UnsupportedKconfigFragment):
             build(tree=linux, targets=["config"], kconfig_add=["foo"])
 
+    def test_kconfig_validation(self, linux):
+        result = build(
+            tree=linux,
+            targets=["config"],
+            kconfig_add=["CONFIG_XOR_1=y", "CONFIG_XOR_2=y"],
+        )
+        assert result.failed
+        assert result.status["config"].failed
+
+    def test_kconfig_validation_is_not_set(self, linux):
+        result = build(
+            tree=linux,
+            targets=["config"],
+            kconfig_add=["CONFIG_SHOULD_NOT_BE_SET=n"],
+        )
+        assert result.passed
+
 
 def test_output_dir(linux, output_dir, kernel):
     build(tree=linux, output_dir=output_dir)

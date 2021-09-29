@@ -863,6 +863,11 @@ class TestKselftest:
         names = [t.name for t in build.targets]
         assert names == ["config", "kselftest"]
 
+    def test_kselftest_merge_runs_right_after_config_and_before_default(self, linux):
+        build = Build(tree=linux, targets=["config", "kernel", "kselftest-merge"])
+        names = [t.name for t in build.targets]
+        assert names == ["config", "kselftest-merge", "default", "kernel"]
+
 
 class TestBPFKselftest:
     def test_bpf_kselftest_kconfig_add(self, linux, output_dir):

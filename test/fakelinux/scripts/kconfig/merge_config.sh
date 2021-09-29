@@ -32,5 +32,5 @@ if grep -q '^CONFIG_XOR_1=y' "$dest" && grep -q '^CONFIG_XOR_2=y' "${dest}"; the
   sed -i -e 's/^CONFIG_XOR_2=y/CONFIG_XOR_2=n/' "$dest"
 fi
 
-# turn CONFIG_SHOULD_NOT_BE_SET=n into `# CONFIG_SHOULD_NOT_BE_SET is not set`
-sed -i -e 's/^\(CONFIG_SHOULD_NOT_BE_SET\)=n/# \1 is not set/' "$dest"
+# turn CONFIG_* into `# CONFIG_* is not set`, as the real Linux does.
+sed -i -e 's/^\(CONFIG_\w\+\)=n/# \1 is not set/' "$dest"

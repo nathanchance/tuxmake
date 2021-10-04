@@ -503,9 +503,6 @@ class Build:
         if not fail and not self.check_artifacts(target):
             fail = True
 
-        if not fail and not target.check():
-            fail = True
-
         if fail:
             return BuildInfo("FAIL")
 

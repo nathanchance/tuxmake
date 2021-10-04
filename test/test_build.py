@@ -207,7 +207,7 @@ class TestKconfig:
             output_dir=output_dir,
         )
         config = output_dir / "config"
-        assert "# CONFIG_FOO is not set\n" in config.read_text()
+        assert "CONFIG_FOO=n\n" in config.read_text()
 
     def test_kconfig_add_in_tree(self, linux, output_dir):
         build(

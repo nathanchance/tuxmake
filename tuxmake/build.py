@@ -598,6 +598,7 @@ class Build:
         return parser.errors, parser.warnings
 
     def terminate(self):
+        self.logger.communicate()
         self.logger.terminate()
 
     def cleanup(self):

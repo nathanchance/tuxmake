@@ -11,6 +11,7 @@ from tuxmake.toolchain import Toolchain
 from tuxmake.build import build
 from tuxmake.build import Build
 from tuxmake.build import defaults
+from tuxmake.build import Terminated
 import tuxmake.exceptions
 
 
@@ -43,7 +44,7 @@ def Popen(mocker, check_artifacts):
 # Disable the metadata extraction for non-metadata related tests since its
 # pretty slow.
 @pytest.fixture(autouse=True)
-def disable_metadata(mocker):
+def collect_metadata(mocker):
     return mocker.patch("tuxmake.build.Build.collect_metadata")
 
 
@@ -309,33 +310,66 @@ def test_quiet(linux, capfd):
     assert "I:" not in err
 
 
-def test_ctrl_c(linux, mocker, Popen):
-    mocker.patch("tuxmake.build.Build.logger")
-    process = mocker.MagicMock()
-    Popen.return_value = process
-    process.communicate.side_effect = KeyboardInterrupt()
-    with pytest.raises(SystemExit):
+class TestInterruptedBuild:
+    @pytest.fixture
+    def interrupted(self, mocker, Popen):
+        mocker.patch("tuxmake.build.Build.logger")
+        process = mocker.MagicMock()
+        Popen.return_value = process
+        process.communicate.side_effect = KeyboardInterrupt()
+        return process
+
+    def test_ctrl_c(self, linux, interrupted):
         b = Build(tree=linux)
-        b.build(b.targets[0])
-    process.terminate.assert_called()
+        res = b.build(b.targets[0])
+        interrupted.terminate.assert_called()
+        assert res.failed
 
+    def test_ctrl_c_skips_all_other_targets(self, linux, interrupted, mocker):
+        b = Build(tree=linux)
+        real_build = b.build
+        mock_build = mocker.patch("tuxmake.build.Build.build", wraps=real_build)
+        b.build_all_targets()
+        expected_statuses = ["FAIL"] + ["SKIP" for _ in b.targets[1:]]
+        statuses = [b.status[t.name].status for t in b.targets]
+        assert statuses == expected_statuses
+        assert mock_build.call_count == 1
 
-def test_always_run_cleanup(linux, mocker):
-    build = Build(tree=linux)
-    mocker.patch(
-        "tuxmake.build.Build.build_all_targets", side_effect=KeyboardInterrupt()
-    )
-    with pytest.raises(KeyboardInterrupt):
-        build.run()
-    assert not build.build_dir.exists()
+    def test_always_run_cleanup(self, linux, mocker):
+        build = Build(tree=linux)
+        mocker.patch(
+            "tuxmake.build.Build.build_all_targets", side_effect=KeyboardInterrupt()
+        )
+        with pytest.raises(KeyboardInterrupt):
+            build.run()
+        assert not build.build_dir.exists()
 
+    def test_cleans_up_even_if_prepare_fails(self, linux, mocker):
+        build = Build(tree=linux)
+        mocker.patch("tuxmake.build.Build.prepare", side_effect=KeyboardInterrupt())
+        with pytest.raises(KeyboardInterrupt):
+            build.run()
+        assert not build.build_dir.exists()
 
-def test_cleans_up_even_if_prepare_fails(linux, mocker):
-    build = Build(tree=linux)
-    mocker.patch("tuxmake.build.Build.prepare", side_effect=KeyboardInterrupt())
-    with pytest.raises(KeyboardInterrupt):
-        build.run()
-    assert not build.build_dir.exists()
+    def test_copies_artifacts_even_when_interrupted(self, linux, mocker):
+        build = Build(tree=linux)
+        mocker.patch(
+            "tuxmake.build.Build.build_all_targets", side_effect=KeyboardInterrupt()
+        )
+        copy_artifacts = mocker.patch("tuxmake.build.Build.copy_artifacts")
+        with pytest.raises(KeyboardInterrupt):
+            build.run()
+        assert copy_artifacts.call_count > 0
+
+    def test_gets_metadata_even_when_interrupted(self, linux, mocker, collect_metadata):
+        build = Build(tree=linux)
+        mocker.patch(
+            "tuxmake.build.Build.build_all_targets", side_effect=KeyboardInterrupt()
+        )
+        with pytest.raises(KeyboardInterrupt):
+            build.run()
+        assert collect_metadata.call_count == 1
+        assert (build.output_dir / "metadata.json").exists()
 
 
 def test_existing_build_dir(linux, home):
@@ -902,3 +936,9 @@ class TestReproducible:
         build1 = Build(tree=linux)
         build2 = Build(tree=linux)
         assert build1.environment == build2.environment
+
+
+class TestTerminated:
+    def test_signal_handler_raises_exception(self):
+        with pytest.raises(Terminated):
+            Terminated.handle_signal(15, None)

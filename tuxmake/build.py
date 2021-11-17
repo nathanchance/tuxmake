@@ -3,6 +3,7 @@ from collections import OrderedDict
 from pathlib import Path
 import json
 import os
+import signal
 import shutil
 import subprocess
 import sys
@@ -77,6 +78,12 @@ class BuildInfo:
         `True` if this target was skipped.
         """
         return self.status == "SKIP"
+
+
+class Terminated(Exception):
+    @staticmethod
+    def handle_signal(signum, _):
+        raise Terminated(f"received signal {signum}; terminating ...")
 
 
 class Build:
@@ -226,6 +233,7 @@ class Build:
             )
 
         self.fail_fast = fail_fast
+        self.interrupted = False
         if self.fail_fast:
             self.keep_going = []
         else:
@@ -390,9 +398,11 @@ class Build:
                 return process.returncode != 0
             else:
                 return process.returncode == 0
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, Terminated) as ex:
+            self.log(str(ex))
             process.terminate()
-            sys.exit(1)
+            self.interrupted = True
+            return False
 
     @contextmanager
     def measure_duration(self, name, metadata=None):
@@ -476,7 +486,7 @@ class Build:
                 result = BuildInfo("SKIP")
             else:
                 result = self.build(target)
-                if self.fail_fast and result.failed:
+                if (self.fail_fast and result.failed) or self.interrupted:
                     skip_all = True
             result.duration = time.time() - start
             self.status[target.name] = result
@@ -613,6 +623,8 @@ class Build:
         build can be inspected though the `status`, `passed`, and `failed`
         properties.
         """
+        old_sigterm = signal.signal(signal.SIGTERM, Terminated.handle_signal)
+
         try:
             self.metadata_collector.before_build()
 
@@ -625,20 +637,22 @@ class Build:
             with self.go_offline():
                 with self.measure_duration("Build", metadata="build"):
                     self.build_all_targets()
-
-                with self.measure_duration("Copying Artifacts", metadata="copy"):
-                    for target in self.targets:
-                        self.copy_artifacts(target)
-
-                with self.measure_duration("Metadata Extraction", metadata="metadata"):
-                    self.collect_metadata()
         finally:
+            with self.measure_duration("Copying Artifacts", metadata="copy"):
+                for target in self.targets:
+                    self.copy_artifacts(target)
+
+            with self.measure_duration("Metadata Extraction", metadata="metadata"):
+                self.collect_metadata()
+
             with self.measure_duration("Cleanup", metadata="cleanup"):
                 self.terminate()
                 if self.auto_cleanup:
                     self.cleanup()
 
             self.save_metadata()
+
+            signal.signal(signal.SIGTERM, old_sigterm)
 
 
 def build(**kwargs):

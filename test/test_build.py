@@ -310,14 +310,29 @@ def test_quiet(linux, capfd):
 
 
 class TestInterruptedBuild:
-    def test_ctrl_c(self, linux, mocker, Popen):
+    @pytest.fixture
+    def interrupted(self, mocker, Popen):
         mocker.patch("tuxmake.build.Build.logger")
         process = mocker.MagicMock()
         Popen.return_value = process
         process.communicate.side_effect = KeyboardInterrupt()
-        with pytest.raises(SystemExit):
-            b = Build(tree=linux)
-            b.build(b.targets[0])
+        return process
+
+    def test_ctrl_c(self, linux, interrupted):
+        b = Build(tree=linux)
+        res = b.build(b.targets[0])
+        interrupted.terminate.assert_called()
+        assert res.failed
+
+    def test_ctrl_c_skips_all_other_targets(self, linux, interrupted, mocker):
+        b = Build(tree=linux)
+        real_build = b.build
+        mock_build = mocker.patch("tuxmake.build.Build.build", wraps=real_build)
+        b.build_all_targets()
+        expected_statuses = ["FAIL"] + ["SKIP" for _ in b.targets[1:]]
+        statuses = [b.status[t.name].status for t in b.targets]
+        assert statuses == expected_statuses
+        assert mock_build.call_count == 1
 
     def test_always_run_cleanup(self, linux, mocker):
         build = Build(tree=linux)

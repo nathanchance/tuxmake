@@ -226,6 +226,7 @@ class Build:
             )
 
         self.fail_fast = fail_fast
+        self.interrupted = False
         if self.fail_fast:
             self.keep_going = []
         else:
@@ -392,7 +393,8 @@ class Build:
                 return process.returncode == 0
         except KeyboardInterrupt:
             process.terminate()
-            sys.exit(1)
+            self.interrupted = True
+            return False
 
     @contextmanager
     def measure_duration(self, name, metadata=None):
@@ -476,7 +478,7 @@ class Build:
                 result = BuildInfo("SKIP")
             else:
                 result = self.build(target)
-                if self.fail_fast and result.failed:
+                if (self.fail_fast and result.failed) or self.interrupted:
                     skip_all = True
             result.duration = time.time() - start
             self.status[target.name] = result

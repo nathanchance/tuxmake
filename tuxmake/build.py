@@ -245,7 +245,7 @@ class Build:
 
         self.offline = False
 
-        self.artifacts = {"log": ["build.log"]}
+        self.artifacts = {"log": ["build.log", "build-debug.log"]}
         self.__logger__ = None
         self.__status__ = {}
         self.__durations__ = {}
@@ -456,7 +456,11 @@ class Build:
             else:
                 stdout = sys.stdout
             self.__logger__ = subprocess.Popen(
-                ["tee", str(self.output_dir / "build.log")],
+                [
+                    str(Runtime.bindir / "tuxmake-logger"),
+                    str(self.output_dir / "build.log"),
+                    str(self.output_dir / "build-debug.log"),
+                ],
                 stdin=subprocess.PIPE,
                 stdout=stdout,
             )

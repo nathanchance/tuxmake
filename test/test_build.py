@@ -250,6 +250,12 @@ def test_saves_log(linux):
     assert "make --silent" in log.read_text()
 
 
+def test_timestamp_in_debug_log(linux):
+    result = build(tree=linux)
+    log = result.output_dir / "build-debug.log"
+    assert "00:00" in log.read_text()
+
+
 def test_build_failure(linux, kernel, monkeypatch):
     monkeypatch.setenv("FAIL", "kernel")
     result = build(tree=linux, targets=["config", "kernel"])

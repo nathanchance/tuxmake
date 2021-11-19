@@ -63,7 +63,7 @@ class Runtime(ConfigurableObject):
                 self.__offline_available__ = True
             except subprocess.CalledProcessError as exc:
                 error = exc.output.decode("utf-8").strip()
-                warning(f"W: offline builds not available ({error})")
+                warning(f"offline builds not available ({error})")
                 self.__offline_available__ = False
         return self.__offline_available__
 

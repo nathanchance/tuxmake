@@ -83,3 +83,15 @@ available.
     - **data_size**: size in bytes of the `.data` section in the ELF file.
     - **text_size**: size in bytes of the `.text` section in the ELF file.
     - **file_size**: total file size in bytes
+- **runtime**: information about the runtime. The contents depends on the
+  runtime used for the build:
+  - For the `null` runtime, no information is provided
+  - For the `podman` and `docker` runtimes:
+    - **image_name**: name of the image used for the build.
+    - **image_digest**: full name of the image used for the build, including
+      the repository digest. This can be used to reproduce a build at a later
+      date with the exact same image, instead of using any later updates of the
+      given image. This will have a format like
+      `docker.io/tuxmake/{arch}_{toolchain}@sha256:[0-9a-f]+, and can be
+      directly used in `podman run` (or `docker run`) command lines as an image
+      name.

@@ -63,7 +63,7 @@ class Runtime(ConfigurableObject):
                 self.__offline_available__ = True
             except subprocess.CalledProcessError as exc:
                 error = exc.output.decode("utf-8").strip()
-                warning(f"W: offline builds not available ({error})")
+                warning(f"offline builds not available ({error})")
                 self.__offline_available__ = False
         return self.__offline_available__
 
@@ -89,6 +89,9 @@ class Runtime(ConfigurableObject):
 
     def get_check_environment_command(self):
         return self.bindir / "tuxmake-check-environment"
+
+    def get_metadata(self, build):
+        return {}
 
 
 class NullRuntime(Runtime):
@@ -299,6 +302,22 @@ class ContainerRuntime(Runtime):
     def __get_extra_opts__(self):
         opts = os.getenv(self.extra_opts_env_variable, "")
         return shlex.split(opts)
+
+    def get_metadata(self, build):
+        image_name = self.get_image(build)
+        image_digest = subprocess.check_output(
+            [
+                self.command,
+                "image",
+                "inspect",
+                "--format='{{index .RepoDigests 0}}",
+                image_name,
+            ],
+        ).decode("utf-8")
+        return {
+            "image_name": image_name,
+            "image_digest": image_digest,
+        }
 
 
 class DockerRuntime(ContainerRuntime):

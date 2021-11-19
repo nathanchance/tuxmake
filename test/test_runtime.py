@@ -127,6 +127,16 @@ class TestDockerRuntime(TestContainerRuntime):
         runtime = DockerRuntime()
         assert runtime.get_image(build) == "docker.io/foo/bar"
 
+    def test_get_metadata(self, build, get_image, mocker):
+        get_image.return_value = "tuxmake/theimage"
+        mocker.patch(
+            "subprocess.check_output",
+            return_value=b"docker.io/tuxmake/theimage@sha256:deadbeef",
+        )
+        metadata = DockerRuntime().get_metadata(build)
+        assert metadata["image_name"] == "docker.io/tuxmake/theimage"
+        assert metadata["image_digest"] == "docker.io/tuxmake/theimage@sha256:deadbeef"
+
     def test_prepare(self, build, get_image, mocker):
         get_image.return_value = "myimage"
         check_call = mocker.patch("subprocess.check_call")

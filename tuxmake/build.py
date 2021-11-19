@@ -587,6 +587,7 @@ class Build:
             "duration": self.__durations__,
         }
         self.metadata["tuxmake"] = {"version": __version__}
+        self.metadata["runtime"] = self.runtime.get_metadata(self)
 
         extracted = self.metadata_collector.collect()
         self.metadata.update(extracted)

@@ -90,6 +90,9 @@ class Runtime(ConfigurableObject):
     def get_check_environment_command(self):
         return self.bindir / "tuxmake-check-environment"
 
+    def get_metadata(self, build):
+        return {}
+
 
 class NullRuntime(Runtime):
     name = "null"
@@ -299,6 +302,22 @@ class ContainerRuntime(Runtime):
     def __get_extra_opts__(self):
         opts = os.getenv(self.extra_opts_env_variable, "")
         return shlex.split(opts)
+
+    def get_metadata(self, build):
+        image_name = self.get_image(build)
+        image_digest = subprocess.check_output(
+            [
+                self.command,
+                "image",
+                "inspect",
+                "--format='{{index .RepoDigests 0}}",
+                image_name,
+            ],
+        ).decode("utf-8")
+        return {
+            "image_name": image_name,
+            "image_digest": image_digest,
+        }
 
 
 class DockerRuntime(ContainerRuntime):

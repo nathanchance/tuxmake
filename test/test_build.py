@@ -330,6 +330,7 @@ class TestInterruptedBuild:
         res = b.build(b.targets[0])
         interrupted.terminate.assert_called()
         assert res.failed
+        assert b.interrupted
 
     def test_ctrl_c_skips_all_other_targets(self, linux, interrupted, mocker):
         b = Build(tree=linux)

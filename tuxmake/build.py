@@ -630,7 +630,6 @@ class Build:
         properties.
         """
         old_sigterm = signal.signal(signal.SIGTERM, Terminated.handle_signal)
-        old_sigalrm = signal.signal(signal.SIGALRM, Terminated.handle_signal)
 
         prepared = False
         try:
@@ -663,7 +662,6 @@ class Build:
             self.save_metadata()
 
             signal.signal(signal.SIGTERM, old_sigterm)
-            signal.signal(signal.SIGALRM, old_sigalrm)
 
 
 def build(**kwargs):

@@ -54,14 +54,6 @@ RUN wget -O /etc/apt/trusted.gpg.d/tuxmake.gpg \
     && apt-get update \
     && apt-get install --assume-yes tuxmake
 
-RUN . /etc/os-release \
-    && if [ -z "${VERSION_CODENAME:-}" ]; then exit; fi \
-    && wget -O /etc/apt/trusted.gpg.d/tuxmake-debian.gpg \
-        https://people.linaro.org/~antonio.terceiro/tuxmake-debian/key.gpg  \
-    && echo "deb https://people.linaro.org/~antonio.terceiro/tuxmake-debian ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/tuxmake-debian.list \
-    && apt-get update \
-    && apt-get --assume-yes upgrade
-
 # Lightweight: base container customizations
 RUN true \
     && useradd --create-home tuxmake \

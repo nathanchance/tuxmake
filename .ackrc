@@ -5,3 +5,4 @@
 --ignore-file=is:index.md
 --ignore-file=is:cli_options.rst
 --ignore-file=is:tuxmake.1
+--ignore-file=is:configure.mk

@@ -43,6 +43,10 @@ class Target(ConfigurableObject):
                 self.artifacts = {key: value}
             else:
                 self.artifacts = {}
+        try:
+            self.makevars = dict(self.config["makevars"])
+        except KeyError:
+            self.makevars = {}
 
     def __str__(self):
         return self.name

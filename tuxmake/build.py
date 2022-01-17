@@ -353,7 +353,7 @@ class Build:
         finally:
             self.offline = False
 
-    def run_cmd(self, origcmd, stdout=None, interactive=False):
+    def run_cmd(self, origcmd, stdout=None, interactive=False, makevars={}):
         """
         Performs the build.
 
@@ -362,7 +362,7 @@ class Build:
         """
         cmd = []
         for c in origcmd:
-            cmd += self.expand_cmd_part(c)
+            cmd += self.expand_cmd_part(c, makevars)
 
         if cmd[0] == "!":
             expect_failure = True
@@ -421,14 +421,14 @@ class Build:
                 self.__durations__[metadata] = duration
             debug(f"{name} finished in {duration} seconds.")
 
-    def expand_cmd_part(self, part):
+    def expand_cmd_part(self, part, makevars):
         if part == "{make}":
             return (
                 ["make"]
                 + self.get_silent()
                 + self.keep_going
                 + [f"--jobs={self.jobs}", f"O={self.build_dir}"]
-                + self.make_args
+                + self.make_args(makevars)
             )
         elif part == "{tar_caf}":
             return [
@@ -475,9 +475,11 @@ class Build:
     def log(self, *stuff):
         subprocess.call(["echo"] + list(stuff), stdout=self.logger.stdin)
 
-    @property
-    def make_args(self):
-        return [f"{k}={v}" for k, v in self.makevars.items() if v]
+    def make_args(self, makevars):
+        # we want to override target makevars with user provided make_variables
+        expanded_makevars = {k: self.format_cmd_part(v) for k, v in makevars.items()}
+        expanded_makevars.update(self.makevars)
+        return [f"{k}={v}" for k, v in expanded_makevars.items() if v]
 
     @property
     def makevars(self):
@@ -516,7 +518,7 @@ class Build:
 
         fail = False
         for cmd in target.commands:
-            if not self.run_cmd(cmd):
+            if not self.run_cmd(cmd, makevars=target.makevars):
                 fail = True
                 break
 

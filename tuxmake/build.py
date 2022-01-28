@@ -23,7 +23,7 @@ from tuxmake.exceptions import UnsupportedArchitectureToolchainCombination
 from tuxmake.exceptions import UnsupportedMakeVariable
 from tuxmake.log import LogParser
 from tuxmake.cmdline import CommandLine
-from tuxmake.utils import defaults
+from tuxmake.build_utils import defaults
 from tuxmake.utils import quote_command_line
 from tuxmake.utils import get_directory_timestamp
 

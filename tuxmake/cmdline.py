@@ -4,7 +4,7 @@ import re
 import sys
 
 from tuxmake.runtime import Runtime
-from tuxmake.utils import supported, defaults
+from tuxmake.build_utils import supported, defaults
 from tuxmake import __version__
 
 

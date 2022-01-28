@@ -9,10 +9,10 @@ from pathlib import Path
 
 
 from tuxmake import cache
-from tuxmake import deprecated
 from tuxmake.logging import debug, warning
 from tuxmake.config import ConfigurableObject, split, splitmap, splitlistmap
 from tuxmake.exceptions import RuntimePreparationFailed
+from tuxmake.exceptions import ImageRequired
 from tuxmake.exceptions import InvalidRuntimeError
 from tuxmake.toolchain import Toolchain
 from tuxmake.arch import host_arch
@@ -42,12 +42,18 @@ class Runtime(ConfigurableObject):
     def __init__(self):
         super().__init__(self.name)
         self.__offline_available__ = None
+        self.__image__ = None
 
     def __init_config__(self):
         self.toolchains = Toolchain.supported()
 
-    def get_image(self, build):
-        return None
+    def get_image(self):
+        if not self.__image__:
+            raise ImageRequired()
+        return self.__image__
+
+    def set_image(self, image):
+        self.__image__ = image
 
     def is_supported(self, arch, toolchain):
         return True
@@ -197,25 +203,6 @@ class ContainerRuntime(Runtime):
         else:
             return False
 
-    @lru_cache(None)
-    def get_image(self, build):
-        image = (
-            os.getenv("TUXMAKE_IMAGE")
-            or deprecated.getenv("TUXMAKE_DOCKER_IMAGE", "TUXMAKE_IMAGE")
-            or build.target_arch.get_image(build.toolchain)
-            or build.toolchain.get_image(build.target_arch)
-        )
-        registry = os.getenv("TUXMAKE_IMAGE_REGISTRY", DEFAULT_CONTAINER_REGISTRY)
-        if registry:
-            if len(image.split("/")) < 3:
-                # only prepend registry if the image name is not already a full
-                # image name.
-                image = registry + "/" + image
-        tag = os.getenv("TUXMAKE_IMAGE_TAG")
-        if tag:
-            image = image + ":" + tag
-        return image
-
     def prepare(self, build):
         super().prepare(build)
         try:
@@ -223,11 +210,11 @@ class ContainerRuntime(Runtime):
             self.start_container(build)
         except subprocess.CalledProcessError:
             raise RuntimePreparationFailed(
-                self.prepare_failed_msg.format(image=self.get_image(build))
+                self.prepare_failed_msg.format(image=self.get_image())
             )
 
     def prepare_image(self, build):
-        pull = [self.command, "pull", self.get_image(build)]
+        pull = [self.command, "pull", self.get_image()]
         last_pull = cache.get(pull)
         now = time.time()
         if last_pull:
@@ -275,7 +262,7 @@ class ContainerRuntime(Runtime):
             f"--workdir={source_tree}",
             *self.get_logging_opts(),
             *extra_opts,
-            self.get_image(build),
+            self.get_image(),
             "sleep",
             "1d",
         ]
@@ -305,7 +292,7 @@ class ContainerRuntime(Runtime):
         return shlex.split(opts)
 
     def get_metadata(self, build):
-        image_name = self.get_image(build)
+        image_name = self.get_image()
         image_digest = (
             subprocess.check_output(
                 [
@@ -362,7 +349,7 @@ class LocalMixin:
 
     def prepare_image(self, build):
         subprocess.check_call(
-            [self.command, "image", "inspect", self.get_image(build)],
+            [self.command, "image", "inspect", self.get_image()],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )

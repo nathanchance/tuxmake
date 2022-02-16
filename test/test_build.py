@@ -58,45 +58,42 @@ def kwargs(called):
     return called.call_args[1]
 
 
-def test_invalid_directory(tmp_path):
-    (tmp_path / "Makefile").touch()
-    with pytest.raises(tuxmake.exceptions.UnrecognizedSourceTree):
-        build(tree=tmp_path)
+class TestBasicFunctionality:
+    def test_invalid_directory(self, tmp_path):
+        (tmp_path / "Makefile").touch()
+        with pytest.raises(tuxmake.exceptions.UnrecognizedSourceTree):
+            build(tree=tmp_path)
 
+    def test_build(self, linux, home, kernel):
+        result = build(tree=linux)
+        assert kernel in result.artifacts["kernel"]
+        assert (home / ".cache/tuxmake/builds/1" / kernel).exists()
+        assert result.passed
 
-def test_build(linux, home, kernel):
-    result = build(tree=linux)
-    assert kernel in result.artifacts["kernel"]
-    assert (home / ".cache/tuxmake/builds/1" / kernel).exists()
-    assert result.passed
+    def test_build_with_output_dir(self, linux, output_dir, kernel):
+        result = build(tree=linux, output_dir=output_dir)
+        assert kernel in result.artifacts["kernel"]
+        assert (output_dir / kernel).exists()
+        assert result.output_dir == output_dir
 
+    def test_build_with_build_dir(self, linux, tmp_path):
+        build(tree=linux, build_dir=tmp_path)
+        assert (tmp_path / ".config").exists
 
-def test_build_with_output_dir(linux, output_dir, kernel):
-    result = build(tree=linux, output_dir=output_dir)
-    assert kernel in result.artifacts["kernel"]
-    assert (output_dir / kernel).exists()
-    assert result.output_dir == output_dir
+    def test_no_directory_created_unecessarily(self, linux, home):
+        Build(tree=linux)
+        assert len(list(home.glob("*"))) == 0
 
+    def test_no_directory_created_unecessarily_with_explicit_paths(
+        self, linux, tmp_path
+    ):
+        Build(tree=linux, output_dir=tmp_path / "output", build_dir=tmp_path / "build")
+        assert not (tmp_path / "output").exists()
+        assert not (tmp_path / "build").exists()
 
-def test_build_with_build_dir(linux, tmp_path):
-    build(tree=linux, build_dir=tmp_path)
-    assert (tmp_path / ".config").exists
-
-
-def test_no_directory_created_unecessarily(linux, home):
-    Build(tree=linux)
-    assert len(list(home.glob("*"))) == 0
-
-
-def test_no_directory_created_unecessarily_with_explicit_paths(linux, tmp_path):
-    Build(tree=linux, output_dir=tmp_path / "output", build_dir=tmp_path / "build")
-    assert not (tmp_path / "output").exists()
-    assert not (tmp_path / "build").exists()
-
-
-def test_unsupported_target(linux):
-    with pytest.raises(tuxmake.exceptions.UnsupportedTarget):
-        build(tree=linux, targets=["unknown-target"])
+    def test_unsupported_target(self, linux):
+        with pytest.raises(tuxmake.exceptions.UnsupportedTarget):
+            build(tree=linux, targets=["unknown-target"])
 
 
 class TestKconfig:

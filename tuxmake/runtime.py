@@ -292,6 +292,9 @@ class ContainerRuntime(Runtime):
         return shlex.split(opts)
 
     def get_metadata(self, build):
+        version = (
+            subprocess.check_output([self.command, "--version"]).decode("utf-8").strip()
+        )
         image_name = self.get_image()
         image_digest = (
             subprocess.check_output(
@@ -307,6 +310,7 @@ class ContainerRuntime(Runtime):
             .strip()
         )
         return {
+            "version": version,
             "image_name": image_name,
             "image_digest": image_digest,
         }

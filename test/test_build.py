@@ -587,6 +587,7 @@ class TestDtbsLegacy:
         subprocess.check_call(
             ["sed", "-i", "-e", "s/dtbs_install/XXXX/g", str(linux_rw / "Makefile")]
         )
+        (linux_rw / "arch/arm64/Makefile").write_text("dtbs:\n\t@echo build dtbs\n")
         return linux_rw
 
     def test_collect_dtbs_manually_without_dtbs_install(self, oldlinux):

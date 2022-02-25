@@ -33,16 +33,6 @@ def check_artifacts(mocker):
     return mocker.patch("tuxmake.build.Build.check_artifacts", return_value=True)
 
 
-@pytest.fixture()
-def Popen(mocker, check_artifacts):
-    _Popen = mocker.patch("subprocess.Popen")
-    _Popen.return_value.communicate.return_value = (
-        mocker.MagicMock(),
-        mocker.MagicMock(),
-    )
-    return _Popen
-
-
 # Disable the metadata extraction for non-metadata related tests since its
 # pretty slow.
 @pytest.fixture(autouse=True)

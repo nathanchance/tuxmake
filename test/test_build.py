@@ -308,7 +308,6 @@ def test_quiet(linux, capfd):
 class TestInterruptedBuild:
     @pytest.fixture
     def interrupted(self, mocker, Popen):
-        mocker.patch("tuxmake.build.Build.logger")
         process = mocker.MagicMock()
         Popen.return_value = process
         process.communicate.side_effect = KeyboardInterrupt()
@@ -638,9 +637,7 @@ class TestRuntime:
         runtime.get_command_line.return_value = ["true"]
         build = Build(tree=linux, runtime="docker")
         build.run_cmd(["true"], interactive=True)
-        runtime.get_command_line.assert_called_with(
-            ["true"], True, offline=build.offline
-        )
+        assert kwargs(runtime.run_cmd)["interactive"]
 
 
 class TestEnvironment:
@@ -650,8 +647,8 @@ class TestEnvironment:
             environment={"KCONFIG_ALLCONFIG": "foo.config"},
             targets=["config"],
         )
-        b.build(b.targets[0])
-        assert kwargs(Popen)["env"]["KCONFIG_ALLCONFIG"] == "foo.config"
+        b.prepare()
+        assert b.runtime.environment["KCONFIG_ALLCONFIG"] == "foo.config"
 
 
 class TestMakeVariables:
@@ -668,10 +665,11 @@ class TestMakeVariables:
 class TestCompilerWrappers:
     def test_ccache(self, linux, Popen):
         b = Build(tree=linux, targets=["config"], wrapper="ccache")
-        b.build(b.targets[0])
-        assert "CC=ccache gcc" in args(Popen)
-        assert "HOSTCC=ccache gcc" in args(Popen)
-        assert "CCACHE_DIR" in kwargs(Popen)["env"]
+        b.prepare()
+        assert "CCACHE_DIR" in b.runtime.environment
+        makevars = b.makevars
+        assert makevars["CC"] == "ccache gcc"
+        assert makevars["HOSTCC"] == "ccache gcc"
 
     def test_ccache_gcc_v(self, linux, Popen):
         b = Build(tree=linux, targets=["config"], toolchain="gcc-10", wrapper="ccache")
@@ -705,6 +703,13 @@ class TestCompilerWrappers:
         )
         b.build(b.targets[0])
         assert "CC=ccache clang" in args(Popen)
+
+    def test_sccache_with_path(self, linux, mocker, Popen):
+        add_volume = mocker.patch("tuxmake.runtime.Runtime.add_volume")
+        b = Build(tree=linux, wrapper="/path/to/sccache")
+        b.prepare()
+        volumes = [call[0] for call in add_volume.call_args_list]
+        assert ("/path/to/sccache", "/usr/local/bin/sccache") in volumes
 
 
 @pytest.mark.skipif(
@@ -790,7 +795,9 @@ class TestDebug:
 
     @pytest.fixture
     def debug_build(self, linux):
-        return Build(tree=linux, debug=True, environment={"FOO": "BAR"})
+        b = Build(tree=linux, debug=True, environment={"FOO": "BAR"})
+        b.prepare()
+        return b
 
     @pytest.fixture
     def err(self, debug_build, mocker, capfd):
@@ -821,7 +828,7 @@ class TestPrepare:
         )
         mocker.patch(
             "tuxmake.runtime.NullRuntime.prepare",
-            side_effect=lambda _: order.append("runtime"),
+            side_effect=lambda: order.append("runtime"),
         )
         mocker.patch(
             "tuxmake.wrapper.Wrapper.prepare_runtime",

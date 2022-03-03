@@ -210,6 +210,16 @@ class TestKconfig:
         assert ("CONFIG_KVM_GUEST=y") in config.read_text()
         assert ("CONFIG_DEBUG_INFO=y") in config.read_text()
 
+    def test_kconfig_add_explicit_make_target(self, linux, output_dir):
+        build(
+            tree=linux,
+            targets=["config"],
+            kconfig_add=["make:kselftest-merge"],
+            output_dir=output_dir,
+        )
+        config = output_dir / "config"
+        assert "CONFIG_KSELFTEST_MERGE=y" in config.read_text()
+
     def test_kconfig_add_invalid(self, linux):
         with pytest.raises(tuxmake.exceptions.UnsupportedKconfigFragment):
             build(tree=linux, targets=["config"], kconfig_add=["foo"])

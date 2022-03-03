@@ -183,6 +183,10 @@ qemu-gdb.config: config
 	$(call maybefail,qemu-gdb.config)
 	echo CONFIG_DEBUG_INFO=y >> $(O)/.config
 
+kselftest-merge: config
+	$(call maybefail,kselftest-merge)
+	echo CONFIG_KSELFTEST_MERGE=y >> $(O)/.config
+
 ########################################################################
 # targz-pkg: very loosely based on linux/scripts/package/buildtar
 ########################################################################

@@ -118,6 +118,8 @@ class Config(Target):
                 self.build.log(f"# {frag} -> {fragfile}")
             elif self.handle_in_tree_config(frag):
                 pass
+            elif self.handle_explicit_make_target(frag):
+                pass
             else:
                 raise UnsupportedKconfigFragment(frag)
         if merge:
@@ -170,6 +172,14 @@ class Config(Target):
     def handle_make_target(self, t):
         if re.match(r"^[\w\-]+config$", t):
             self.commands.append(["{make}", t])
+            return True
+        else:
+            return False
+
+    def handle_explicit_make_target(self, t):
+        if re.match(r"^make:.*$", t):
+            target = re.sub(r"^make:", "", t)
+            self.commands.append(["{make}", target])
             return True
         else:
             return False

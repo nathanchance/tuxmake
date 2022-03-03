@@ -16,6 +16,9 @@ configuration specified by *kconfig*. It can be specified in the following
 ways:
 
 - an in-tree configuration target (e.g. `kvm_guest.config`);
+- an explicit make target (`make:targetname`); TuxMake will call `make
+  targetname` during the configuration step (e.g. `make:kselftest-merge` will
+  cause `make kselftest-merge` to be called).
 - a path to a config file on the local filesystem;
 - a URL to a config file, in which case TuxMake will download it;
 - a config fragment matching one of these:
@@ -23,7 +26,7 @@ ways:
     - `# CONFIG_* is not set`
 
 `kconfig_add` can be specified multiple times. Any in-tree configuration target
-will be built with `make`, and then all of the others will be saved to a local
-file in the order they were passed. They will be then merged on top of the
-existing configuration by calling `scripts/kconfig/merge_config.sh` and
-`make olddefconfig`.
+and explicit make targets will be built with `make`, and then all of the others
+will be saved to a local file in the order they were passed. They will be then
+merged on top of the existing configuration by calling
+`scripts/kconfig/merge_config.sh` and `make olddefconfig`.

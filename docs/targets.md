@@ -117,6 +117,9 @@ tarball which is copied into the output directory as `kselftest-bpf.tar.xz`.
 
 ## kselftest-merge
 
+*DEPRECATED:* this target is deprecated. You should use
+`--kconfig-add=make:kselftest-merge` instead.
+
 This target merges some configuration required by `kselftest` in the kernel
 configuration. It will run after the `config` target. Note that `kselftest`
 does not require this, so if you want `kselftest-merge` to be built, it needs

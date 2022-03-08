@@ -11,4 +11,7 @@ limited to articles and talks.
 - [Portable and Repeatable Linux kernel builds with Tuxmake](https://meetings-archive.debian.net/pub/debian-meetings/2021/MiniDebConf-India/15-portable-and-repeatable-linux-kernel-builds-with-tuxmake.webm).
   **Video**, talk at MiniDebconf India 2021 (webm, 166MB).
 
+## March 2021
+
+- [LVC21-106: Consistent and Portable Linux Builds with TuxMake](https://connect.linaro.org/resources/lvc21/lvc21-106/). **Video**, talk at Linaro Virtual Connect 2021.
 

@@ -129,6 +129,17 @@ class BuildImage(Image):
         super().__init__(image_data)
         self.pkgname = self.name
 
+    @property
+    def arch(self):
+        try:
+            return getattr(self, "__arch__")
+        except AttributeError:
+            a = re.sub(r"_(rust|gcc|clang).*$", "", self.name)
+            if a == self.name:
+                return None
+            self.__arch__ = Architecture(a)
+            return self.__arch__
+
     def emit(self):
         super().emit()
         packages = " ".join(self.get_packages())
@@ -142,23 +153,22 @@ class BuildImage(Image):
 
 
 class ClangBuildImage(BuildImage):
-    pass
+    def get_packages(self):
+        extra_packages = []
+        if self.arch == "arm64":
+            extra_packages = ["binutils-arm-linux-gnueabihf"]
+        return super().get_packages() + extra_packages
 
 
 class GccBuildImage(BuildImage):
-    pass
+    def get_packages(self):
+        extra_packages = []
+        if self.arch == "arm64":
+            extra_packages = [f"{pkg}-arm-linux-gnueabihf" for pkg in self.packages]
+        return super().get_packages() + extra_packages
 
 
 class CrossBuildMixin:
-    @property
-    def arch(self):
-        try:
-            return getattr(self, "__arch__")
-        except AttributeError:
-            a = re.sub(r"_(rust|gcc|clang).*$", "", self.name)
-            self.__arch__ = Architecture(a)
-            return self.__arch__
-
     @property
     def lists(self):
         arch = self.arch.name
@@ -185,7 +195,7 @@ class CrossBuildMixin:
             self.test_args.append("--libc-compile-fatal")
 
 
-class CrossGccBuildImage(CrossBuildMixin, BuildImage):
+class CrossGccBuildImage(CrossBuildMixin, GccBuildImage):
     extra_lists = ["crossbuild"]
 
     def __init__(self, image_data):
@@ -193,23 +203,17 @@ class CrossGccBuildImage(CrossBuildMixin, BuildImage):
         self.pkgname = re.sub(r".*_(gcc.*)$", "\g<1>", self.name)
 
     def get_packages(self):
-        packages = self.packages.copy()
-        suffixes = [self.cross_package_suffix]
-        if self.cross_package_suffix == "aarch64-linux-gnu":
-            suffixes.append("arm-linux-gnueabihf")
-        for suffix in suffixes:
-            packages += [pkg + "-" + suffix for pkg in self.packages]
-        return packages
+        return super().get_packages() + [
+            pkg + "-" + self.cross_package_suffix
+            for pkg in self.packages
+        ]
 
 
 class CrossClangBuildImage(CrossBuildMixin, ClangBuildImage):
     extra_lists = ["crossbuild"]
 
     def get_packages(self):
-        binutils = ["binutils-" + self.cross_package_suffix]
-        if self.cross_package_suffix == "aarch64-linux-gnu":
-            binutils.append("binutils-arm-linux-gnueabihf")
-        return self.packages + binutils
+        return super().get_packages() + ["binutils-" + self.cross_package_suffix]
 
 
 class ClangAndroidBuildImage(ClangBuildImage):

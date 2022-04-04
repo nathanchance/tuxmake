@@ -55,13 +55,13 @@ test_gcc_9() {
 test_arm64_gcc() {
     get_build_args arm64_gcc
     assertArg 'BASE=$(REGISTRY)$(PROJECT)/gcc' 'HOSTARCH=aarch64'\
-        'PACKAGES="gcc g++ gcc-aarch64-linux-gnu g++-aarch64-linux-gnu gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf"'
+        'PACKAGES="gcc g++ gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-aarch64-linux-gnu"'
 }
 
 test_arm64_gcc_8() {
     get_build_args arm64_gcc-8
     assertArg 'BASE=$(REGISTRY)$(PROJECT)/gcc' 'HOSTARCH=aarch64'\
-        'PACKAGES="gcc-8 g++-8 gcc-8-aarch64-linux-gnu g++-8-aarch64-linux-gnu gcc-8-arm-linux-gnueabihf g++-8-arm-linux-gnueabihf"'
+        'PACKAGES="gcc-8 g++-8 gcc-8-arm-linux-gnueabihf g++-8-arm-linux-gnueabihf gcc-8-aarch64-linux-gnu g++-8-aarch64-linux-gnu"'
 }
 
 test_x86_64_gcc() {
@@ -78,7 +78,7 @@ test_clang() {
 test_arm64_clang() {
     get_build_args arm64_clang
     assertArg 'BASE=$(REGISTRY)$(PROJECT)/clang' 'HOSTARCH=aarch64' \
-        'PACKAGES="clang llvm lld binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf"'
+        'PACKAGES="clang llvm lld binutils-arm-linux-gnueabihf binutils-aarch64-linux-gnu"'
 }
 
 test_clang_11() {

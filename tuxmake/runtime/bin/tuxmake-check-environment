@@ -141,6 +141,7 @@ sub check_toolchain_image() {
   $arch ||= `arch`; chomp $arch;
   my @prefixes = ("");
   push @prefixes, $cross_compile if $cross_compile;
+  push @prefixes, "arm-linux-gnueabihf-" if ($arch eq "arm64");
 
   for $compiler (@compilers) {
     for my $prefix (@prefixes) {

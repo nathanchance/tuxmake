@@ -73,6 +73,15 @@ docker_runtime() {
   return 1
 }
 
+podman_runtime() {
+  case "${TUXMAKE:-}" in
+    *--runtime=podman*)
+      return 0
+      ;;
+  esac
+  return 1
+}
+
 under_docker() {
   if [ -f /.dockerenv ]; then
     return 0

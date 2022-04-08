@@ -22,7 +22,8 @@ RUN if [ -f /etc/apt/sources.list.d/extra.list ]; then exit; fi; \
 
 # Install basic toolchain packages. Which toolchain exactly is defined by the
 # $PACKAGES build argument
-RUN apt-get install \
+RUN apt-get update -q && \
+    apt-get install \
         --assume-yes \
         --no-install-recommends \
         --option=debug::pkgProblemResolver=yes \

@@ -20,6 +20,10 @@ class ConfigurableObject:
         self.name, self.config = self.read_config(name)
         self.__init_config__()
 
+    def __repr__(self):
+        c = type(self).__name__
+        return f"<{c} {self.name}>"
+
     @classmethod
     @lru_cache(None)
     def read_config(cls, name: str) -> Tuple[str, ConfigParser]:

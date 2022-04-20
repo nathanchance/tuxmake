@@ -11,8 +11,12 @@ def setup(mocker, monkeypatch, tmp_path):
     (tmp_path / "test" / "foo.ini").touch()
 
 
-def test_constructor_calls___init_config__(mocker):
-    __init_config__ = mocker.patch("tuxmake.config.ConfigurableObject.__init_config__")
+@pytest.fixture
+def __init_config__(mocker):
+    return mocker.patch("tuxmake.config.ConfigurableObject.__init_config__")
+
+
+def test_constructor_calls___init_config__(__init_config__):
     ConfigurableObject("foo")
     __init_config__.assert_called()
 
@@ -20,3 +24,7 @@ def test_constructor_calls___init_config__(mocker):
 def test___init_config___not_implemented():
     with pytest.raises(NotImplementedError):
         ConfigurableObject("foo")
+
+
+def test_repr(__init_config__):
+    assert repr(ConfigurableObject("foo")) == "<ConfigurableObject foo>"

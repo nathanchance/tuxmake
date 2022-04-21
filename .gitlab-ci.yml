@@ -37,6 +37,10 @@ stages:
   script:
     - make unit-tests
 
+unit-tests-python3.10:
+  extends: .unit-tests
+  image: $CI_REGISTRY/linaro/tuxmake/ci-ubuntu-22.04
+
 unit-tests-python3.9:
   extends: .unit-tests
   image: $CI_REGISTRY/linaro/tuxmake/ci-debian-11
@@ -52,6 +56,10 @@ unit-tests-python3.7:
 unit-tests-python3.6:
   extends: .unit-tests
   image: $CI_REGISTRY/linaro/tuxmake/ci-ubuntu-18.04
+
+unit-tests-python3.10-arm64:
+  extends: [.unit-tests, .arm64]
+  image: $CI_REGISTRY/linaro/tuxmake/ci-ubuntu-22.04
 
 unit-tests-python3.9-arm64:
   extends: [.unit-tests, .arm64]

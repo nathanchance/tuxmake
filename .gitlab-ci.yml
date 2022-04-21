@@ -1,5 +1,5 @@
 include:
-  - '/support/docker/gitlab-ci.yml'
+  - '/support/docker/tuxmake-images.yml'
   - '/support/docker/tuxmake-ci-images.yml'
 
 image:

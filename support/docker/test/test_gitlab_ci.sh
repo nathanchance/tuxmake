@@ -10,8 +10,8 @@ tearDown() {
 
 test_gitlab_ci_is_update_to_date() {
   ./gen-gitlab-ci > "${ci}"
-  diff -u gitlab-ci.yml ${ci}
-  assertEquals "gitlab-ci.yml is up to date" 0 ${?}
+  diff -u tuxmake-images.yml ${ci}
+  assertEquals "tuxmake-images.yml is up to date" 0 ${?}
 }
 
 . /usr/share/shunit2/shunit2

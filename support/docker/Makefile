@@ -107,5 +107,5 @@ dot:
 
 .PHONY: $(all_images) $(releases) $(publish_releases) $(publish_multiarch_releases) test show list clean purge dot
 
-gitlab-ci.yml: gen-gitlab-ci ../../tuxmake/runtime/docker.ini
+tuxmake-images.yml: gen-gitlab-ci ../../tuxmake/runtime/docker.ini
 	+./gen-gitlab-ci > $@ || ($(RM) $@; false)

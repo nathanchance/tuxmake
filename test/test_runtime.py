@@ -174,11 +174,11 @@ class TestDockerRuntime(TestContainerRuntime):
         assert runtime.container_id == container_id
 
     def test_cleanup(self, container_id, mocker):
-        check_call = mocker.patch("subprocess.check_call")
+        call = mocker.patch("subprocess.call")
         runtime = DockerRuntime()
         runtime.start_container()
         runtime.cleanup()
-        cmd = check_call.call_args[0][0]
+        cmd = call.call_args[0][0]
         assert cmd[0:2] == ["docker", "stop"]
         assert cmd[-1] == container_id
 

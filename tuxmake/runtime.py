@@ -474,7 +474,7 @@ class ContainerRuntime(Runtime):
     def cleanup(self):
         if not self.container_id:
             return
-        subprocess.check_call(
+        subprocess.call(
             [self.command, "stop", self.container_id], stdout=subprocess.DEVNULL
         )
         super().cleanup()

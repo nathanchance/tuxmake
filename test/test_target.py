@@ -95,7 +95,7 @@ class TestDtbs:
     def test_commands(self, build):
         dtbs = Target("dtbs", build)
         assert dtbs.commands[0] == ["{make}", "dtbs"]
-        assert dtbs.commands[2][1] == "dtbs_install"
+        assert dtbs.commands[3][1] == "dtbs_install"
         assert dtbs.makevars["INSTALL_DTBS_PATH"] == "{build_dir}/dtbsinstall/dtbs"
 
     def test_depends_on_config(self, build):

@@ -1,4 +1,4 @@
-.PHONY: test tags dist
+.PHONY: test doc-test tags dist
 
 export PROJECT := tuxmake
 
@@ -57,10 +57,12 @@ docs/cli.md: tuxmake.rst tuxmake/cli.py scripts/cli2md.sh scripts/cli2md.py
 docs/index.md: README.md scripts/readme2index.sh
 	scripts/readme2index.sh $@
 
-doc: public
+doc: doc-test public
+
+doc-test:
+	python3 -m pytest scripts/test_doc.py
 
 public: docs/cli.md docs/index.md $(wildcard docs/*)
-	python3 -m pytest scripts/test_doc.py
 	PYTHONPATH=. mkdocs build
 
 serve-public: public

@@ -87,6 +87,9 @@ dist/tuxmake-$(version)-0tuxmake.noarch.rpm: dist/tuxmake-$(version).tar.gz dist
 
 rpmsrc: dist dist/tuxmake.spec
 
+dist/PKGBUILD: tuxmake.PKGBUILD
+	cp tuxmake.PKGBUILD dist/PKGBUILD
+
 dist/tuxmake.spec: tuxmake.spec
 	cp tuxmake.spec dist/
 
@@ -109,3 +112,8 @@ dist/tuxmake_$(version)-1.dsc: dist/tuxmake_$(version).orig.tar.gz $(wildcard de
 	cd dist && tar xaf tuxmake_$(version).orig.tar.gz
 	cp -r debian/ dist/tuxmake-$(version)
 	cd dist/tuxmake-$(version)/ && dpkg-buildpackage -S -d -us -uc
+
+pkg: dist/tuxmake-$(version)-1-any.pkg.tar.zst
+
+dist/tuxmake-$(version)-1-any.pkg.tar.zst: dist/tuxmake-$(version).tar.gz dist/PKGBUILD
+	cd dist && makepkg --noconfirm -rs

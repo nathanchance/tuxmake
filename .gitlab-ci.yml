@@ -222,6 +222,23 @@ deb:
     paths:
       - dist/*.deb
 
+pkg:
+  extends: .tuxmake
+  stage: integration-tests
+  image: archlinux:base-devel
+  script:
+    - sed -i '/^NoExtract/d' /etc/pacman.conf
+    - pacman -Syyu --noconfirm
+    - pacman -S --noconfirm git glibc python-flit
+    - echo "C.UTF-8 UTF-8" >/etc/locale.gen
+    - locale-gen
+    - useradd -m build
+    - "echo 'build ALL=(ALL) NOPASSWD: ALL' >/etc/sudoers.d/build"
+    - su build -c "git config --global --add safe.directory ${CI_PROJECT_DIR}; make pkg"
+  artifacts:
+    paths:
+      - dist/*.pkg.tar.zst
+
 packages:
   image: debian:bullseye
   stage: build

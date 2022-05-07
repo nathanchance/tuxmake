@@ -47,6 +47,9 @@ fi
 if [ -f debian/changelog ]; then
     sed -i -e "1 { s/(.*)/(${version}-1)/ }" debian/changelog
 fi
+if [ -f "${PROJECT}.PKGBUILD" ]; then
+    sed -i -e "s/^pkgver=.*/pkgver=${version}/" ${PROJECT}.PKGBUILD
+fi
 $git commit -a --file=${relnotes}
 
 $git push

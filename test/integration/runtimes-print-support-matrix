@@ -27,4 +27,8 @@ test_podman_local() {
   assertEquals 0 "${rc}"
 }
 
-. /usr/share/shunit2/shunit2
+if [ -e /usr/bin/shunit2 ]; then
+  . /usr/bin/shunit2
+else
+  . /usr/share/shunit2/shunit2
+fi

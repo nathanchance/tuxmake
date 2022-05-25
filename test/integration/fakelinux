@@ -270,4 +270,8 @@ if [ $# -gt 0 ]; then
   }
 fi
 
-. /usr/share/shunit2/shunit2
+if [ -e /usr/bin/shunit2 ]; then
+  . /usr/bin/shunit2
+else
+  . /usr/share/shunit2/shunit2
+fi

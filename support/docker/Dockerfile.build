@@ -74,38 +74,38 @@ RUN if [ -z "${HOSTARCH}" ]; then exit; fi; \
         --no-install-recommends \
         --option=debug::pkgProblemResolver=yes \
         ${INSTALL_OPTIONS} \
-        libbinutils:${arch} \
-        libc6-dev:${arch} && \
+        libbinutils libbinutils:${arch} \
+        libc6-dev libc6-dev:${arch} && \
     apt-get install \
         --assume-yes \
         --no-install-recommends \
         --option=debug::pkgProblemResolver=yes \
-        libbabeltrace-dev:${arch} \
+        libbabeltrace-dev libbabeltrace-dev:${arch} \
         libc6-dev-${arch}-cross \
-        libasound2-dev:${arch} \
-        libcap-dev:${arch} \
-        libcap-ng-dev:${arch} \
-        libdrm-dev:${arch} \
-        libdw-dev:${arch} \
-        libelf-dev:${arch} \
-        libfuse-dev:${arch} \
-        libhugetlbfs-dev:${arch} \
-        libiberty-dev:${arch} \
-        libkeyutils-dev:${arch} \
-        libmnl-dev:${arch} \
-        libmount-dev:${arch} \
-        libnuma-dev:${arch} \
-        libpci-dev:${arch} \
-        libpopt-dev:${arch} \
+        libasound2-dev libasound2-dev:${arch} \
+        libcap-dev libcap-dev:${arch} \
+        libcap-ng-dev:${arch} # https://bugs.debian.org/983476 \
+        libdrm-dev libdrm-dev:${arch} \
+        libdw-dev libdw-dev:${arch} \
+        libelf-dev libelf-dev:${arch} \
+        libfuse-dev libfuse-dev:${arch} \
+        libhugetlbfs-dev libhugetlbfs-dev:${arch} \
+        libiberty-dev libiberty-dev:${arch} \
+        libkeyutils-dev libkeyutils-dev:${arch} \
+        libmnl-dev libmnl-dev:${arch} \
+        libmount-dev libmount-dev:${arch} \
+        libnuma-dev libnuma-dev:${arch} \
+        libpci-dev libpci-dev:${arch} \
+        libpopt-dev libpopt-dev:${arch} \
         libreadline-dev \
-        libreadline-dev:${arch} \
-        libslang2-dev:${arch} \
-        libssl-dev:${arch} \
-        $(test "${arch}" != "s390x" && echo libunwind-dev:${arch}) \
-        libzstd-dev:${arch} \
+        libreadline-dev libreadline-dev:${arch} \
+        libslang2-dev libslang2-dev:${arch} \
+        libssl-dev libssl-dev:${arch} \
+        $(test "${arch}" != "s390x" && echo libunwind-dev libunwind-dev:${arch}) \
+        libzstd-dev libzstd-dev:${arch} \
         linux-libc-dev \
         linux-libc-dev-${arch}-cross \
-        systemtap-sdt-dev:${arch} \
+        systemtap-sdt-dev systemtap-sdt-dev:${arch} \
         && \
     # This is a horrible hack, but a foreign binutils-dev is not installable \
     # See https://bugs.debian.org/983540 \

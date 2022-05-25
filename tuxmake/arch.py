@@ -20,6 +20,10 @@ class Architecture(ConfigurableObject):
         self.targets = self.config["targets"]
         self.artifacts = self.config["artifacts"]
         self.makevars = self.config["makevars"]
+        try:
+            self.dynamic_makevars = self.config["dynamic-makevars"]
+        except KeyError:
+            self.dynamic_makevars = {}
         self.aliases = [k for k, v in self.config_aliases.items() if v == self.name]
         try:
             self.images = self.config["images"]

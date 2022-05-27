@@ -6,6 +6,7 @@ import os
 import signal
 import shutil
 import subprocess
+import tempfile
 import time
 from tuxmake import __version__
 from tuxmake import deprecated
@@ -201,6 +202,8 @@ class Build:
             if k in self.MAKE_VARIABLES_REJECTLIST:
                 raise UnsupportedMakeVariable(k)
         self.make_variables = make_variables
+
+        self.dynamic_make_variables = dict(self.target_arch.dynamic_makevars)
 
         if not targets:
             targets = defaults.targets
@@ -473,8 +476,19 @@ class Build:
         mvars.update(self.wrapper.wrap(mvars))
         return mvars
 
+    def get_dynamic_makevars(self):
+        for k, v in self.dynamic_make_variables.items():
+            self.make_variables[k] = self.get_command_output(v).strip()
+
+    def get_command_output(self, cmd):
+        with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as f:
+            self.run_cmd(["sh", "-c", cmd], stdout=f, echo=False)
+            f.seek(0)
+            return f.read().strip()
+
     def build_all_targets(self):
         skip_all = False
+        self.get_dynamic_makevars()
         for target in self.targets:
             start = time.time()
             if skip_all:
@@ -602,11 +616,18 @@ class Build:
 
     def check_environment(self):
         self.runtime.prepare()
+        self.get_dynamic_makevars()
         cmd = [str(self.runtime.get_check_environment_command())]
         cmd.append(f"{self.target_arch.name}_{self.toolchain.name}")
         cross = self.makevars.get("CROSS_COMPILE")
         if cross:
             cmd.append(cross)
+        if "CROSS_COMPILE_COMPAT" in self.dynamic_make_variables:
+            cross_compat = self.makevars.get("CROSS_COMPILE_COMPAT")
+            if cross_compat:
+                cmd.append(cross_compat)
+            else:
+                cmd.append("")
         result = self.run_cmd(cmd)
         self.cleanup()
         if not result:

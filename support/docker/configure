@@ -95,13 +95,13 @@ class Image:
             stream.write(f"\t\t--build-arg={k}={v} \\\n")
         stream.write(f"\t\t$(docker_build_args) \\\n")
         stream.write(f"\t\t--file=Dockerfile.{self.kind} \\\n")
-        stream.write(f"\t\t--tag=$(PROJECT)/{self.name}:latest$(TAG) \\\n")
+        stream.write(f"\t\t--tag=$(REGISTRY)$(PROJECT)/{self.name}:latest$(TAG) \\\n")
         stream.write("\t\t. $(LOG)\n\n")
 
         test_args = " ".join(self.test_args)
         stream.write(f"test-{self.name}: {self.name}\n")
         stream.write(f"\t$(ANN_TEST) {self.name}\n")
-        stream.write(f"\t$(Q)$(docker) run --rm $(PROJECT)/{self.name}:latest$(TAG) tuxmake-check-environment {test_args} $(NOSTDOUT) \n\n")
+        stream.write(f"\t$(Q)$(docker) run --rm $(REGISTRY)$(PROJECT)/{self.name}:latest$(TAG) tuxmake-check-environment {test_args} $(NOSTDOUT) \n\n")
 
 
 class BaseImage(Image):

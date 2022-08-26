@@ -541,7 +541,7 @@ class DockerRuntime(ContainerRuntime):
             uid = str(os.getuid())
             self.__exec_as_root(["usermod", "-u", uid, self.__user__])
             if self.__group__:
-                gid = str(os.getuid())
+                gid = str(os.getgid())
                 self.__exec_as_root(["groupmod", "-g", gid, self.__group__])
 
     def __exec_as_root(self, cmd):

@@ -231,6 +231,7 @@ class TestDockerRuntime(TestContainerRuntime):
         assert "--env=FOO=bar baz" in cmd
 
     def test_set_user(self, spawn_container, mocker):
+        mocker.patch("os.getuid", return_value=6666)
         check_call = mocker.patch("subprocess.check_call")
         runtime = DockerRuntime()
         runtime.set_user("tuxmake")
@@ -238,10 +239,10 @@ class TestDockerRuntime(TestContainerRuntime):
         cmd = spawn_container.call_args[0][0]
         assert "--user=tuxmake" in cmd
         usermod = check_call.call_args[0][0]
-        uid = str(os.getuid())
-        assert usermod[-4:] == ["usermod", "-u", uid, "tuxmake"]
+        assert usermod[-4:] == ["usermod", "-u", "6666", "tuxmake"]
 
     def test_set_user_set_group(self, spawn_container, mocker):
+        mocker.patch("os.getgid", return_value=7777)
         check_call = mocker.patch("subprocess.check_call")
         runtime = DockerRuntime()
         runtime.set_user("tuxmake")
@@ -250,8 +251,7 @@ class TestDockerRuntime(TestContainerRuntime):
         cmd = spawn_container.call_args[0][0]
         assert "--user=tuxmake:tuxmake" in cmd
         groupmod = check_call.call_args[0][0]
-        gid = str(os.getgid())
-        assert groupmod[-4:] == ["groupmod", "-g", gid, "tuxmake"]
+        assert groupmod[-4:] == ["groupmod", "-g", "7777", "tuxmake"]
 
     def test_interactive(self):
         cmd = DockerRuntime().get_command_line(["bash"], True)

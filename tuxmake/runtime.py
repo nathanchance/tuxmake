@@ -90,10 +90,10 @@ class Runtime(ConfigurableObject):
         * `podman-local`: like `docker-local`, but with Podman.
         """
         name = name or DEFAULT_RUNTIME
-        name = "".join([w.title() for w in re.split(r"[_-]", name)]) + "Runtime"
+        clsname = "".join([w.title() for w in re.split(r"[_-]", name)]) + "Runtime"
         try:
             here = sys.modules[__name__]
-            cls = getattr(here, name)
+            cls = getattr(here, clsname)
             return cls()
         except AttributeError:
             raise InvalidRuntimeError(name)

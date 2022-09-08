@@ -37,8 +37,9 @@ class TestGetRuntime:
         assert isinstance(Runtime.get("docker-local"), DockerLocalRuntime)
 
     def test_invalid_runtime(self):
-        with pytest.raises(InvalidRuntimeError):
+        with pytest.raises(InvalidRuntimeError) as exc:
             Runtime.get("invalid")
+        assert str(exc.value) == "Invalid runtime: invalid"
         with pytest.raises(InvalidRuntimeError):
             Runtime.get("xyz")
 

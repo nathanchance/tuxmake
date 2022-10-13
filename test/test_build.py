@@ -474,7 +474,7 @@ class TestArchitecture:
 
 
 class TestToolchain:
-    # Test that the righ make arguments are passed, when needed. Ideally we
+    # Test that the right make arguments are passed, when needed. Ideally we
     # would want more black box tests that check the results of the build, but
     # for that we would need a reliable mechanism to check which toolchain was
     # used to build a given binary.

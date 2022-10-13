@@ -450,7 +450,7 @@ class Build:
         return part.format(
             source_tree=self.source_tree,
             build_dir=self.build_dir,
-            target_arch=self.target_arch.name,
+            source_arch=self.target_arch.source_arch,
             toolchain=self.toolchain.name,
             wrapper=self.wrapper.name,
             kconfig=self.kconfig,

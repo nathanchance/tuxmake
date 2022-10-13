@@ -20,6 +20,7 @@ class Architecture(ConfigurableObject):
         self.targets = self.config["targets"]
         self.artifacts = self.config["artifacts"]
         self.makevars = self.config["makevars"]
+        self.source_arch = self.makevars.get("SRCARCH", self.makevars["ARCH"])
         try:
             self.dynamic_makevars = self.config["dynamic-makevars"]
         except KeyError:

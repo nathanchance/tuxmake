@@ -26,6 +26,24 @@ class TestAlias:
         assert arch.aliases == ["aarch64"]
 
 
+class TestSourceArch:
+    def test_source_arch_x86_64(self):
+        arch = Architecture("x86_64")
+        assert arch.source_arch == "x86"
+
+    def test_source_arch_i386(self):
+        arch = Architecture("i386")
+        assert arch.source_arch == "x86"
+
+    def test_source_arch_arm64(self):
+        arch = Architecture("arm64")
+        assert arch.source_arch == "arm64"
+
+    def test_source_arch_armv5(self):
+        arch = Architecture("armv5")
+        assert arch.source_arch == "arm"
+
+
 @pytest.fixture
 def gcc():
     return Toolchain("gcc")

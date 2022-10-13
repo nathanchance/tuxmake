@@ -131,6 +131,11 @@ test_dtbs() {
   assertTrue "does not build dtbs on x86_64" "grep 'dtbs: SKIP' stderr"
 }
 
+test_dtbs_armv5() {
+  run tuxmake --target-arch=armv5 dtbs
+  assertTrue "build dtbs on armv5" "grep 'dtbs: PASS' stderr"
+}
+
 test_ccache() {
   run tuxmake --wrapper=ccache
   assertTrue 'CC=' "grep \"'CC=ccache gcc'\" stdout"

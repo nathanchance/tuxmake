@@ -1,3 +1,7 @@
-Package: dwarves pahole libbpf0 linux-libc-dev:*
+Package: dwarves pahole libbpf0
 Pin: release a=bullseye-backports
+Pin-Priority: 500
+
+Package: linux-libc-dev:*
+Pin: version 5.19.11-1~bpo11+1
 Pin-Priority: 500

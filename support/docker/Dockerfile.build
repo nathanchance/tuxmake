@@ -110,7 +110,6 @@ RUN set -x; \
         libzstd-dev libzstd-dev:${arch} \
         linux-libc-dev \
         linux-libc-dev-${arch}-cross \
-        pkg-config:${arch} \
         systemtap-sdt-dev:${arch} \
         && \
     : This is a horrible hack, but a foreign binutils-dev is not installable && \

@@ -54,8 +54,14 @@ RUN set -x; \
         arch=$(dpkg-architecture --host-type=${HOSTARCH}-linux-gnu --query=DEB_HOST_ARCH); \
     fi; \
     case "${arch}" in \
-        amd64|arm64|armel|armhf|i386|mips64el|mipsel|ppc64el|riscv64|s390x) \
+        amd64|arm64|armel|armhf|i386|mips64el|mipsel|ppc64el|s390x) \
             supported=yes; \
+            ;; \
+        riscv64) \
+            supported=no; \
+            if grep -q unstable /etc/apt/sources.list.d/debian.sources; then \
+                supported=yes; \
+            fi; \
             ;; \
         *) \
             supported=no; \

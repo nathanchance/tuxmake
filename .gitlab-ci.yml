@@ -188,7 +188,7 @@ pages:
   script:
     # TUXMAKE_RELEASE_MANAGERS_GPG_KEYS is defined on gitlab, in the CI/CD
     # settings, section "Variables"
-    - for key in ${TUXMAKE_RELEASE_MANAGERS_GPG_KEYS}; do wget -O - https://keys.openpgp.org/vks/v1/by-fingerprint/${key} | gpg --import; done
+    - for key in ${TUXMAKE_RELEASE_MANAGERS_GPG_KEYS[@]}; do wget -O - https://keys.openpgp.org/vks/v1/by-fingerprint/${key} | gpg --import; done
     - git tag --verify ${CI_COMMIT_TAG}
     - cp -r dist/repo public/packages
 

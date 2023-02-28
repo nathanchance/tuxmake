@@ -28,6 +28,7 @@ stages:
   - publish-base
   - build
   - publish
+  - trigger_tuxsuite
 
 
 .unit-tests:
@@ -261,3 +262,12 @@ packages:
   artifacts:
     paths:
       - dist/repo
+
+trigger_tuxsuite:
+  stage: trigger_tuxsuite
+  before_script:
+    - apt install -y curl
+  script:
+    - "curl -X POST -F token=$TUXSUITE_PACKAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/13070238/trigger/pipeline"
+  only:
+    - master

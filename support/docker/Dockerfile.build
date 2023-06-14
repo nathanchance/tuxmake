@@ -16,7 +16,7 @@ RUN if [ -f /etc/apt/sources.list.d/extra.list ]; then exit; fi; \
         wget -O /etc/apt/trusted.gpg.d/extra.asc "${EXTRA_APT_REPO_KEY}"; \
     fi; \
     if [ -n "${EXTRA_APT_REPO}" ] && [ "${HOSTARCH}" = riscv64 ]; then \
-        if [[ "${INSTALL_OPTIONS}" != *-toolchain-bullseye-* ]]; then \
+        if [ "${INSTALL_OPTIONS}" = "-t llvm-toolchain-bullseye" ]; then \
             INSTALL_OPTIONS="-t llvm-toolchain"; \
             CLANG_VERSION=""; \
         else \
@@ -103,8 +103,8 @@ RUN set -x; \
         --no-install-recommends \
         --option=debug::pkgProblemResolver=yes \
         ${INSTALL_OPTIONS} \
-        libbinutils libbinutils:${arch} \
-        libc6-dev libc6-dev:${arch} && \
+        libbinutils \
+        libc6-dev && \
     : libcap-ng-dev is affected by https://bugs.debian.org/983476 && \
     : systemtap-sdt-dev is not multiarch-ready && \
     debianversion=$(dpkg-query --show base-files | cut -f2) && \
@@ -113,36 +113,34 @@ RUN set -x; \
         --assume-yes \
         --no-install-recommends \
         --option=debug::pkgProblemResolver=yes \
-        libbabeltrace-dev libbabeltrace-dev:${arch} \
+        libbabeltrace-dev \
         libc6-dev-${arch}-cross \
-        libasound2-dev libasound2-dev:${arch} \
-        libcap-dev libcap-dev:${arch} \
-        libcap-ng-dev:${arch} \
-        libdrm-dev libdrm-dev:${arch} \
-        libdw-dev libdw-dev:${arch} \
-        libelf-dev libelf-dev:${arch} \
-        libfuse-dev libfuse-dev:${arch} \
-        libhugetlbfs-dev libhugetlbfs-dev:${arch} \
-        libiberty-dev libiberty-dev:${arch} \
-        libkeyutils-dev libkeyutils-dev:${arch} \
-        libmnl-dev libmnl-dev:${arch} \
-        libmount-dev libmount-dev:${arch} \
-        libnuma-dev libnuma-dev:${arch} \
-        libperl-dev libperl-dev:${arch} \
-        libpfm4-dev libpfm4-dev:${arch} \
-        libpci-dev libpci-dev:${arch} \
-        libpopt-dev libpopt-dev:${arch} \
-        libpython3-dev libpython3-dev:${arch} \
+        libasound2-dev \
+        libcap-dev \
+        libdrm-dev \
+        libdw-dev \
+        libelf-dev \
+        libfuse-dev \
+        libhugetlbfs-dev \
+        libiberty-dev \
+        libkeyutils-dev \
+        libmnl-dev \
+        libmount-dev \
+        libnuma-dev \
+        libperl-dev \
+        libpfm4-dev \
+        libpci-dev \
+        libpopt-dev \
+        libpython3-dev \
         libreadline-dev \
-        libreadline-dev libreadline-dev:${arch} \
-        libslang2-dev libslang2-dev:${arch} \
-        libssl-dev libssl-dev:${arch} \
-        libtraceevent-dev libtraceevent-dev:${arch} \
-        $(test "${arch}" != "s390x" && echo libunwind-dev libunwind-dev:${arch}) \
-        libzstd-dev libzstd-dev:${arch} \
+        libreadline-dev \
+        libslang2-dev \
+        libssl-dev \
+        libtraceevent-dev \
+        $(test "${arch}" != "s390x" && echo libunwind-dev ) \
+        libzstd-dev \
         linux-libc-dev \
         linux-libc-dev-${arch}-cross \
-        systemtap-sdt-dev:${arch} \
         && \
     if dpkg --compare-versions "${debianversion}" ge 12; then \
         apt-get install  \
@@ -156,6 +154,46 @@ RUN set -x; \
     apt-get download ${INSTALL_OPTIONS} binutils-dev:${arch} && \
     dpkg -x binutils-dev*.deb /tmp/binutils-dev && \
     rsync -avp /tmp/binutils-dev/ / && \
+    : Install all target architecture host packages separately and allow it to fail && \
+    : for riscv64 && \
+    if [ "${HOSTARCH}" = riscv64 ]; then \
+        allow_failure=true;  \
+    else  \
+        allow_failure=false; \
+    fi && \
+    apt-get install \
+        --assume-yes \
+        --no-install-recommends \
+        --option=debug::pkgProblemResolver=yes \
+        libbinutils:${arch} \
+        libc6-dev:${arch} \
+        libbabeltrace-dev:${arch} \
+        libasound2-dev:${arch} \
+        libcap-dev:${arch} \
+        libcap-ng-dev:${arch} \
+        libdrm-dev:${arch} \
+        libdw-dev:${arch} \
+        libelf-dev:${arch} \
+        libfuse-dev:${arch} \
+        libhugetlbfs-dev:${arch} \
+        libiberty-dev:${arch} \
+        libkeyutils-dev:${arch} \
+        libmnl-dev:${arch} \
+        libmount-dev:${arch} \
+        libnuma-dev:${arch} \
+        libperl-dev:${arch} \
+        libpfm4-dev:${arch} \
+        libpci-dev:${arch} \
+        libpopt-dev:${arch} \
+        libpython3-dev:${arch} \
+        libreadline-dev:${arch} \
+        libslang2-dev:${arch} \
+        libssl-dev:${arch} \
+        libtraceevent-dev:${arch} \
+        $(test "${arch}" != "s390x" && echo libunwind-dev:${arch}) \
+        libzstd-dev:${arch} \
+        systemtap-sdt-dev:${arch} || \
+         ${allow_failure} && \
     rm -rf binutils-dev*.deb /tmp/binutils-dev
 
 # For gcc images, symlink all binaries with unversioned names into $PATH

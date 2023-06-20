@@ -8,6 +8,7 @@ ERRORS: Tuple[str, ...] = (
     "no such file or directory",
     "no rule to make target",
     "failed to merge target specific data of file",
+    "undefined reference to",
 )
 
 

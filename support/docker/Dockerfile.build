@@ -41,13 +41,18 @@ RUN if [ -f /etc/apt/sources.list.d/extra.list ]; then exit; fi; \
 RUN if [ -f /root/tmp_install_options ]; then \
         INSTALL_OPTIONS=$(cat /root/tmp_install_options); \
     fi; \
+    if [ "${HOSTARCH}" = loongarch64 ]; then \
+        allow_failure=true;  \
+    else  \
+        allow_failure=false; \
+    fi && \
     apt-get update -q && \
     apt-get install \
         --assume-yes \
         --no-install-recommends \
         --option=debug::pkgProblemResolver=yes \
         ${INSTALL_OPTIONS} \
-        $PACKAGES
+        $PACKAGES || ${allow_failure}
 
 # Install extra development packages
 #

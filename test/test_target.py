@@ -128,6 +128,25 @@ class TestTargzPkg:
         assert artifacts[0][1].name == filename
 
 
+class TestBinDebPkg:
+    def test_multiple_files_against_wildcards(self, build, tmp_path):
+        for f in [
+            "linux-headers-6.5.0+_6.5.0-11329-g708283abf896-2_arm64.deb",
+            "linux-image-6.5.0+_6.5.0-11329-g708283abf896-2_arm64.deb",
+            "linux-image-6.5.0+-dbg_6.5.0-11329-g708283abf896-2_arm64.deb",
+            "linux-libc-dev_6.5.0-11329-g708283abf896-2_arm64.deb",
+            "linux-upstream_6.5.0-rc7-2_arm64.buildinfo",
+            "linux-upstream_6.5.0-rc7-2_arm64.changes",
+        ]:
+            (tmp_path / f).touch()
+
+        bindebpkg = Target("bindeb-pkg", build)
+        artifacts = bindebpkg.find_artifacts(tmp_path)
+        assert len(artifacts) == 4
+        filenames = [f for f, _ in artifacts]
+        assert "linux-headers-6.5.0+_6.5.0-11329-g708283abf896-2_arm64.deb" in filenames
+
+
 class TestCompression:
     def test_invalid_compression(self):
         with pytest.raises(tuxmake.exceptions.UnsupportedCompression):

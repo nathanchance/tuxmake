@@ -208,6 +208,16 @@ targz-pkg: all
 	echo "Tarball successfully created in $(tarball)"
 
 ########################################################################
+# bindeb-pkg: create fake Debian packages like linux does
+########################################################################
+bindeb-pkg: all
+	touch $(O)/../linux-image-$(KERNELRELEASE)_$(KERNELRELEASE)-1_$(ARCH).deb
+	touch $(O)/../linux-libc-dev_$(KERNELRELEASE)-1_$(ARCH).deb
+	touch $(O)/../linux-libc-dev_$(KERNELRELEASE)-1_$(ARCH).buildinfo
+	touch $(O)/../linux-libc-dev_$(KERNELRELEASE)-1_$(ARCH).changes
+
+
+########################################################################
 # cleaning
 ########################################################################
 clean:

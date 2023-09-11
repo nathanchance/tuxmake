@@ -1147,3 +1147,12 @@ class TestCustomCrossCompile:
         build.status["config"] = BuildInfo("PASS")
         build.build(build.targets[1])
         assert "CROSS_COMPILE_COMPAT=foo-" in args(Popen)
+
+
+class TestBinDebPkg:
+    def test_bindeb_pkg(self, linux):
+        build = Build(tree=linux, targets=["bindeb-pkg"])
+        build.run()
+        assert list(build.output_dir.glob("*.deb")) != []
+        assert list(build.output_dir.glob("*.changes")) == []
+        assert list(build.output_dir.glob("*.buildinfo")) == []

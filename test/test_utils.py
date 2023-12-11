@@ -1,3 +1,4 @@
+import os
 import subprocess
 import pytest
 from tuxmake.utils import get_directory_timestamp
@@ -13,10 +14,12 @@ class TestGetDirectoryTimestamp:
         )
         (tmp_path / "README.md").write_text("HELLO WORLD")
         subprocess.check_call(["git", "add", "README.md"], cwd=tmp_path)
+        new_env = dict(os.environ)
+        new_env["GIT_COMMITTER_DATE"] = "2021-05-13 12:00 -0300"
         subprocess.check_call(
             ["git", "commit", "--message=First commit"],
             cwd=tmp_path,
-            env={"GIT_COMMITTER_DATE": "2021-05-13 12:00 -0300"},
+            env=new_env,
         )
         assert get_directory_timestamp(tmp_path) == "1620918000"
 

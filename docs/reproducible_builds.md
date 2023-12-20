@@ -53,7 +53,7 @@ linux (master) $ tuxmake --target-arch arm64 --runtime podman --kconfig tinyconf
 [...]
 ```
 
-Now Alice needs her coleague Bob, who is going to help her with testing her
+Now Alice needs her colleague Bob, who is going to help her with testing her
 changes, to reproduce that build locally. They sync to make sure they are
 working on the same git tree, and Alice shares the above command line with Bob.
 Running it on his side, Bob should get a build that is bit by bit identical to

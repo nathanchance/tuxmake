@@ -101,7 +101,7 @@ class Runtime(ConfigurableObject):
         except AttributeError:
             raise InvalidRuntimeError(name)
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(self.name)
         self.__offline_available__ = None
         self.__image__ = None
@@ -113,7 +113,7 @@ class Runtime(ConfigurableObject):
         self.quiet: bool = False
         self.source_dir: Path = Path.cwd()
         self.output_dir: Optional[Path] = None
-        self.environment = {}
+        self.environment: dict = {}
         self.caps: Optional[list] = []
 
     def __init_config__(self):

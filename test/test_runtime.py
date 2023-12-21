@@ -305,6 +305,14 @@ class TestDockerRuntime(TestContainerRuntime):
     def test_str(self):
         assert str(DockerRuntime()) == "docker"
 
+    def test_cleans_up_ovelay_dir(self, tmp_path):
+        overlay = tmp_path / "overlay"
+        overlay.mkdir()
+        runtime = DockerRuntime()
+        runtime.overlay_dir = overlay
+        runtime.cleanup()
+        assert not overlay.exists()
+
 
 class TestDockerRuntimeSpawnContainer(FakeGetImage):
     def test_spawn_container(self, mocker, container_id):
@@ -420,11 +428,11 @@ class TestPodmanRuntime(TestContainerRuntime):
         assert "--hostname=foobar" in cmd
         assert "--env=FOO=bar baz" in cmd
 
-    def test_selinux_label(self, get_image, spawn_container):
+    def test_selinux_label_or_overlay(self, get_image, spawn_container):
         PodmanRuntime().start_container()
         cmd = spawn_container.call_args[0][0]
         volumes = [o for o in cmd if o.startswith("--volume=")]
-        assert all([v.endswith(":z") for v in volumes])
+        assert all([v.endswith(":z") or v.endswith(":O") for v in volumes])
 
     def test_logging_level(self, spawn_container):
         PodmanRuntime().start_container()

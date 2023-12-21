@@ -507,13 +507,15 @@ class ContainerRuntime(Runtime):
     def get_volume_opts(self):
         volumes = []
         if self.source_dir:
-            volumes.append((self.source_dir, self.source_dir))
+            volumes.append(
+                self.volume_opt(self.source_dir, self.source_dir, overlay=True)
+            )
         if self.output_dir and self.source_dir != self.output_dir:
-            volumes.append((self.output_dir, self.output_dir))
-        volumes.append((super().bindir, self.bindir))
-        volumes += self.volumes
+            volumes.append(self.volume_opt(self.output_dir, self.output_dir))
+        volumes.append(self.volume_opt(super().bindir, self.bindir))
+        volumes += [self.volume_opt(s, d) for s, d in self.volumes]
 
-        return [self.volume(src, dst) for src, dst in volumes]
+        return volumes
 
     def get_metadata(self):
         version = (
@@ -544,6 +546,7 @@ class DockerRuntime(ContainerRuntime):
     name = "docker"
     command = "docker"
     extra_opts_env_variable = "TUXMAKE_DOCKER_RUN"
+    overlay_dir = None
 
     def get_user_opts(self):
         if self.__user__:
@@ -573,8 +576,31 @@ class DockerRuntime(ContainerRuntime):
     def get_logging_opts(self):
         return []
 
-    def volume(self, source, target):
-        return f"--volume={source}:{target}"
+    def volume_opt(self, source, target, overlay=False):
+        if overlay and self.output_dir:
+            self.overlay_dir = self.output_dir / "overlay"
+            self.overlay_dir.mkdir()
+            upperdir = self.overlay_dir / "uppperdir"
+            upperdir.mkdir(parents=True)
+            workdir = self.overlay_dir / "workdir"
+            workdir.mkdir(parents=True)
+            return (",").join(
+                [
+                    "--mount=type=volume",
+                    f"dst={target}",
+                    "volume-driver=local",
+                    "volume-opt=type=overlay",
+                    f'"volume-opt=o=lowerdir={source},upperdir={upperdir},workdir={workdir}"',
+                    "volume-opt=device=overlay",
+                ]
+            )
+        else:
+            return f"--volume={source}:{target}"
+
+    def cleanup(self):
+        if self.overlay_dir:
+            subprocess.check_call(["rm", "-rf", str(self.overlay_dir)])
+        super().cleanup()
 
 
 class PodmanRuntime(ContainerRuntime):
@@ -588,8 +614,13 @@ class PodmanRuntime(ContainerRuntime):
     def get_logging_opts(self):
         return ["--log-level=ERROR"]
 
-    def volume(self, source, target):
-        return f"--volume={source}:{target}:z"
+    def volume_opt(self, source, target, overlay=False):
+        v = f"--volume={source}:{target}"
+        if overlay:
+            v += ":O"
+        else:
+            v += ":z"
+        return v
 
 
 class LocalMixin:

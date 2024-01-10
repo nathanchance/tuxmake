@@ -48,7 +48,7 @@ image tags to use via environment variables. See the "ENVIRONMENT VARIABLES"
 section in the [command line documentation](cli.md#environment-variables).
 
 The docker runtime, and all other container runtimes, will expose the source
-directory inside the container overlayed by a copy-on-write filesystem.
+directory inside the container overlaid by a copy-on-write filesystem.
 Therefore, writes to the source directory will not affect the real source
 directory.
 

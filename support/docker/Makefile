@@ -21,7 +21,7 @@ endif
 ANN_BUILD := @$(ANN) " BUILD"
 ANN_TEST  := @$(ANN) "  TEST"
 
-docker := docker
+docker ?= docker
 
 default: checkconfig all
 	@$(MAKE) --silent show

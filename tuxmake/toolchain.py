@@ -1,3 +1,5 @@
+import re
+
 from tuxmake.config import ConfigurableObject
 from tuxmake.exceptions import UnsupportedToolchain
 
@@ -8,12 +10,17 @@ class Toolchain(ConfigurableObject):
     config_aliases = {"rust": "rustgcc"}
 
     def __init__(self, name):
-        parts = name.split("-")
-        family = parts[0]
+        pattern = re.compile(r"((korg-)?(rust|gcc|clang|llvm))-?(.*)")
+        match = pattern.search(name)
+        family = ""
+        version = ""
+        if match:
+            family = match.group(1)
+            version = match.group(4)
         super().__init__(family)
         self.name = name
-        if len(parts) > 1:
-            self.version_suffix = "-" + parts[1]
+        if version:
+            self.version_suffix = "-" + version
         else:
             self.version_suffix = ""
 

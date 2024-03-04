@@ -251,9 +251,9 @@ class KorgBuildMixin:
     def emit(self):
         super().emit()
         self.arg("TC_FULL_VERSION", self.tc_full_version)
-        self.arg("HOSTARCH", native_arch.name)
+        self.arg("BUILD_HOST_ARCH", native_arch.name)
         if native_arch.name == "arm64":
-            self.arg("HOSTARCH", "aarch64")
+            self.arg("BUILD_HOST_ARCH", "aarch64")
 
 
 class KorgClangBuildImage(KorgBuildMixin, ClangBuildImage):
@@ -262,6 +262,7 @@ class KorgClangBuildImage(KorgBuildMixin, ClangBuildImage):
 
 
 class CrossKorgClangBuildImage(KorgBuildMixin, CrossClangBuildImage):
+    kind = "korg-clang-build"
     pass
 
 

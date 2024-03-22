@@ -71,6 +71,11 @@ class Runtime(ConfigurableObject):
       an empty dict.
     * **caps**: additional capabilities needed by the container ran by this runtime.
       Type: `list` with `str`; defaults to an empty list.
+    * **network**: name of the network created by the runtime(docker|podman) to be
+      used in the container.
+    * **allow_user_opts**: flag to enable/disable user options for container runtime.
+      Type: `bool`; defaults to `False`.
+
     """
 
     basedir = "runtime"
@@ -116,6 +121,8 @@ class Runtime(ConfigurableObject):
         self.output_dir: Optional[Path] = None
         self.environment: dict = {}
         self.caps: Optional[list] = []
+        self.network = None
+        self.allow_user_opts: bool = True
 
     def __init_config__(self):
         self.toolchains = Toolchain.supported()
@@ -463,7 +470,8 @@ class ContainerRuntime(Runtime):
         env = (f"--env={k}={v}" for k, v in self.environment.items())
         caps = (f"--cap-add={cap}" for cap in self.caps)
 
-        user_opts = self.get_user_opts()
+        user_opts = self.get_user_opts() if self.allow_user_opts else []
+        network = [f"--network={self.network}"] if self.network else []
         extra_opts = self.__get_extra_opts__()
         cmd = [
             self.command,
@@ -475,6 +483,7 @@ class ContainerRuntime(Runtime):
             *env,
             *caps,
             *user_opts,
+            *network,
             *self.get_volume_opts(),
             f"--workdir={self.source_dir}",
             *self.get_logging_opts(),

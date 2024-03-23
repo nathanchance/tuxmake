@@ -184,12 +184,15 @@ class Runtime(ConfigurableObject):
     def get_command_prefix(self, interactive):
         return []
 
-    def add_volume(self, source, dest=None):
+    def add_volume(self, source, dest=None, ro=False, device=False):
         """
         Ensures that the directory or file **source** is available for commands
-        run as **dest**. For container runtimes, this meand bind-mounting
+        run as **dest**. For container runtimes, this means bind-mounting
         **source** as **dest** inside the container. All volumes must be added
         before `prepare()` is called.
+        * **ro**: bind-mount with read only. Type: `bool`; defaults to `False`.
+        * **device**: flag to bind-mount volume as device. Type: `bool`;
+          defaults to `False`.
 
         This is a noop for non-container runtimes.
         """
@@ -426,8 +429,8 @@ class ContainerRuntime(Runtime):
             self.__volumes__ = []
         return self.__volumes__
 
-    def add_volume(self, source, dest=None):
-        self.volumes.append((source, dest or source))
+    def add_volume(self, source, dest=None, ro=False, device=False):
+        self.volumes.append((source, dest or source, ro, device))
 
     @lru_cache(None)
     def is_supported(self, arch, toolchain):
@@ -527,7 +530,10 @@ class ContainerRuntime(Runtime):
         if self.output_dir and self.source_dir != self.output_dir:
             volumes.append(self.volume_opt(self.output_dir, self.output_dir))
         volumes.append(self.volume_opt(super().bindir, self.bindir))
-        volumes += [self.volume_opt(s, d) for s, d in self.volumes]
+        volumes += [
+            self.volume_opt(s, d, ro=ro, device=device)
+            for s, d, ro, device in self.volumes
+        ]
 
         return volumes
 
@@ -598,7 +604,7 @@ class DockerRuntime(ContainerRuntime):
     def get_logging_opts(self):
         return []
 
-    def volume_opt(self, source, target, overlay=False):
+    def volume_opt(self, source, target, overlay=False, ro=False, device=False):
         if overlay and self.output_dir:
             self.overlay_dir = self.output_dir / "overlay"
             self.overlay_dir.mkdir()
@@ -617,7 +623,9 @@ class DockerRuntime(ContainerRuntime):
                 ]
             )
         else:
-            return f"--volume={source}:{target}"
+            option = "device" if device else "volume"
+            mode = "ro" if ro else "rw"
+            return f"--{option}={source}:{target}:{mode}"
 
     def cleanup(self):
         if self.overlay_dir:
@@ -636,12 +644,17 @@ class PodmanRuntime(ContainerRuntime):
     def get_logging_opts(self):
         return ["--log-level=ERROR"]
 
-    def volume_opt(self, source, target, overlay=False):
-        v = f"--volume={source}:{target}"
+    def volume_opt(self, source, target, overlay=False, ro=False, device=False):
+        option = "device" if device else "volume"
+        mode = "ro" if ro else "rw"
+        v = f"--{option}={source}:{target}"
         if overlay:
             v += ":O"
         else:
-            v += ":z"
+            v += f":{mode}"
+            if not device:
+                v += ",z"
+
         return v
 
 

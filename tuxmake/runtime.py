@@ -5,9 +5,10 @@ import shlex
 import subprocess
 import sys
 import time
+from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional, TextIO
+from typing import Callable, Optional, TextIO, Union
 
 
 from tuxmake import cache
@@ -113,7 +114,7 @@ class Runtime(ConfigurableObject):
         self.__image__ = None
         self.__user__ = None
         self.__group__ = None
-        self.__logger__: Optional[subprocess.Popen] = None
+        self.__start_time__ = datetime.now()
 
         self.basename: str = "run"
         self.quiet: bool = False
@@ -123,6 +124,8 @@ class Runtime(ConfigurableObject):
         self.caps: Optional[list] = []
         self.network = None
         self.allow_user_opts: bool = True
+
+        self.init_logging()
 
     def __init_config__(self):
         self.toolchains = Toolchain.supported()
@@ -216,6 +219,8 @@ class Runtime(ConfigurableObject):
         if self.output_dir:
             self.output_dir.mkdir(parents=True, exist_ok=True)
 
+        self.init_logging()
+
     def get_go_offline_command(self):
         return self.bindir / "tuxmake-run-offline"
 
@@ -229,42 +234,39 @@ class Runtime(ConfigurableObject):
         """
         return {}
 
-    @property
-    def logger(self):
-        if not self.__logger__:
-            if self.quiet:
-                stdout = subprocess.DEVNULL
-            else:
-                stdout = sys.stdout
-            if self.output_dir:
-                log = self.output_dir / f"{self.basename}.log"
-                debug_log = self.output_dir / f"{self.basename}-debug.log"
-            else:
-                log = debug_log = Path("/dev/null")
-            self.__logger__ = subprocess.Popen(
-                [
-                    str(Runtime.bindir / "tuxmake-logger"),
-                    str(log),
-                    str(debug_log),
-                ],
-                stdin=subprocess.PIPE,
-                stdout=stdout,
-            )
-        return self.__logger__
+    def init_logging(self):
+        if self.output_dir:
+            log = self.output_dir / f"{self.basename}.log"
+            debug_log = self.output_dir / f"{self.basename}-debug.log"
+        else:
+            log = debug_log = Path("/dev/null")
+
+        self.log_file = log.open("w")
+        self.debug_logfile = debug_log.open("w")
 
     def log(self, *stuff):
         """
         Logs **stuff** to both the console and to any log files in use.
         """
-        subprocess.call(["echo"] + list(stuff), stdout=self.logger.stdin)
+        for item in stuff:
+            item = (item.rstrip("\n")) + "\n"
+            if not self.quiet:
+                sys.stdout.write(item)
+            self.log_file.write(item)
+            elapsed_time = (datetime.now() - self.__start_time__).seconds
+            hours = elapsed_time // 3600
+            minutes = (elapsed_time % 3600) // 60
+            seconds = elapsed_time % 60
+            ts = "{:02}:{:02}:{:02}".format(int(hours), int(minutes), int(seconds))
+            self.debug_logfile.write(f"{ts} {item}")
 
     def cleanup(self):
         """
         Cleans up and returns resources used during execution. You must call
         this methods after you are done with the runtime object.
         """
-        self.logger.communicate()
-        self.logger.terminate()
+        self.log_file.close()
+        self.debug_logfile.close()
 
     def run_cmd(
         self,
@@ -274,6 +276,7 @@ class Runtime(ConfigurableObject):
         expect_failure: bool = False,
         stdout: Optional[TextIO] = None,
         echo: bool = True,
+        logger: Optional[Callable] = None,
     ):
         """
         Runs a command in the desired runtime. Returns True if the command
@@ -290,19 +293,31 @@ class Runtime(ConfigurableObject):
           method, i.e. returns True if the command fails, False if it succeeds.
         * **stdout**: a TextIO object to where the `stdout` of the called
           command will be directed.
+        * **echo**: flag to log the command which is being run. Type: `bool`.
+          Defaults to `True`.
+        * **logger**: Optional callable function to be called for each line of
+          command output.
 
         If the command in interrupted in some way (by a TERM signal, or by the
         user typing control-C), an instance of `Terminated` is raised.
         """
         final_cmd = self.get_command_line(cmd, interactive=interactive, offline=offline)
 
+        if not logger:
+            logger = self.log
+        private_stdout: Union[TextIO, int, None]
+
         if interactive:
-            stdout = stderr = stdin = None
+            private_stdout = stderr = stdin = None
+
         else:
+            if stdout:
+                private_stdout = stdout
+            else:
+                private_stdout = subprocess.PIPE
+            stderr = subprocess.STDOUT
             stdin = subprocess.DEVNULL
-            stderr = self.logger.stdin
-            if not stdout:
-                stdout = self.logger.stdin
+
         if echo:
             self.log(quote_command_line(cmd))
 
@@ -317,11 +332,16 @@ class Runtime(ConfigurableObject):
             cwd=self.source_dir,
             env=env,
             stdin=stdin,
-            stdout=stdout,
+            stdout=private_stdout,
             stderr=stderr,
+            universal_newlines=True,
         )
         try:
-            process.communicate()
+            self.start_time = datetime.now()
+            if process.stdout and not interactive:
+                for line in process.stdout:
+                    logger(line)
+            process.wait()
             if expect_failure:
                 return process.returncode != 0
             else:

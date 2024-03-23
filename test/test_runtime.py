@@ -56,6 +56,7 @@ class TestRuntime:
             "tuxmake.runtime.Runtime.get_command_line", return_value=["/bin/bash"]
         )
         runtime = NullRuntime()
+        runtime.prepare()
         runtime.run_cmd(["/bin/bash"], interactive=True)
         kwargs = Popen.call_args[1]
         get_command_line.assert_called_with(

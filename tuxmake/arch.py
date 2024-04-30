@@ -14,6 +14,7 @@ class Architecture(ConfigurableObject):
         "armel": "armv5",
         "armv8l": "arm",
         "i686": "i386",
+        "s390x": "s390",
     }
 
     def __init_config__(self):

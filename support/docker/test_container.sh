@@ -4,14 +4,14 @@ set -eu;
 
 
 setUp() {
-  apk add py3-pip git podman
+  apk add py3-pip git podman gcc python3-dev
   # Install tuxmake and tuxrun
-  pip3 install --force-reinstall tuxmake tuxrun;
+  pip3 install tuxmake tuxrun 'urllib3<2.0'
   apk add --no-cache --update  fuse-overlayfs linux-virt
   tuxmake --version;
   tuxrun --version;
   # Clone linux kernel source
-  git clone --depth=1 --branch=master https://github.com/torvalds/linux.git;
+  git clone --depth=1 --branch=master https://github.com/torvalds/linux.git
 }
 
 cleanUp() {

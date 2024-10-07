@@ -21,7 +21,7 @@ typecheck:
 codespell:
 	codespell \
 		--check-filenames \
-		--skip '.git,public,dist,*.sw*,*.pyc,tags,*.json,.coverage,htmlcov,*.1,*.log'
+		--skip '.git,public,dist,*.sw*,*.pyc,tags,*.json,.coverage,htmlcov,*.1,*.log,code-of-conduct.md'
 
 RUN_TESTS = scripts/run-tests
 

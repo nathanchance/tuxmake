@@ -10,7 +10,7 @@ ARG INSTALL_OPTIONS
 ARG PACKAGES
 COPY korg_llvm.sha256sum /
 
-RUN wget --progress=dot:giga https://mirrors.edge.kernel.org/pub/tools/llvm/files/llvm-${TC_FULL_VERSION}-${BUILD_HOST_ARCH}.tar.gz && \
+RUN wget -t 10 --retry-connrefused --progress=dot:giga https://mirrors.edge.kernel.org/pub/tools/llvm/files/llvm-${TC_FULL_VERSION}-${BUILD_HOST_ARCH}.tar.gz && \
     sha256sum -c korg_llvm.sha256sum --ignore-missing && \
     tar xaf llvm-${TC_FULL_VERSION}-${BUILD_HOST_ARCH}.tar.gz -C /usr/local && \
     rm -f llvm-${TC_FULL_VERSION}-${BUILD_HOST_ARCH}.tar.gz

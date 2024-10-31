@@ -722,7 +722,7 @@ class Build:
                         flush=True,
                     )
         count = len(os.listdir(str(self.korg_toolchains_dir)))
-        print(f"\nDownloaded {count} kernel.org gcc toolchain archives.")
+        self.log(f"\nDownloaded {count} kernel.org gcc toolchain archives.")
 
     def run(self):
         """

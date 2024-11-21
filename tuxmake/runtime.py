@@ -467,6 +467,9 @@ class ContainerRuntime(Runtime):
     def is_supported(self, arch, toolchain):
         image_name = arch.get_image(toolchain) or toolchain.get_image(arch)
         image = self.toolchain_images_map.get(image_name)
+        if toolchain.name.startswith("korg-gcc"):
+            image_name = f"tuxmake/{arch}_{toolchain.name}"
+            image = self.toolchain_images_map.get(image_name)
         if image:
             return native_arch.name in image.hosts or any(
                 [a in image.hosts for a in native_arch.aliases]

@@ -55,6 +55,7 @@ RUN apt-get update \
         python3-docutils \
         python3-setuptools \
         python3-jsonschema \
+        python3-yaml \
         rsync \
         socat \
         sparse \

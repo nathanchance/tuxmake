@@ -300,7 +300,14 @@ class ReverseParser:
 
 
 class CommandLine:
-    ignore = ["targets", "jobs", "output_dir", "build_dir", "check_environment"]
+    ignore = [
+        "targets",
+        "jobs",
+        "output_dir",
+        "build_dir",
+        "check_environment",
+        "download_all_korg_gcc_toolchains",
+    ]
 
     def __init__(self):
         self.parser = build_parser(cls=ReverseParser)

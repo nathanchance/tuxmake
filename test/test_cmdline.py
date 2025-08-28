@@ -40,7 +40,10 @@ class TestCommandLine:
         )
         assert cmd[-2:] == ["FOO=BAR", "config"]
 
-    @pytest.mark.parametrize("option", ["jobs", "output-dir", "build-dir"])
+    @pytest.mark.parametrize(
+        "option",
+        ["jobs", "output-dir", "build-dir", "download-all-korg-gcc-toolchains"],
+    )
     def test_ignore(self, cmdline, option):
         build = Build()
         cmd = cmdline.reproduce(build)

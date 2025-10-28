@@ -47,6 +47,7 @@ RUN apt-get update \
         libssl-dev \
         libdw-dev \
         libelf-dev \
+        libxxhash-dev \
         lz4 \
         lzop \
         make \

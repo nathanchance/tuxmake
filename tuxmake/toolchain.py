@@ -1,3 +1,4 @@
+from pathlib import Path
 import re
 
 from tuxmake.config import ConfigurableObject
@@ -17,7 +18,14 @@ class Toolchain(ConfigurableObject):
         if match:
             family = match.group(1)
             version = match.group(4)
-        super().__init__(family)
+
+        # Try to load config for full name first, fall back to family
+        config_name = family
+        full_name_config = Path(__file__).parent / self.basedir / f"{name}.ini"
+        if full_name_config.exists():
+            config_name = name
+
+        super().__init__(config_name)
         self.name = name
         if version:
             self.version_suffix = "-" + version
@@ -31,10 +39,20 @@ class Toolchain(ConfigurableObject):
 
     def expand_makevars(self, arch):
         archvars = {"CROSS_COMPILE": "", **arch.makevars}
-        return {
+        # Start with base makevars
+        result = {
             k: v.format(toolchain=self.name, **archvars)
             for k, v in self.makevars.items()
         }
+        # Override with architecture-specific makevars if they exist
+        arch_section = f"makevars:{arch.name}"
+        if self.config.has_section(arch_section):
+            arch_specific = {
+                k: v.format(toolchain=self.name, **archvars)
+                for k, v in self.config[arch_section].items()
+            }
+            result.update(arch_specific)
+        return result
 
     def get_image(self, arch):
         return self.image.format(

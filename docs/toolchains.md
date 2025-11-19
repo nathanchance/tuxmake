@@ -10,6 +10,16 @@ This toolchain will use `gcc` as compiler. It is the default if you don't
 request a specific toolchain. Specify `gcc-N` for requesting specific `gcc`
 versions.
 
+## gcc-8
+
+This toolchain uses `gcc-8` as the compiler. It is configured with
+`CROSS_COMPILE=arc-elf32-` for the `arc` architecture.
+
+## gcc-9
+
+This toolchain uses `gcc-8` as the compiler. It is configured with
+`CROSS_COMPILE=arc-elf32-` for the `arc` architecture.
+
 ## clang
 
 This toolchain uses `clang` as compiler, but the GNU binutils tools for

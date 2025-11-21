@@ -1,6 +1,7 @@
 export PYTHONPATH := $(shell readlink -f $(CURDIR)/../..)
 DOCKER_REGISTRY := docker.io/
 PROJECT := tuxmake
+GITLAB_REGISTRY := registry.gitlab.com/linaro
 
 ANN := echo
 ifneq ($(findstring s,$(filter-out --%,$(MAKEFLAGS))),)
@@ -51,30 +52,50 @@ endif
 $(publish_releases): publish-%: test-%
 	images=$$(./list-images $*); \
 	if [ "x$$images" != x ]; then \
-	  echo $(patsubst %, $(PROJECT)/%:latest$(TAG), $(shell ./list-images $*)) | \
-	    $(xargs) -n 1 $(docker) push; \
+		echo $(patsubst %, $(PROJECT)/%:latest$(TAG), $(shell ./list-images $*)) | \
+			$(xargs) -n 1 $(docker) push; \
+		for img in $$(./list-images $*); do \
+			echo "TAGGING: $(PROJECT)/$${img}:latest$(TAG)  ->  $(GITLAB_REGISTRY)/$(PROJECT)/$${img}:latest$(TAG)"; \
+			$(docker) tag $(PROJECT)/$${img}:latest$(TAG) $(GITLAB_REGISTRY)/$(PROJECT)/$${img}:latest$(TAG); \
+		done; \
+		echo $(patsubst %, $(GITLAB_REGISTRY)/$(PROJECT)/%:latest$(TAG), $(shell ./list-images $*)) | \
+			$(xargs) -n 1 $(docker) push; \
 	fi
 
 $(test_releases): test-%: Makefile
 	  @list="$(patsubst %, test-%, $(shell ./list-images $*))"; if [ -n "$$list" ]; then $(MAKE) $$list; fi
 
 TIMESTAMP = $(shell date +%Y%m%d)
+TAGS := $(TIMESTAMP) latest-dev latest
 
 $(publish_multiarch_releases): publish-multiarch-%: noop-%
+	@echo "===> Creating the manifest and pushing to dockerhub";
 	@for image in $(shell ./list-images $*); do \
-		echo $(PROJECT)/$${image}:$(TIMESTAMP) $$(./get-arch-images $${image}) | \
-			$(xargs) $(docker) manifest create; \
-		echo $(PROJECT)/$${image}:latest-dev $$(./get-arch-images $${image}) | \
-			$(xargs) $(docker) manifest create; \
-		echo $(PROJECT)/$${image}:latest $$(./get-arch-images $${image}) | \
-			$(xargs) $(docker) manifest create; \
+		for tag in $(TAGS); do \
+			echo $(PROJECT)/$${image}:$${tag} $$(./get-arch-images $${image}) | \
+				$(xargs) $(docker) manifest create; \
+		done; \
+	done; \
+	for tag in $(TAGS); do \
+		echo $(patsubst %, $(PROJECT)/%:$${tag}, $(shell ./list-images $*)) | \
+			$(xargs) -n 1 $(docker) manifest push; \
 	done
-	@echo $(patsubst %, $(PROJECT)/%:$(TIMESTAMP), $(shell ./list-images $*)) | \
-		$(xargs) -n 1 $(docker) manifest push
-	@echo $(patsubst %, $(PROJECT)/%:latest-dev, $(shell ./list-images $*)) | \
-		$(xargs) -n 1 $(docker) manifest push
-	@echo $(patsubst %, $(PROJECT)/%:latest, $(shell ./list-images $*)) | \
-		$(xargs) -n 1 $(docker) manifest push
+
+	@echo "===> Creating the manifest and pushing to tuxmake registry";
+	@for image in $(shell ./list-images $*); do \
+		for tag in $(TAGS); do \
+			manifest_images=""; \
+			for arch_image in $$(./get-arch-images $${image}); do \
+				manifest_images="$${manifest_images} $(GITLAB_REGISTRY)/$${arch_image}"; \
+			done; \
+			echo $(GITLAB_REGISTRY)/$(PROJECT)/$${image}:$${tag} $${manifest_images} | \
+				$(xargs) $(docker) manifest create; \
+		done; \
+	done; \
+	for tag in $(TAGS); do \
+		echo $(patsubst %, $(GITLAB_REGISTRY)/$(PROJECT)/%:$${tag}, $(shell ./list-images $*)) | \
+			$(xargs) -n 1 $(docker) manifest push; \
+	done
 
 tuxmake-check-environment: ../../tuxmake/runtime/bin/tuxmake-check-environment
 	$(Q)cp $< $@

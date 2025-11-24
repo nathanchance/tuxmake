@@ -39,40 +39,40 @@ assertArg() {
 
 test_gcc() {
     get_build_args gcc
-    assertArg 'BASE=$(REGISTRY)$(PROJECT)/base' 'PACKAGES="gcc g++"'
+    assertArg 'BASE=$(DOCKER_REGISTRY)$(PROJECT)/base' 'PACKAGES="gcc g++"'
 }
 
 test_gcc_11() {
     get_build_args gcc-11
-    assertArg 'BASE=$(REGISTRY)$(PROJECT)/base-debian' 'PACKAGES="gcc-11 g++-11"'
+    assertArg 'BASE=$(DOCKER_REGISTRY)$(PROJECT)/base-debian' 'PACKAGES="gcc-11 g++-11"'
 }
 
 test_arm64_gcc() {
     get_build_args arm64_gcc
-    assertArg 'BASE=$(REGISTRY)$(PROJECT)/gcc' 'HOSTARCH=aarch64'\
+    assertArg 'BASE=$(DOCKER_REGISTRY)$(PROJECT)/gcc' 'HOSTARCH=aarch64'\
         'PACKAGES="gcc g++ gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-aarch64-linux-gnu"'
 }
 
 test_x86_64_gcc() {
     get_build_args x86_64_gcc
-    assertArg 'BASE=$(REGISTRY)$(PROJECT)/gcc' 'HOSTARCH=x86_64'\
+    assertArg 'BASE=$(DOCKER_REGISTRY)$(PROJECT)/gcc' 'HOSTARCH=x86_64'\
         'PACKAGES="gcc g++"'
 }
 
 test_clang() {
     get_build_args clang
-    assertArg 'BASE=$(REGISTRY)$(PROJECT)/base' 'PACKAGES="clang clang-tidy llvm lld"'
+    assertArg 'BASE=$(DOCKER_REGISTRY)$(PROJECT)/base' 'PACKAGES="clang clang-tidy llvm lld"'
 }
 
 test_arm64_clang() {
     get_build_args arm64_clang
-    assertArg 'BASE=$(REGISTRY)$(PROJECT)/clang' 'HOSTARCH=aarch64' \
+    assertArg 'BASE=$(DOCKER_REGISTRY)$(PROJECT)/clang' 'HOSTARCH=aarch64' \
         'PACKAGES="clang clang-tidy llvm lld binutils-arm-linux-gnueabihf binutils-aarch64-linux-gnu"'
 }
 
 test_clang_13() {
     get_build_args clang-13
-    assertArg 'BASE=$(REGISTRY)$(PROJECT)/base' 'PACKAGES="clang-13 clang-tidy-13 llvm-13 lld-13"'
+    assertArg 'BASE=$(DOCKER_REGISTRY)$(PROJECT)/base' 'PACKAGES="clang-13 clang-tidy-13 llvm-13 lld-13"'
 }
 
 test_gcc_all_includes_only_gcc_images_not_gcc_N() {

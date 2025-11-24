@@ -72,7 +72,7 @@ class Image:
 
     @property
     def base_image(self):
-        return f"$(REGISTRY)$(PROJECT)/{self.base}:latest$(TAG)"
+        return f"$(DOCKER_REGISTRY)$(PROJECT)/{self.base}:latest$(TAG)"
 
     def arg(self, k, v):
         self.args.append((k, v))
@@ -110,7 +110,7 @@ class Image:
             stream.write(f"\t\t--build-arg={k}={v} \\\n")
         stream.write(f"\t\t{self.build_args} $(docker_build_args) \\\n")
         stream.write(f"\t\t--file=Dockerfile.{self.kind} \\\n")
-        stream.write(f"\t\t--tag=$(REGISTRY)$(PROJECT)/{self.name}:latest$(TAG) \\\n")
+        stream.write(f"\t\t--tag=$(DOCKER_REGISTRY)$(PROJECT)/{self.name}:latest$(TAG) \\\n")
         stream.write("\t\t. $(LOG)\n\n")
 
         test_args = " ".join(self.test_args)
@@ -122,9 +122,9 @@ class Image:
             return
         stream.write(f"test-{self.name}: {self.name}\n")
         stream.write(f"\t$(ANN_TEST) {self.name}\n")
-        stream.write(f"\t$(Q)$(docker) run --rm $(REGISTRY)$(PROJECT)/{self.name}:latest$(TAG) tuxmake-check-environment {test_args} $(NOSTDOUT) \n")
+        stream.write(f"\t$(Q)$(docker) run --rm $(DOCKER_REGISTRY)$(PROJECT)/{self.name}:latest$(TAG) tuxmake-check-environment {test_args} $(NOSTDOUT) \n")
         if self.boot_test:
-            stream.write(f"\t$(Q)sh ./test_container.sh $(REGISTRY)$(PROJECT)/{self.name}:latest$(TAG) $(NOSTDOUT) \n\n")
+            stream.write(f"\t$(Q)sh ./test_container.sh $(DOCKER_REGISTRY)$(PROJECT)/{self.name}:latest$(TAG) $(NOSTDOUT) \n\n")
 
 
 

@@ -32,6 +32,7 @@ stages:
         - cd support/docker/
         - ./configure
         - 'docker login --username="${DOCKER_USERNAME}" --password-stdin < "${DOCKER_PASSWORD_FILE}"'
+        - 'docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY' # Registry login
 """
 
 PUBLISH_JOB = """

@@ -26,6 +26,7 @@ RUN apt-get update \
         procps \
         apt-transport-https \
         ca-certificates \
+        device-tree-compiler \
         bash \
         bc \
         bison \
@@ -57,6 +58,7 @@ RUN apt-get update \
         python3-docutils \
         python3-setuptools \
         python3-jsonschema \
+        python3-pip \
         python3-yaml \
         rsync \
         socat \

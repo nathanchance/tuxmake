@@ -239,5 +239,8 @@ RUN apt-get install -qy cmake libdw-dev && \
     make install && \
     cd ../../ && \
     rm -rf pahole
+# TODO: Remove jsonschema pin once dt-schema releases a version compatible
+#       with jsonschema >=4.18 (post-commit 7b9c4e8412ea).
+RUN pip install --break-system-packages --ignore-installed 'jsonschema<4.18' dtschema
 
 # vim: ft=dockerfile

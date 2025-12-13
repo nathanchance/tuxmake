@@ -53,6 +53,17 @@ This target builds all DTB files, like `dtbs`, but does not rely on the
 `dtbs_install` target. It's main goal is supporting DTBs in old kernels where
 `dtbs_install` didn't exist. It will be skipped on recent kernels.
 
+## dtbs_check
+
+This target validates Device Tree Source (DTS) files against JSON schemas using
+the kernel's built-in `dtbs_check` make target. This enables early detection of
+DTS/schema regressions and ensures Device Tree files comply with the
+dt-bindings schema definitions maintained in the kernel.
+
+No artifacts are copied to the output directory. The validation results are
+shown in the build output, with schema violations reported as warnings or
+errors.
+
 ## kernel
 
 Builds the Kernel image, which is copied into the output directory. The

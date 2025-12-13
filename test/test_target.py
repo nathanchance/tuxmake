@@ -107,6 +107,39 @@ class TestDtbs:
         assert dtbs.artifacts["dtbs.tar.xz"] == "dtbs.tar.xz"
 
 
+class TestDtbsCheck:
+    def test_commands(self, build):
+        dtbs_check = Target("dtbs_check", build)
+        assert dtbs_check.commands[0] == ["{make}", "dtbs_check"]
+
+    def test_depends_on_config(self, build):
+        dtbs_check = Target("dtbs_check", build)
+        assert dtbs_check.dependencies == ["config"]
+
+    def test_description(self, build):
+        dtbs_check = Target("dtbs_check", build)
+        assert dtbs_check.description == "Device Tree Source validation against schemas"
+
+    def test_preconditions(self, build):
+        dtbs_check = Target("dtbs_check", build)
+        assert len(dtbs_check.preconditions) == 2
+        assert dtbs_check.preconditions[0] == [
+            "test",
+            "-d",
+            "arch/{source_arch}/boot/dts",
+        ]
+        assert dtbs_check.preconditions[1] == [
+            "grep",
+            "-q",
+            "^dtbs_check:",
+            "{source_tree}/Makefile",
+        ]
+
+    def test_no_artifacts(self, build):
+        dtbs_check = Target("dtbs_check", build)
+        assert dtbs_check.artifacts == {}
+
+
 class TestDefault:
     def test_command(self, build):
         default = Target("default", build)
